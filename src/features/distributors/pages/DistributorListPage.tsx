@@ -2,12 +2,19 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box, Typography, Tooltip } from "@mui/material";
 import {
   getAllDistributors,
   deleteDistributor,
 } from "../api/distributorApi";
 import type { Distributor } from "../types/distributor";
+
+const countryCodeToFlag = (code: string) =>
+  code
+    .toUpperCase()
+    .split("")
+    .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
+    .join("");
 
 export default function DistributorListPage() {
   const [distributors, setDistributors] = useState<Distributor[]>([]);
@@ -46,11 +53,6 @@ export default function DistributorListPage() {
 
   const columns: GridColDef[] = [
     {
-      field: "name",
-      headerName: "Name",
-      flex: 1,
-    },
-    {
       field: "description",
       headerName: "Description",
       flex: 2,
@@ -59,7 +61,17 @@ export default function DistributorListPage() {
     {
       field: "countryCode",
       headerName: "Country",
-      width: 120,
+      width: 100,
+      renderCell: (params) =>
+        params.value ? (
+          <Tooltip title={params.value}>
+            <span style={{ fontSize: "1.5rem" }}>
+              {countryCodeToFlag(params.value)}
+            </span>
+          </Tooltip>
+        ) : (
+          "-"
+        ),
     },
     {
       field: "website",
@@ -126,9 +138,9 @@ export default function DistributorListPage() {
           columns={columns}
           loading={loading}
           getRowId={(row) => row.id}
-          pageSizeOptions={[5, 10, 20]}
+          pageSizeOptions={[10, 20, 30]}
           initialState={{
-            pagination: { paginationModel: { pageSize: 5 } },
+            pagination: { paginationModel: { pageSize: 10 } },
           }}
         />
       </div>
