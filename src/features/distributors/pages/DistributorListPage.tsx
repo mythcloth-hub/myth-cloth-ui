@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
-import { Button, Box, Typography, Tooltip } from "@mui/material";
+import { Box, Typography, Tooltip, IconButton, Button } from "@mui/material";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import EditIcon from "@mui/icons-material/EditOutlined";
+import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   getAllDistributors,
   deleteDistributor,
@@ -76,16 +79,24 @@ export default function DistributorListPage() {
     {
       field: "website",
       headerName: "Website",
-      flex: 1,
+      width: 90,
+      align: "center",
+      headerAlign: "center",
+      sortable: false,
       renderCell: (params) =>
         params.value ? (
-          <a
-            href={params.value}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Visit
-          </a>
+          <Tooltip title={params.value}>
+            <IconButton
+              component="a"
+              href={params.value}
+              target="_blank"
+              rel="noopener noreferrer"
+              size="small"
+              sx={{ color: "secondary.main", "&:hover": { color: "primary.main" } }}
+            >
+              <OpenInNewIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         ) : (
           "-"
         ),
@@ -93,26 +104,30 @@ export default function DistributorListPage() {
     {
       field: "actions",
       headerName: "Actions",
-      width: 180,
+      width: 100,
       sortable: false,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => (
         <>
-          <Button
-            size="small"
-            onClick={() =>
-              navigate(`/distributors/edit/${params.row.id}`)
-            }
-          >
-            Edit
-          </Button>
-
-          <Button
-            size="small"
-            color="error"
-            onClick={() => handleDelete(params.row.id)}
-          >
-            Delete
-          </Button>
+          <Tooltip title="Edit">
+            <IconButton
+              size="small"
+              onClick={() => navigate(`/distributors/edit/${params.row.id}`)}
+              sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton
+              size="small"
+              onClick={() => handleDelete(params.row.id)}
+              sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </>
       ),
     },
