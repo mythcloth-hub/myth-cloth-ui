@@ -3,6 +3,6 @@ export type Distributor = {
   id: number;
   name: string;
   description: string;
-  countryCode: string;
+  country: string;
   website?: string;
 };

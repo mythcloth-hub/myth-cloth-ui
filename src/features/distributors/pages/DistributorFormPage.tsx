@@ -6,7 +6,10 @@ import {
   TextField,
   Button,
   Paper,
+  Alert,
+  Snackbar,
 } from "@mui/material";
+import axios from "axios";
 
 import { createDistributor, getDistributorById, updateDistributor } from "../api/distributorApi";
 import type { Distributor } from "../types/distributor";
@@ -16,7 +19,7 @@ type FormData = Omit<Distributor, "id">;
 const emptyForm: FormData = {
   name: "",
   description: "",
-  countryCode: "",
+  country: "",
   website: "",
 };
 
@@ -28,6 +31,16 @@ export default function DistributorFormPage() {
   const [form, setForm] = useState<FormData>(emptyForm);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Maps server-side field names to form field names
+  const serverFieldMap: Record<string, keyof FormData> = {
+    name: "name",
+    description: "description",
+    country: "country",
+    website: "website",
+  };
 
   useEffect(() => {
     if (!isEdit) return;
@@ -46,7 +59,7 @@ export default function DistributorFormPage() {
     const newErrors: Partial<FormData> = {};
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!form.description.trim()) newErrors.description = "Description is required";
-    if (!form.countryCode.trim()) newErrors.countryCode = "Country code is required";
+    if (!form.country.trim()) newErrors.country = "Country code is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -55,6 +68,7 @@ export default function DistributorFormPage() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: undefined }));
+    setServerError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,10 +81,24 @@ export default function DistributorFormPage() {
       } else {
         await createDistributor({ id: 0, ...form });
       }
-      navigate("/distributors");
+      setSuccessMessage(isEdit ? "Distributor updated successfully." : "Distributor created successfully.");
     } catch (err) {
       console.error(err);
-      alert(`Failed to ${isEdit ? "update" : "create"} distributor`);
+      if (axios.isAxiosError(err) && err.response?.data) {
+        const body = err.response.data as Record<string, unknown>;
+        if (body.errors && typeof body.errors === "object") {
+          const fieldErrors: Partial<FormData> = {};
+          for (const [key, message] of Object.entries(body.errors as Record<string, string>)) {
+            const formField = serverFieldMap[key];
+            if (formField) fieldErrors[formField] = message;
+          }
+          setErrors((prev) => ({ ...prev, ...fieldErrors }));
+        } else {
+          setServerError((body.detail as string) ?? `Failed to ${isEdit ? "update" : "create"} distributor`);
+        }
+      } else {
+        setServerError(`Failed to ${isEdit ? "update" : "create"} distributor`);
+      }
     } finally {
       setLoading(false);
     }
@@ -93,6 +121,11 @@ export default function DistributorFormPage() {
           noValidate
           sx={{ display: "flex", flexDirection: "column", gap: 2 }}
         >
+          {serverError && (
+            <Alert severity="error" onClose={() => setServerError(null)}>
+              {serverError}
+            </Alert>
+          )}
           <TextField
             label="Name"
             name="name"
@@ -102,6 +135,7 @@ export default function DistributorFormPage() {
             helperText={errors.name}
             required
             fullWidth
+            slotProps={{ htmlInput: { maxLength: 50 } }}
           />
           <TextField
             label="Description"
@@ -117,11 +151,11 @@ export default function DistributorFormPage() {
           />
           <TextField
             label="Country Code"
-            name="countryCode"
-            value={form.countryCode}
+            name="country"
+            value={form.country}
             onChange={handleChange}
-            error={Boolean(errors.countryCode)}
-            helperText={errors.countryCode ?? "2-letter code, e.g. US, MX, JP"}
+            error={Boolean(errors.country)}
+            helperText={errors.country ?? "2-letter code, e.g. US, MX, JP"}
             required
             fullWidth
             slotProps={{ htmlInput: { maxLength: 2 } }}
@@ -138,12 +172,20 @@ export default function DistributorFormPage() {
             <Button variant="outlined" onClick={() => navigate("/distributors")}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" disabled={loading}>
+            <Button type="submit" variant="contained" disabled={loading || Boolean(successMessage)}>
               {isEdit ? "Update" : "Create"}
             </Button>
           </Box>
         </Box>
       </Paper>
+      <Snackbar
+        open={Boolean(successMessage)}
+        autoHideDuration={3000}
+        onClose={() => { setSuccessMessage(null); navigate("/distributors"); }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity="success">{successMessage}</Alert>
+      </Snackbar>
     </Box>
   );
 }
