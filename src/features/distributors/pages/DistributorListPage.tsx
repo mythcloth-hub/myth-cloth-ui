@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
-import type { GridColDef } from "@mui/x-data-grid";
-import { Box, Typography, Tooltip, IconButton, Button } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+
+import { Box, Typography, Tooltip, IconButton, Button } from "@mui/material";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  getAllDistributors,
-  deleteDistributor,
-} from "../api/distributorApi";
+
+import { getAllDistributors, deleteDistributor } from "../api/distributorApi";
 import type { Distributor } from "../types/distributor";
+import type { GridColDef } from "@mui/x-data-grid";
 
 const countryCodeToFlag = (code: string) =>
   code
@@ -59,22 +58,18 @@ export default function DistributorListPage() {
       field: "description",
       headerName: "Description",
       flex: 2,
-      valueGetter: (_value, row) => row.description || "-",
     },
     {
       field: "countryCode",
       headerName: "Country",
       width: 100,
-      renderCell: (params) =>
-        params.value ? (
-          <Tooltip title={params.value}>
-            <span style={{ fontSize: "1.5rem" }}>
-              {countryCodeToFlag(params.value)}
-            </span>
-          </Tooltip>
-        ) : (
-          "-"
-        ),
+      renderCell: (params) => (
+        <Tooltip title={params.value}>
+          <span style={{ fontSize: "1.5rem" }}>
+            {countryCodeToFlag(params.value)}
+          </span>
+        </Tooltip>
+      )
     },
     {
       field: "website",
@@ -98,7 +93,7 @@ export default function DistributorListPage() {
             </IconButton>
           </Tooltip>
         ) : (
-          "-"
+          ""
         ),
     },
     {
@@ -130,7 +125,7 @@ export default function DistributorListPage() {
           </Tooltip>
         </>
       ),
-    },
+    }
   ];
 
   return (
@@ -153,10 +148,6 @@ export default function DistributorListPage() {
           columns={columns}
           loading={loading}
           getRowId={(row) => row.id}
-          pageSizeOptions={[10, 20, 30]}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 10 } },
-          }}
         />
       </div>
     </Box>
