@@ -2,7 +2,6 @@
 export type Distributor = {
   id: number;
   name: string;
-  description: string;
-  country: string;
+  countryCode: string;
   website?: string;
 };

@@ -8,6 +8,11 @@ import {
   Paper,
   Alert,
   Snackbar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
 } from "@mui/material";
 import axios from "axios";
 
@@ -18,10 +23,33 @@ type FormData = Omit<Distributor, "id">;
 
 const emptyForm: FormData = {
   name: "",
-  description: "",
-  country: "",
+  countryCode: "",
   website: "",
 };
+
+const DISTRIBUTOR_NAMES: { label: string; value: string }[] = [
+  { value: "DAM",              label: "Distribuidora Animéxico" },
+  { value: "BANDAI_CHINA",     label: "Tamashii Nations China" },
+  { value: "BLUE_FIN",         label: "Bluefin" },
+  { value: "BANDAI",           label: "Tamashii Nations" },
+  { value: "DS_DISTRIBUTIONS", label: "DS Distribuciones" },
+  { value: "DTM",              label: "Distribuidora Toyvision México" },
+];
+
+const countryCodeToFlag = (code: string) =>
+  code
+    .toUpperCase()
+    .split("")
+    .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
+    .join("");
+
+const COUNTRIES: { value: string; label: string }[] = [
+  { value: "CN", label: "China" },
+  { value: "ES", label: "Spain" },
+  { value: "JP", label: "Japan" },
+  { value: "MX", label: "Mexico" },
+  { value: "US", label: "United States" },
+];
 
 export default function DistributorFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,8 +65,7 @@ export default function DistributorFormPage() {
   // Maps server-side field names to form field names
   const serverFieldMap: Record<string, keyof FormData> = {
     name: "name",
-    description: "description",
-    country: "country",
+    countryCode: "countryCode",
     website: "website",
   };
 
@@ -58,8 +85,17 @@ export default function DistributorFormPage() {
   const validate = (): boolean => {
     const newErrors: Partial<FormData> = {};
     if (!form.name.trim()) newErrors.name = "Name is required";
-    if (!form.description.trim()) newErrors.description = "Description is required";
-    if (!form.country.trim()) newErrors.country = "Country code is required";
+    if (!form.countryCode.trim()) newErrors.countryCode = "Country is required";
+    if (form.website?.trim()) {
+      try {
+        const url = new URL(form.website.trim());
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+          newErrors.website = "Website must start with http:// or https://";
+        }
+      } catch {
+        newErrors.website = "Website must be a valid URL (e.g. https://example.com)";
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -118,6 +154,11 @@ export default function DistributorFormPage() {
         <Box
           component="form"
           onSubmit={handleSubmit}
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === "Enter" && (e.target as HTMLElement).getAttribute("role") !== "combobox") {
+              handleSubmit(e as unknown as React.FormEvent);
+            }
+          }}
           noValidate
           sx={{ display: "flex", flexDirection: "column", gap: 2 }}
         >
@@ -126,40 +167,47 @@ export default function DistributorFormPage() {
               {serverError}
             </Alert>
           )}
-          <TextField
-            label="Name"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            error={Boolean(errors.name)}
-            helperText={errors.name}
-            required
-            fullWidth
-            slotProps={{ htmlInput: { maxLength: 50 } }}
-          />
-          <TextField
-            label="Description"
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            error={Boolean(errors.description)}
-            helperText={errors.description}
-            required
-            fullWidth
-            multiline
-            rows={3}
-          />
-          <TextField
-            label="Country Code"
-            name="country"
-            value={form.country}
-            onChange={handleChange}
-            error={Boolean(errors.country)}
-            helperText={errors.country ?? "2-letter code, e.g. US, MX, JP"}
-            required
-            fullWidth
-            slotProps={{ htmlInput: { maxLength: 2 } }}
-          />
+          <FormControl required fullWidth error={Boolean(errors.name)}>
+            <InputLabel id="name-label">Name</InputLabel>
+            <Select
+              labelId="name-label"
+              label="Name"
+              name="name"
+              value={form.name}
+              onChange={(e) => {
+                setForm((prev) => ({ ...prev, name: e.target.value }));
+                setErrors((prev) => ({ ...prev, name: undefined }));
+                setServerError(null);
+              }}
+            >
+              {DISTRIBUTOR_NAMES.map(({ value, label }) => (
+                <MenuItem key={value} value={value}>{label}</MenuItem>
+              ))}
+            </Select>
+            {errors.name && <FormHelperText>{errors.name}</FormHelperText>}
+          </FormControl>
+          <FormControl required fullWidth error={Boolean(errors.countryCode)}>
+            <InputLabel id="country-label">Country</InputLabel>
+            <Select
+              labelId="country-label"
+              label="Country"
+              name="countryCode"
+              value={form.countryCode}
+              onChange={(e) => {
+                setForm((prev) => ({ ...prev, countryCode: e.target.value }));
+                setErrors((prev) => ({ ...prev, countryCode: undefined }));
+                setServerError(null);
+              }}
+            >
+              {COUNTRIES.map(({ value, label }) => (
+                <MenuItem key={value} value={value}>
+                  <span style={{ marginRight: 8 }}>{countryCodeToFlag(value)}</span>
+                  {label}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.countryCode && <FormHelperText>{errors.countryCode}</FormHelperText>}
+          </FormControl>
           <TextField
             label="Website"
             name="website"
@@ -167,6 +215,9 @@ export default function DistributorFormPage() {
             onChange={handleChange}
             fullWidth
             placeholder="https://example.com"
+            slotProps={{ htmlInput: { maxLength: 150 } }}
+            error={Boolean(errors.website)}
+            helperText={errors.website}
           />
           <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
             <Button variant="outlined" onClick={() => navigate("/distributors")}>

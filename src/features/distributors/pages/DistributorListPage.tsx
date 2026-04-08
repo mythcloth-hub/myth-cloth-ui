@@ -163,6 +163,8 @@ export default function DistributorListPage() {
           loading={loading}
           getRowId={(row) => row.id}
           columnVisibilityModel={{ website: !isMobile }}
+          onRowDoubleClick={(params) => navigate(`/distributors/edit/${params.row.id}`)}
+          sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
         />
       </div>
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
