@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMediaQuery, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-import { Box, Typography, Tooltip, IconButton, Button } from "@mui/material";
+import { Box, Typography, Tooltip, IconButton, Button, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
@@ -21,8 +22,13 @@ const countryCodeToFlag = (code: string) =>
 export default function DistributorListPage() {
   const [distributors, setDistributors] = useState<Distributor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const loadData = async () => {
     try {
@@ -40,16 +46,23 @@ export default function DistributorListPage() {
     loadData();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    const confirmed = window.confirm("Delete this distributor?");
-    if (!confirmed) return;
+  const handleDeleteClick = (id: number) => {
+    setPendingDeleteId(id);
+    setConfirmOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (pendingDeleteId === null) return;
+    setConfirmOpen(false);
     try {
-      await deleteDistributor(id);
+      await deleteDistributor(pendingDeleteId);
       await loadData();
+      setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
       alert("Failed to delete distributor");
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
@@ -117,7 +130,7 @@ export default function DistributorListPage() {
           <Tooltip title="Delete">
             <IconButton
               size="small"
-              onClick={() => handleDelete(params.row.id)}
+              onClick={() => handleDeleteClick(params.row.id)}
               sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
             >
               <DeleteIcon fontSize="small" />
@@ -129,8 +142,8 @@ export default function DistributorListPage() {
   ];
 
   return (
-    <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
+      <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }} gutterBottom>
         Distributors
       </Typography>
 
@@ -142,14 +155,39 @@ export default function DistributorListPage() {
         + Add Distributor
       </Button>
 
-      <div style={{ height: 500, width: "100%" }}>
+      <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>
         <DataGrid
           rows={distributors}
           columns={columns}
           loading={loading}
           getRowId={(row) => row.id}
+          columnVisibilityModel={{ website: !isMobile }}
         />
       </div>
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Delete Distributor</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this distributor? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={5000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="success" onClose={() => setSnackbarOpen(false)}>
+          Distributor deleted successfully.
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
