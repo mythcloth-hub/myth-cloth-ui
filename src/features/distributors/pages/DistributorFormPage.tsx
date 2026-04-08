@@ -73,8 +73,11 @@ export default function DistributorFormPage() {
     if (!isEdit) return;
     getDistributorById(Number(id))
       .then((data) => {
-        const { id: _id, ...rest } = data;
-        setForm(rest);
+        setForm({
+          name: data.name,
+          countryCode: data.countryCode,
+          website: data.website ?? "",
+        });
       })
       .catch((err) => {
         console.error(err);
@@ -120,17 +123,21 @@ export default function DistributorFormPage() {
       setSuccessMessage(isEdit ? "Distributor updated successfully." : "Distributor created successfully.");
     } catch (err) {
       console.error(err);
-      if (axios.isAxiosError(err) && err.response?.data) {
-        const body = err.response.data as Record<string, unknown>;
-        if (body.errors && typeof body.errors === "object") {
-          const fieldErrors: Partial<FormData> = {};
-          for (const [key, message] of Object.entries(body.errors as Record<string, string>)) {
-            const formField = serverFieldMap[key];
-            if (formField) fieldErrors[formField] = message;
+      if (axios.isAxiosError(err)) {
+        if (err.response?.data) {
+          const body = err.response.data as Record<string, unknown>;
+          if (body.errors && typeof body.errors === "object") {
+            const fieldErrors: Partial<FormData> = {};
+            for (const [key, message] of Object.entries(body.errors as Record<string, string>)) {
+              const formField = serverFieldMap[key];
+              if (formField) fieldErrors[formField] = message;
+            }
+            setErrors((prev) => ({ ...prev, ...fieldErrors }));
+          } else {
+            setServerError((body.detail as string) ?? `Failed to ${isEdit ? "update" : "create"} distributor`);
           }
-          setErrors((prev) => ({ ...prev, ...fieldErrors }));
         } else {
-          setServerError((body.detail as string) ?? `Failed to ${isEdit ? "update" : "create"} distributor`);
+          setServerError("Unable to connect to the server. Please check your connection and try again.");
         }
       } else {
         setServerError(`Failed to ${isEdit ? "update" : "create"} distributor`);
@@ -150,7 +157,7 @@ export default function DistributorFormPage() {
         {isEdit ? "Edit Distributor" : "New Distributor"}
       </Typography>
 
-      <Paper sx={{ padding: { xs: 2, sm: 3 }, maxWidth: 600 }}>
+      <Paper sx={{ padding: { xs: 2, sm: 3 } }}>
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -231,9 +238,9 @@ export default function DistributorFormPage() {
       </Paper>
       <Snackbar
         open={Boolean(successMessage)}
-        autoHideDuration={3000}
+        autoHideDuration={1500}
         onClose={() => { setSuccessMessage(null); navigate("/distributors"); }}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert severity="success">{successMessage}</Alert>
       </Snackbar>
