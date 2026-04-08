@@ -75,7 +75,8 @@ export default function DistributorListPage() {
     {
       field: "countryCode",
       headerName: "Country",
-      width: 100,
+      width: 130,
+      sortable: false,
       renderCell: (params) => (
         <Tooltip title={params.value}>
           <span style={{ fontSize: "1.5rem" }}>
@@ -87,7 +88,7 @@ export default function DistributorListPage() {
     {
       field: "website",
       headerName: "Website",
-      width: 90,
+      width: 120,
       align: "center",
       headerAlign: "center",
       sortable: false,
@@ -112,7 +113,7 @@ export default function DistributorListPage() {
     {
       field: "actions",
       headerName: "Actions",
-      width: 100,
+      width: 130,
       sortable: false,
       align: "center",
       headerAlign: "center",
@@ -143,17 +144,17 @@ export default function DistributorListPage() {
 
   return (
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
-      <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }} gutterBottom>
-        Distributors
-      </Typography>
-
-      <Button
-        variant="contained"
-        sx={{ marginBottom: 2 }}
-        onClick={() => navigate("/distributors/new")}
-      >
-        + Add Distributor
-      </Button>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+        <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
+          Distributors
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={() => navigate("/distributors/new")}
+        >
+          + Add Distributor
+        </Button>
+      </Box>
 
       <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>
         <DataGrid
