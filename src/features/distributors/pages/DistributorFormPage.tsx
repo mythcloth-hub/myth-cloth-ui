@@ -13,6 +13,7 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 
@@ -58,6 +59,7 @@ export default function DistributorFormPage() {
 
   const [form, setForm] = useState<FormData>(emptyForm);
   const [loading, setLoading] = useState(false);
+  const [loadingForm, setLoadingForm] = useState(isEdit);
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -71,6 +73,7 @@ export default function DistributorFormPage() {
 
   useEffect(() => {
     if (!isEdit) return;
+    setLoadingForm(true);
     getDistributorById(Number(id))
       .then((data) => {
         setForm({
@@ -81,8 +84,9 @@ export default function DistributorFormPage() {
       })
       .catch((err) => {
         console.error(err);
-        alert("Failed to load distributor");
-      });
+        setServerError("Failed to load distributor. Please try again.");
+      })
+      .finally(() => setLoadingForm(false));
   }, [id, isEdit]);
 
   const validate = (): boolean => {
@@ -157,6 +161,11 @@ export default function DistributorFormPage() {
         {isEdit ? "Edit Distributor" : "New Distributor"}
       </Typography>
 
+      {loadingForm ? (
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
       <Paper sx={{ padding: { xs: 2, sm: 3 } }}>
         <Box
           component="form"
@@ -236,6 +245,7 @@ export default function DistributorFormPage() {
           </Box>
         </Box>
       </Paper>
+      )}
       <Snackbar
         open={Boolean(successMessage)}
         autoHideDuration={1500}

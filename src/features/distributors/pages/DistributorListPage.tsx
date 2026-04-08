@@ -4,7 +4,7 @@ import { useMediaQuery, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-import { Box, Typography, Tooltip, IconButton, Button, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
+import { Box, Typography, Tooltip, IconButton, Button, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CircularProgress } from "@mui/material";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
@@ -19,12 +19,23 @@ const countryCodeToFlag = (code: string) =>
     .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
     .join("");
 
+function CustomNoRowsOverlay() {
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 1 }}>
+      <Typography variant="body1" color="text.secondary">No distributors yet.</Typography>
+      <Typography variant="body2" color="text.secondary">Click + Add Distributor to get started.</Typography>
+    </Box>
+  );
+}
+
 export default function DistributorListPage() {
   const [distributors, setDistributors] = useState<Distributor[]>([]);
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const navigate = useNavigate();
   const theme = useTheme();
@@ -36,7 +47,7 @@ export default function DistributorListPage() {
       setDistributors(data);
     } catch (err) {
       console.error(err);
-      alert("Failed to load distributors");
+      setErrorMessage("Failed to load distributors. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -54,14 +65,16 @@ export default function DistributorListPage() {
   const handleConfirmDelete = async () => {
     if (pendingDeleteId === null) return;
     setConfirmOpen(false);
+    setDeleting(true);
     try {
       await deleteDistributor(pendingDeleteId);
       await loadData();
       setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
-      alert("Failed to delete distributor");
+      setErrorMessage("Failed to delete distributor. Please try again.");
     } finally {
+      setDeleting(false);
       setPendingDeleteId(null);
     }
   };
@@ -164,6 +177,7 @@ export default function DistributorListPage() {
           getRowId={(row) => row.id}
           columnVisibilityModel={{ website: !isMobile }}
           onRowDoubleClick={(params) => navigate(`/distributors/edit/${params.row.id}`)}
+          slots={{ noRowsOverlay: CustomNoRowsOverlay }}
           sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
         />
       </div>
@@ -176,8 +190,8 @@ export default function DistributorListPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
-            Delete
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deleting}>
+            {deleting ? <CircularProgress size={20} color="inherit" /> : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -189,6 +203,16 @@ export default function DistributorListPage() {
       >
         <Alert severity="success" onClose={() => setSnackbarOpen(false)}>
           Distributor deleted successfully.
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={Boolean(errorMessage)}
+        autoHideDuration={6000}
+        onClose={() => setErrorMessage(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="error" onClose={() => setErrorMessage(null)}>
+          {errorMessage}
         </Alert>
       </Snackbar>
     </Box>
