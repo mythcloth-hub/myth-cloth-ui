@@ -12,6 +12,7 @@ import {
   ListItemIcon,
   ListItemText,
   Toolbar,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -22,6 +23,8 @@ import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
 import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
+import { useAppTheme } from "../theme/ThemeContext";
+import { THEME_META, type ThemeId } from "../theme/themes";
 
 const DRAWER_WIDTH = 230;
 
@@ -59,6 +62,7 @@ const NAV_SECTIONS: NavSection[] = [
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { themeId, setThemeId } = useAppTheme();
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -75,7 +79,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Brand */}
-      <Box sx={{ px: 3, py: 2.5, borderBottom: "1px solid rgba(212, 175, 55, 0.2)" }}>
+      <Box sx={{ px: 3, py: 2.5, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <Typography
           variant="h6"
           sx={{ color: "primary.main", fontWeight: 700, letterSpacing: 1, lineHeight: 1.2 }}
@@ -116,17 +120,22 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                       onClick={() => handleClick(item.path)}
                       sx={{
                         mx: 1,
-                        borderRadius: 1,
+                        borderRadius: 1.5,
                         mb: 0.25,
                         color: active ? "primary.main" : "text.secondary",
                         backgroundColor: active
-                          ? "rgba(212, 175, 55, 0.1)"
+                          ? "rgba(212, 175, 55, 0.12)"
                           : "transparent",
+                        borderLeft: active ? "2px solid #d4af37" : "2px solid transparent",
+                        boxShadow: active ? "0 0 12px rgba(212, 175, 55, 0.15), inset 0 1px 0 rgba(255,255,255,0.06)" : "none",
+                        backdropFilter: active ? "blur(8px)" : "none",
+                        transition: "all 0.2s ease",
                         "&:hover": {
                           backgroundColor: active
-                            ? "rgba(212, 175, 55, 0.15)"
+                            ? "rgba(212, 175, 55, 0.18)"
                             : "rgba(255,255,255,0.05)",
                           color: active ? "primary.main" : "text.primary",
+                          boxShadow: "0 0 8px rgba(212, 175, 55, 0.1)",
                         },
                       }}
                     >
@@ -152,10 +161,79 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               })}
             </List>
             {section.heading === "" && (
-              <Divider sx={{ borderColor: "rgba(212, 175, 55, 0.1)", mx: 2, mt: 1 }} />
+              <Divider sx={{ borderColor: "rgba(255,255,255,0.07)", mx: 2, mt: 1 }} />
             )}
           </Box>
         ))}
+      </Box>
+
+      {/* Theme switcher */}
+      <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+        <Typography
+          variant="overline"
+          sx={{
+            display: "block",
+            px: 1,
+            pb: 1,
+            color: "text.secondary",
+            fontSize: "0.65rem",
+            letterSpacing: "0.1em",
+          }}
+        >
+          Theme
+        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          {(Object.keys(THEME_META) as ThemeId[]).map((id) => {
+            const meta = THEME_META[id];
+            const active = themeId === id;
+            return (
+              <Tooltip key={id} title={meta.description} placement="right" arrow>
+                <Box
+                  onClick={() => setThemeId(id)}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.25,
+                    px: 1.25,
+                    py: 0.6,
+                    borderRadius: 1.5,
+                    cursor: "pointer",
+                    backgroundColor: active ? "rgba(255,255,255,0.08)" : "transparent",
+                    border: active ? "1px solid" : "1px solid transparent",
+                    borderColor: active ? "primary.main" : "transparent",
+                    transition: "all 0.18s ease",
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.06)",
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      backgroundColor: meta.preview,
+                      border: "2px solid",
+                      borderColor: active ? "primary.main" : "rgba(255,255,255,0.25)",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: active ? "primary.main" : "text.secondary",
+                      fontWeight: active ? 600 : 400,
+                      fontSize: "0.78rem",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {meta.label}
+                  </Typography>
+                </Box>
+              </Tooltip>
+            );
+          })}
+        </Box>
       </Box>
     </Box>
   );
@@ -170,8 +248,6 @@ export default function MainLayout() {
     "& .MuiDrawer-paper": {
       width: DRAWER_WIDTH,
       boxSizing: "border-box",
-      backgroundColor: "background.paper",
-      borderRight: "1px solid rgba(212, 175, 55, 0.12)",
     },
   };
 
@@ -183,8 +259,6 @@ export default function MainLayout() {
         sx={{
           display: { md: "none" },
           width: "100%",
-          backgroundColor: "background.paper",
-          borderBottom: "1px solid rgba(212, 175, 55, 0.15)",
           boxShadow: "none",
         }}
       >
