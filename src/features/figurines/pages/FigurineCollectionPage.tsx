@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Box,
@@ -8,12 +8,17 @@ import {
   CardMedia,
   Chip,
   Grid,
+  IconButton,
+  InputAdornment,
   Pagination,
   Skeleton,
   Snackbar,
   Alert,
+  TextField,
   Typography,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
 import { getFigurines } from "../api/figurineApi";
@@ -209,17 +214,31 @@ function CardSkeleton() {
   );
 }
 
+// How many results per page when browsing normally or searching
+const SEARCH_BATCH = 5000; // fetch all to enable full-collection search
+
 export default function FigurineCollectionPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const page = Number(searchParams.get("page") ?? "1");
-  const [figurines, setFigurines] = useState<Figurine[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [totalPages, setTotalPages] = useState(0);
+  const query = searchParams.get("q") ?? "";
+  const page  = Number(searchParams.get("page") ?? "1");
+
+  // Normal-mode state (paginated from server)
+  const [figurines,     setFigurines]     = useState<Figurine[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [totalPages,    setTotalPages]    = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+
+  // Search-mode state (full collection cached locally)
+  const [allFigurines,   setAllFigurines]   = useState<Figurine[]>([]);
+  const [searchLoading,  setSearchLoading]  = useState(false);
+  const allFetched = useRef(false);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Fetch paginated data (normal mode)
   useEffect(() => {
+    if (query) return; // search mode handles its own data
     setLoading(true);
     setFigurines([]);
     getFigurines(page - 1, PAGE_SIZE)
@@ -233,41 +252,120 @@ export default function FigurineCollectionPage() {
         setErrorMessage("Failed to load figurines. Please check your connection and try again.");
       })
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, query]);
+
+  // Fetch full collection once when search mode is first activated
+  useEffect(() => {
+    if (!query || allFetched.current) return;
+    setSearchLoading(true);
+    getFigurines(0, SEARCH_BATCH)
+      .then((data) => {
+        setAllFigurines(data.content);
+        allFetched.current = true;
+      })
+      .catch((err) => {
+        console.error(err);
+        setErrorMessage("Failed to load figurines for search.");
+      })
+      .finally(() => setSearchLoading(false));
+  }, [query]);
+
+  // Filtered + paginated results for search mode
+  const filteredFigurines = useMemo(() => {
+    if (!query) return [];
+    const q = query.toLowerCase();
+    return allFigurines.filter((f) => f.name.toLowerCase().includes(q));
+  }, [query, allFigurines]);
+
+  const searchTotalPages = Math.ceil(filteredFigurines.length / PAGE_SIZE);
+  const searchPageItems  = filteredFigurines.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Unified display values
+  const isSearchMode    = Boolean(query);
+  const displayLoading  = isSearchMode ? searchLoading : loading;
+  const displayItems    = isSearchMode ? searchPageItems : figurines;
+  const displayTotal    = isSearchMode ? filteredFigurines.length : totalElements;
+  const displayPages    = isSearchMode ? searchTotalPages : totalPages;
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-    setSearchParams({ page: String(value) });
+    setSearchParams(query ? { q: query, page: String(value) } : { page: String(value) });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSearch = (value: string) => {
+    if (value.trim()) {
+      setSearchParams({ q: value.trim(), page: "1" });
+    } else {
+      setSearchParams({ page: "1" });
+    }
+  };
+
+  const handleClear = () => {
+    setSearchParams({ page: "1" });
   };
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
       {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
-            Collection
-          </Typography>
-          {!loading && totalElements > 0 && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {totalElements.toLocaleString()} figurines · page {page} of {totalPages}
-            </Typography>
-          )}
-        </Box>
-        <Button variant="contained" onClick={() => navigate("/figurines/new")}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2, gap: 2, flexWrap: "wrap" }}>
+        <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" }, flexShrink: 0 }}>
+          Collection
+        </Typography>
+        <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
           + New Figurine
         </Button>
       </Box>
 
+      {/* Search bar */}
+      <Box sx={{ mb: 2.5 }}>
+        <TextField
+          size="small"
+          placeholder="Search by name…"
+          defaultValue={query}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch((e.target as HTMLInputElement).value);
+          }}
+          onBlur={(e) => handleSearch(e.target.value)}
+          fullWidth
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: "text.disabled", fontSize: 20 }} />
+                </InputAdornment>
+              ),
+              endAdornment: query ? (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={handleClear} sx={{ color: "text.disabled" }}>
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            },
+          }}
+          sx={{ maxWidth: 480 }}
+        />
+      </Box>
+
+      {/* Status line */}
+      {!displayLoading && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {isSearchMode
+            ? `${displayTotal.toLocaleString()} result${displayTotal !== 1 ? "s" : ""} for "${query}"`
+            : displayTotal > 0 ? `${displayTotal.toLocaleString()} figurines · page ${page} of ${displayPages}` : null
+          }
+        </Typography>
+      )}
+
       {/* Grid */}
       <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-        {loading
+        {displayLoading
           ? Array.from({ length: PAGE_SIZE }).map((_, i) => (
               <Grid key={i} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
                 <CardSkeleton />
               </Grid>
             ))
-          : figurines.map((fig) => (
+          : displayItems.map((fig) => (
               <Grid key={fig.id} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
                 <FigurineCard figurine={fig} onClick={() => navigate(`/figurines/${fig.id}`)} />
               </Grid>
@@ -275,7 +373,7 @@ export default function FigurineCollectionPage() {
       </Grid>
 
       {/* Empty state */}
-      {!loading && figurines.length === 0 && !errorMessage && (
+      {!displayLoading && displayItems.length === 0 && !errorMessage && (
         <Box
           sx={{
             display: "flex",
@@ -287,16 +385,16 @@ export default function FigurineCollectionPage() {
           }}
         >
           <Typography variant="body1" color="text.secondary">
-            No figurines in the collection yet.
+            {isSearchMode ? `No figurines found matching "${query}".` : "No figurines in the collection yet."}
           </Typography>
         </Box>
       )}
 
       {/* Pagination */}
-      {!loading && totalPages > 1 && (
+      {!displayLoading && displayPages > 1 && (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4, mb: 2 }}>
           <Pagination
-            count={totalPages}
+            count={displayPages}
             page={page}
             onChange={handlePageChange}
             color="primary"
