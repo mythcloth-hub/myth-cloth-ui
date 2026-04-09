@@ -7,10 +7,14 @@ import {
   CardContent,
   CardMedia,
   Chip,
+  FormControl,
   Grid,
   IconButton,
   InputAdornment,
+  InputLabel,
+  MenuItem,
   Pagination,
+  Select,
   Skeleton,
   Snackbar,
   Alert,
@@ -22,6 +26,8 @@ import ClearIcon from "@mui/icons-material/Clear";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
 import { getFigurines } from "../api/figurineApi";
+import { lineupsApi, seriesApi, groupsApi } from "../../catalogs/api/catalogApi";
+import type { Catalog } from "../../catalogs/types/catalog";
 import type { Figurine } from "../types/figurine";
 
 const PAGE_SIZE = 12;
@@ -220,8 +226,12 @@ const SEARCH_BATCH = 5000; // fetch all to enable full-collection search
 export default function FigurineCollectionPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get("q") ?? "";
-  const page  = Number(searchParams.get("page") ?? "1");
+  const query  = searchParams.get("q")      ?? "";
+  const lineup  = searchParams.get("lineup") ?? "";
+  const series  = searchParams.get("series") ?? "";
+  const group   = searchParams.get("group")  ?? "";
+  const revival  = searchParams.get("revival") ?? "";
+  const page    = Number(searchParams.get("page") ?? "1");
 
   // Normal-mode state (paginated from server)
   const [figurines,     setFigurines]     = useState<Figurine[]>([]);
@@ -229,16 +239,30 @@ export default function FigurineCollectionPage() {
   const [totalPages,    setTotalPages]    = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
-  // Search-mode state (full collection cached locally)
-  const [allFigurines,   setAllFigurines]   = useState<Figurine[]>([]);
-  const [searchLoading,  setSearchLoading]  = useState(false);
+  // Filter-mode state (full collection cached locally)
+  const [allFigurines,  setAllFigurines]  = useState<Figurine[]>([]);
+  const [filterLoading, setFilterLoading] = useState(false);
   const allFetched = useRef(false);
+
+  // Lineup, series & group options for the dropdowns
+  const [lineupOptions, setLineupOptions] = useState<Catalog[]>([]);
+  const [seriesOptions, setSeriesOptions] = useState<Catalog[]>([]);
+  const [groupOptions,  setGroupOptions]  = useState<Catalog[]>([]);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fetch paginated data (normal mode)
+  const isFilterMode = Boolean(query) || Boolean(lineup) || Boolean(series) || Boolean(group) || Boolean(revival);
+
+  // Fetch dropdown options once on mount
   useEffect(() => {
-    if (query) return; // search mode handles its own data
+    lineupsApi.getAll().then(setLineupOptions).catch(console.error);
+    seriesApi.getAll().then(setSeriesOptions).catch(console.error);
+    groupsApi.getAll().then(setGroupOptions).catch(console.error);
+  }, []);
+
+  // Fetch paginated data (normal browse mode)
+  useEffect(() => {
+    if (isFilterMode) return;
     setLoading(true);
     setFigurines([]);
     getFigurines(page - 1, PAGE_SIZE)
@@ -252,12 +276,12 @@ export default function FigurineCollectionPage() {
         setErrorMessage("Failed to load figurines. Please check your connection and try again.");
       })
       .finally(() => setLoading(false));
-  }, [page, query]);
+  }, [page, isFilterMode]);
 
-  // Fetch full collection once when search mode is first activated
+  // Fetch full collection once when filter mode is first activated
   useEffect(() => {
-    if (!query || allFetched.current) return;
-    setSearchLoading(true);
+    if (!isFilterMode || allFetched.current) return;
+    setFilterLoading(true);
     getFigurines(0, SEARCH_BATCH)
       .then((data) => {
         setAllFigurines(data.content);
@@ -265,43 +289,116 @@ export default function FigurineCollectionPage() {
       })
       .catch((err) => {
         console.error(err);
-        setErrorMessage("Failed to load figurines for search.");
+        setErrorMessage("Failed to load figurines for filtering.");
       })
-      .finally(() => setSearchLoading(false));
-  }, [query]);
+      .finally(() => setFilterLoading(false));
+  }, [isFilterMode]);
 
-  // Filtered + paginated results for search mode
+  // Apply all active filters client-side
   const filteredFigurines = useMemo(() => {
-    if (!query) return [];
-    const q = query.toLowerCase();
-    return allFigurines.filter((f) => f.name.toLowerCase().includes(q));
-  }, [query, allFigurines]);
+    if (!isFilterMode) return [];
+    let results = allFigurines;
+    if (query) {
+      const q = query.toLowerCase();
+      results = results.filter((f) => f.name.toLowerCase().includes(q));
+    }
+    if (lineup) {
+      results = results.filter((f) => String(f.lineUp.id) === lineup);
+    }
+    if (series) {
+      results = results.filter((f) => String(f.series.id) === series);
+    }
+    if (group) {
+      results = results.filter((f) => String(f.group.id) === group);
+    }
+    if (revival === "true")  results = results.filter((f) => f.isRevival === true);
+    if (revival === "false") results = results.filter((f) => f.isRevival === false);
+    return results;
+  }, [query, lineup, series, group, revival, allFigurines, isFilterMode]);
 
-  const searchTotalPages = Math.ceil(filteredFigurines.length / PAGE_SIZE);
-  const searchPageItems  = filteredFigurines.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const filterTotalPages = Math.ceil(filteredFigurines.length / PAGE_SIZE);
+  const filterPageItems  = filteredFigurines.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // Unified display values
-  const isSearchMode    = Boolean(query);
-  const displayLoading  = isSearchMode ? searchLoading : loading;
-  const displayItems    = isSearchMode ? searchPageItems : figurines;
-  const displayTotal    = isSearchMode ? filteredFigurines.length : totalElements;
-  const displayPages    = isSearchMode ? searchTotalPages : totalPages;
+  const displayLoading = isFilterMode ? filterLoading : loading;
+  const displayItems   = isFilterMode ? filterPageItems : figurines;
+  const displayTotal   = isFilterMode ? filteredFigurines.length : totalElements;
+  const displayPages   = isFilterMode ? filterTotalPages : totalPages;
+
+  // Build params preserving all active filters
+  const makeParams = (overrides: Record<string, string>) => {
+    const p: Record<string, string> = {};
+    if (query)   p.q       = query;
+    if (lineup)  p.lineup  = lineup;
+    if (series)  p.series  = series;
+    if (group)   p.group   = group;
+    if (revival) p.revival = revival;
+    p.page = "1";
+    return { ...p, ...overrides };
+  };
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-    setSearchParams(query ? { q: query, page: String(value) } : { page: String(value) });
+    setSearchParams(makeParams({ page: String(value) }));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSearch = (value: string) => {
-    if (value.trim()) {
-      setSearchParams({ q: value.trim(), page: "1" });
-    } else {
-      setSearchParams({ page: "1" });
-    }
+    const p: Record<string, string> = { page: "1" };
+    if (value.trim()) p.q      = value.trim();
+    if (lineup)       p.lineup = lineup;
+    if (series)       p.series = series;
+    if (group)        p.group  = group;
+    if (revival)      p.revival = revival;
+    setSearchParams(p);
   };
 
-  const handleClear = () => {
-    setSearchParams({ page: "1" });
+  const handleClearSearch = () => {
+    const p: Record<string, string> = { page: "1" };
+    if (lineup)  p.lineup  = lineup;
+    if (series)  p.series  = series;
+    if (group)   p.group   = group;
+    if (revival) p.revival = revival;
+    setSearchParams(p);
+  };
+
+  const handleLineupChange = (value: string) => {
+    const p: Record<string, string> = { page: "1" };
+    if (query)   p.q       = query;
+    if (value)   p.lineup  = value;
+    if (series)  p.series  = series;
+    if (group)   p.group   = group;
+    if (revival) p.revival = revival;
+    setSearchParams(p);
+  };
+
+  const handleSeriesChange = (value: string) => {
+    const p: Record<string, string> = { page: "1" };
+    if (query)   p.q       = query;
+    if (lineup)  p.lineup  = lineup;
+    if (value)   p.series  = value;
+    if (group)   p.group   = group;
+    if (revival) p.revival = revival;
+    setSearchParams(p);
+  };
+
+  const handleGroupChange = (value: string) => {
+    const p: Record<string, string> = { page: "1" };
+    if (query)   p.q       = query;
+    if (lineup)  p.lineup  = lineup;
+    if (series)  p.series  = series;
+    if (value)   p.group   = value;
+    if (revival) p.revival = revival;
+    setSearchParams(p);
+  };
+
+  const handleRevivalChange = (value: string) => {
+    const p: Record<string, string> = { page: "1" };
+    if (query)  p.q      = query;
+    if (lineup) p.lineup = lineup;
+    if (series) p.series = series;
+    if (group)  p.group  = group;
+    if (value)  p.revival = value;
+    setSearchParams(p);
   };
 
   return (
@@ -316,8 +413,8 @@ export default function FigurineCollectionPage() {
         </Button>
       </Box>
 
-      {/* Search bar */}
-      <Box sx={{ mb: 2.5 }}>
+      {/* Filters row */}
+      <Box sx={{ display: "flex", gap: 2, mb: 2.5, flexWrap: "wrap", alignItems: "center" }}>
         <TextField
           size="small"
           placeholder="Search by name…"
@@ -326,7 +423,7 @@ export default function FigurineCollectionPage() {
             if (e.key === "Enter") handleSearch((e.target as HTMLInputElement).value);
           }}
           onBlur={(e) => handleSearch(e.target.value)}
-          fullWidth
+          sx={{ flex: "1 1 240px", maxWidth: 400 }}
           slotProps={{
             input: {
               startAdornment: (
@@ -336,22 +433,83 @@ export default function FigurineCollectionPage() {
               ),
               endAdornment: query ? (
                 <InputAdornment position="end">
-                  <IconButton size="small" onClick={handleClear} sx={{ color: "text.disabled" }}>
+                  <IconButton size="small" onClick={handleClearSearch} sx={{ color: "text.disabled" }}>
                     <ClearIcon fontSize="small" />
                   </IconButton>
                 </InputAdornment>
               ) : null,
             },
           }}
-          sx={{ maxWidth: 480 }}
         />
+        <FormControl size="small" sx={{ flex: "1 1 180px", maxWidth: 240 }}>
+          <InputLabel>Line Up</InputLabel>
+          <Select
+            label="Line Up"
+            value={lineup}
+            onChange={(e) => handleLineupChange(e.target.value)}
+          >
+            <MenuItem value=""><em>All</em></MenuItem>
+            {lineupOptions.map((opt) => (
+              <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ flex: "1 1 180px", maxWidth: 240 }}>
+          <InputLabel>Series</InputLabel>
+          <Select
+            label="Series"
+            value={series}
+            onChange={(e) => handleSeriesChange(e.target.value)}
+          >
+            <MenuItem value=""><em>All</em></MenuItem>
+            {seriesOptions.map((opt) => (
+              <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ flex: "1 1 180px", maxWidth: 240 }}>
+          <InputLabel>Group</InputLabel>
+          <Select
+            label="Group"
+            value={group}
+            onChange={(e) => handleGroupChange(e.target.value)}
+          >
+            <MenuItem value=""><em>All</em></MenuItem>
+            {groupOptions.map((opt) => (
+              <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ flex: "1 1 140px", maxWidth: 180 }}>
+          <InputLabel>Revival</InputLabel>
+          <Select
+            label="Revival"
+            value={revival}
+            onChange={(e) => handleRevivalChange(e.target.value)}
+          >
+            <MenuItem value=""><em>All</em></MenuItem>
+            <MenuItem value="true">Yes</MenuItem>
+            <MenuItem value="false">No</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
 
       {/* Status line */}
       {!displayLoading && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {isSearchMode
-            ? `${displayTotal.toLocaleString()} result${displayTotal !== 1 ? "s" : ""} for "${query}"`
+          {isFilterMode
+            ? (() => {
+                const lineupLabel = lineupOptions.find((o) => String(o.id) === lineup)?.description;
+                const seriesLabel = seriesOptions.find((o) => String(o.id) === series)?.description;
+                const groupLabel  = groupOptions.find((o)  => String(o.id) === group)?.description;
+                const parts: string[] = [];
+                if (query)       parts.push(`matching "${query}"`);
+                if (lineupLabel) parts.push(`in ${lineupLabel}`);
+                if (seriesLabel) parts.push(`· ${seriesLabel}`);
+                if (groupLabel)  parts.push(`· ${groupLabel}`);
+                if (revival)     parts.push(`· Revival: ${revival === "true" ? "Yes" : "No"}`);
+                return `${displayTotal.toLocaleString()} result${displayTotal !== 1 ? "s" : ""}${parts.length ? " " + parts.join(" ") : ""}`;
+              })()
             : displayTotal > 0 ? `${displayTotal.toLocaleString()} figurines · page ${page} of ${displayPages}` : null
           }
         </Typography>
@@ -385,7 +543,7 @@ export default function FigurineCollectionPage() {
           }}
         >
           <Typography variant="body1" color="text.secondary">
-            {isSearchMode ? `No figurines found matching "${query}".` : "No figurines in the collection yet."}
+            {isFilterMode ? "No figurines match the current filters." : "No figurines in the collection yet."}
           </Typography>
         </Box>
       )}
