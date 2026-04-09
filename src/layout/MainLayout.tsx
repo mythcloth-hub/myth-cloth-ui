@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import CakeOutlinedIcon from "@mui/icons-material/CakeOutlined";
 import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
@@ -38,7 +39,8 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: "",
     items: [
-      { label: "Distributors",  path: "/distributors",            icon: <LocalShippingOutlinedIcon /> },
+      { label: "Distributors",  path: "/distributors",   icon: <LocalShippingOutlinedIcon /> },
+      { label: "Anniversaries", path: "/anniversaries",  icon: <CakeOutlinedIcon /> },
     ],
   },
   {
