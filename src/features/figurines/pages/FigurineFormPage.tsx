@@ -6,6 +6,11 @@ import {
   Button,
   Checkbox,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   FormControlLabel,
   Grid,
@@ -23,7 +28,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import axios from "axios";
 
-import { getFigurineById, createFigurine, updateFigurine } from "../api/figurineApi";
+import { getFigurineById, createFigurine, updateFigurine, deleteFigurine } from "../api/figurineApi";
 import { groupsApi, lineupsApi, seriesApi } from "../../catalogs/api/catalogApi";
 import { getAllDistributors } from "../../distributors/api/distributorApi";
 import type { Catalog } from "../../catalogs/types/catalog";
@@ -131,6 +136,9 @@ export default function FigurineFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // catalog options
   const [lineups,      setLineups]      = useState<Catalog[]>([]);
@@ -284,6 +292,20 @@ export default function FigurineFormPage() {
   };
 
   // ── Submit ──────────────────────────────────────────────────────────────────
+
+  const handleDelete = async () => {
+    if (!id) return;
+    setDeleting(true);
+    try {
+      await deleteFigurine(Number(id));
+      navigate("/figurines", { replace: true, state: { deleted: true } });
+    } catch {
+      setServerError("Failed to delete figurine.");
+      setDeleteDialogOpen(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -650,6 +672,16 @@ export default function FigurineFormPage() {
 
           {/* ── Actions ── */}
           <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
+            {isEdit && (
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => setDeleteDialogOpen(true)}
+                sx={{ mr: "auto" }}
+              >
+                Delete
+              </Button>
+            )}
             <Button variant="outlined" onClick={() => isEdit ? navigate(`/figurines/${id}`) : navigate("/figurines")}>
               Cancel
             </Button>
@@ -669,6 +701,22 @@ export default function FigurineFormPage() {
       >
         <Alert severity="success">{successMessage}</Alert>
       </Snackbar>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Delete Figurine?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This will permanently delete this figurine. This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained" disabled={deleting}>
+            {deleting ? <CircularProgress size={18} color="inherit" /> : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

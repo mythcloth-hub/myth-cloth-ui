@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
+  Badge,
   Box,
   Button,
   Card,
   CardContent,
   CardMedia,
   Chip,
+  Collapse,
   FormControl,
   Grid,
   IconButton,
@@ -23,6 +25,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
+import TuneIcon from "@mui/icons-material/Tune";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
 import { getFigurines } from "../api/figurineApi";
@@ -225,12 +228,22 @@ const SEARCH_BATCH = 5000; // fetch all to enable full-collection search
 
 export default function FigurineCollectionPage() {
   const navigate = useNavigate();
+  const location  = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const query  = searchParams.get("q")      ?? "";
   const lineup  = searchParams.get("lineup") ?? "";
   const series  = searchParams.get("series") ?? "";
   const group   = searchParams.get("group")  ?? "";
-  const revival  = searchParams.get("revival") ?? "";
+  const revival       = searchParams.get("revival")       ?? "";
+  const metalBody     = searchParams.get("metalBody")     ?? "";
+  const originalColor = searchParams.get("originalColor") ?? "";
+  const plainCloth    = searchParams.get("plainCloth")    ?? "";
+  const battleDamaged = searchParams.get("battleDamaged") ?? "";
+  const goldenArmor   = searchParams.get("goldenArmor")   ?? "";
+  const gold24k       = searchParams.get("gold24k")       ?? "";
+  const manga         = searchParams.get("manga")         ?? "";
+  const multiPack     = searchParams.get("multiPack")     ?? "";
+  const articulable   = searchParams.get("articulable")   ?? "";
   const page    = Number(searchParams.get("page") ?? "1");
 
   // Normal-mode state (paginated from server)
@@ -249,9 +262,19 @@ export default function FigurineCollectionPage() {
   const [seriesOptions, setSeriesOptions] = useState<Catalog[]>([]);
   const [groupOptions,  setGroupOptions]  = useState<Catalog[]>([]);
 
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage,   setErrorMessage]   = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(
+    (location.state as { deleted?: boolean } | null)?.deleted ? "Figurine deleted successfully." : null
+  );
+  const [filtersOpen,    setFiltersOpen]    = useState(false);
 
-  const isFilterMode = Boolean(query) || Boolean(lineup) || Boolean(series) || Boolean(group) || Boolean(revival);
+  const isFilterMode =
+    Boolean(query) || Boolean(lineup) || Boolean(series) || Boolean(group) ||
+    Boolean(revival) || Boolean(metalBody) || Boolean(originalColor) || Boolean(plainCloth) ||
+    Boolean(battleDamaged) || Boolean(goldenArmor) || Boolean(gold24k) ||
+    Boolean(manga) || Boolean(multiPack) || Boolean(articulable);
+
+  const activeFilterCount = [lineup, series, group, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
 
   // Fetch dropdown options once on mount
   useEffect(() => {
@@ -311,10 +334,28 @@ export default function FigurineCollectionPage() {
     if (group) {
       results = results.filter((f) => String(f.group.id) === group);
     }
-    if (revival === "true")  results = results.filter((f) => f.isRevival === true);
-    if (revival === "false") results = results.filter((f) => f.isRevival === false);
+    if (revival === "true")        results = results.filter((f) => f.isRevival === true);
+    if (revival === "false")       results = results.filter((f) => f.isRevival === false);
+    if (metalBody === "true")      results = results.filter((f) => f.isMetalBody === true);
+    if (metalBody === "false")     results = results.filter((f) => f.isMetalBody === false);
+    if (originalColor === "true")  results = results.filter((f) => f.isOriginalColorEdition === true);
+    if (originalColor === "false") results = results.filter((f) => f.isOriginalColorEdition === false);
+    if (plainCloth === "true")     results = results.filter((f) => f.isPlainCloth === true);
+    if (plainCloth === "false")    results = results.filter((f) => f.isPlainCloth === false);
+    if (battleDamaged === "true")  results = results.filter((f) => f.isBattleDamaged === true);
+    if (battleDamaged === "false") results = results.filter((f) => f.isBattleDamaged === false);
+    if (goldenArmor === "true")    results = results.filter((f) => f.isGoldenArmor === true);
+    if (goldenArmor === "false")   results = results.filter((f) => f.isGoldenArmor === false);
+    if (gold24k === "true")        results = results.filter((f) => f.isGold24kEdition === true);
+    if (gold24k === "false")       results = results.filter((f) => f.isGold24kEdition === false);
+    if (manga === "true")          results = results.filter((f) => f.isMangaVersion === true);
+    if (manga === "false")         results = results.filter((f) => f.isMangaVersion === false);
+    if (multiPack === "true")      results = results.filter((f) => f.isMultiPack === true);
+    if (multiPack === "false")     results = results.filter((f) => f.isMultiPack === false);
+    if (articulable === "true")    results = results.filter((f) => f.isArticulable === true);
+    if (articulable === "false")   results = results.filter((f) => f.isArticulable === false);
     return results;
-  }, [query, lineup, series, group, revival, allFigurines, isFilterMode]);
+  }, [query, lineup, series, group, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, allFigurines, isFilterMode]);
 
   const filterTotalPages = Math.ceil(filteredFigurines.length / PAGE_SIZE);
   const filterPageItems  = filteredFigurines.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -325,16 +366,28 @@ export default function FigurineCollectionPage() {
   const displayTotal   = isFilterMode ? filteredFigurines.length : totalElements;
   const displayPages   = isFilterMode ? filterTotalPages : totalPages;
 
-  // Build params preserving all active filters
+  // Build params preserving all active filters; override value "" removes that key
   const makeParams = (overrides: Record<string, string>) => {
     const p: Record<string, string> = {};
-    if (query)   p.q       = query;
-    if (lineup)  p.lineup  = lineup;
-    if (series)  p.series  = series;
-    if (group)   p.group   = group;
-    if (revival) p.revival = revival;
+    if (query)        p.q            = query;
+    if (lineup)       p.lineup       = lineup;
+    if (series)       p.series       = series;
+    if (group)        p.group        = group;
+    if (revival)      p.revival      = revival;
+    if (metalBody)    p.metalBody    = metalBody;
+    if (originalColor) p.originalColor = originalColor;
+    if (plainCloth)   p.plainCloth   = plainCloth;
+    if (battleDamaged) p.battleDamaged = battleDamaged;
+    if (goldenArmor)  p.goldenArmor  = goldenArmor;
+    if (gold24k)      p.gold24k      = gold24k;
+    if (manga)        p.manga        = manga;
+    if (multiPack)    p.multiPack    = multiPack;
+    if (articulable)  p.articulable  = articulable;
     p.page = "1";
-    return { ...p, ...overrides };
+    for (const [k, v] of Object.entries(overrides)) {
+      if (v) p[k] = v; else delete p[k];
+    }
+    return p;
   };
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
@@ -342,64 +395,13 @@ export default function FigurineCollectionPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSearch = (value: string) => {
-    const p: Record<string, string> = { page: "1" };
-    if (value.trim()) p.q      = value.trim();
-    if (lineup)       p.lineup = lineup;
-    if (series)       p.series = series;
-    if (group)        p.group  = group;
-    if (revival)      p.revival = revival;
-    setSearchParams(p);
-  };
-
-  const handleClearSearch = () => {
-    const p: Record<string, string> = { page: "1" };
-    if (lineup)  p.lineup  = lineup;
-    if (series)  p.series  = series;
-    if (group)   p.group   = group;
-    if (revival) p.revival = revival;
-    setSearchParams(p);
-  };
-
-  const handleLineupChange = (value: string) => {
-    const p: Record<string, string> = { page: "1" };
-    if (query)   p.q       = query;
-    if (value)   p.lineup  = value;
-    if (series)  p.series  = series;
-    if (group)   p.group   = group;
-    if (revival) p.revival = revival;
-    setSearchParams(p);
-  };
-
-  const handleSeriesChange = (value: string) => {
-    const p: Record<string, string> = { page: "1" };
-    if (query)   p.q       = query;
-    if (lineup)  p.lineup  = lineup;
-    if (value)   p.series  = value;
-    if (group)   p.group   = group;
-    if (revival) p.revival = revival;
-    setSearchParams(p);
-  };
-
-  const handleGroupChange = (value: string) => {
-    const p: Record<string, string> = { page: "1" };
-    if (query)   p.q       = query;
-    if (lineup)  p.lineup  = lineup;
-    if (series)  p.series  = series;
-    if (value)   p.group   = value;
-    if (revival) p.revival = revival;
-    setSearchParams(p);
-  };
-
-  const handleRevivalChange = (value: string) => {
-    const p: Record<string, string> = { page: "1" };
-    if (query)  p.q      = query;
-    if (lineup) p.lineup = lineup;
-    if (series) p.series = series;
-    if (group)  p.group  = group;
-    if (value)  p.revival = value;
-    setSearchParams(p);
-  };
+  const handleSearch        = (value: string) => setSearchParams(makeParams({ q: value.trim() }));
+  const handleClearSearch   = ()              => setSearchParams(makeParams({ q: "" }));
+  const handleLineupChange  = (value: string) => setSearchParams(makeParams({ lineup:  value }));
+  const handleSeriesChange  = (value: string) => setSearchParams(makeParams({ series:  value }));
+  const handleGroupChange   = (value: string) => setSearchParams(makeParams({ group:   value }));
+  const handleBoolChange    = (key: string, value: string) => setSearchParams(makeParams({ [key]: value }));
+  const clearAllFilters     = () => setSearchParams(query ? { q: query, page: "1" } : { page: "1" });
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -413,8 +415,8 @@ export default function FigurineCollectionPage() {
         </Button>
       </Box>
 
-      {/* Filters row */}
-      <Box sx={{ display: "flex", gap: 2, mb: 2.5, flexWrap: "wrap", alignItems: "center" }}>
+      {/* Search bar + filter toggle */}
+      <Box sx={{ display: "flex", gap: 1.5, mb: 1.5, alignItems: "center" }}>
         <TextField
           size="small"
           placeholder="Search by name…"
@@ -423,7 +425,7 @@ export default function FigurineCollectionPage() {
             if (e.key === "Enter") handleSearch((e.target as HTMLInputElement).value);
           }}
           onBlur={(e) => handleSearch(e.target.value)}
-          sx={{ flex: "1 1 240px", maxWidth: 400 }}
+          sx={{ flex: 1, maxWidth: 480 }}
           slotProps={{
             input: {
               startAdornment: (
@@ -441,75 +443,138 @@ export default function FigurineCollectionPage() {
             },
           }}
         />
-        <FormControl size="small" sx={{ flex: "1 1 180px", maxWidth: 240 }}>
-          <InputLabel>Line Up</InputLabel>
-          <Select
-            label="Line Up"
-            value={lineup}
-            onChange={(e) => handleLineupChange(e.target.value)}
+        <Badge badgeContent={activeFilterCount || null} color="primary" sx={{ flexShrink: 0 }}>
+          <Button
+            variant={filtersOpen ? "contained" : "outlined"}
+            size="small"
+            startIcon={<TuneIcon fontSize="small" />}
+            onClick={() => setFiltersOpen((o) => !o)}
           >
-            <MenuItem value=""><em>All</em></MenuItem>
-            {lineupOptions.map((opt) => (
-              <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ flex: "1 1 180px", maxWidth: 240 }}>
-          <InputLabel>Series</InputLabel>
-          <Select
-            label="Series"
-            value={series}
-            onChange={(e) => handleSeriesChange(e.target.value)}
+            Filters
+          </Button>
+        </Badge>
+        {activeFilterCount > 0 && (
+          <Button
+            size="small"
+            onClick={clearAllFilters}
+            sx={{ color: "text.secondary", whiteSpace: "nowrap", flexShrink: 0 }}
           >
-            <MenuItem value=""><em>All</em></MenuItem>
-            {seriesOptions.map((opt) => (
-              <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ flex: "1 1 180px", maxWidth: 240 }}>
-          <InputLabel>Group</InputLabel>
-          <Select
-            label="Group"
-            value={group}
-            onChange={(e) => handleGroupChange(e.target.value)}
-          >
-            <MenuItem value=""><em>All</em></MenuItem>
-            {groupOptions.map((opt) => (
-              <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ flex: "1 1 140px", maxWidth: 180 }}>
-          <InputLabel>Revival</InputLabel>
-          <Select
-            label="Revival"
-            value={revival}
-            onChange={(e) => handleRevivalChange(e.target.value)}
-          >
-            <MenuItem value=""><em>All</em></MenuItem>
-            <MenuItem value="true">Yes</MenuItem>
-            <MenuItem value="false">No</MenuItem>
-          </Select>
-        </FormControl>
+            Clear all
+          </Button>
+        )}
       </Box>
+
+      {/* Collapsible filter panel */}
+      <Collapse in={filtersOpen}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1.5,
+            flexWrap: "wrap",
+            mb: 1.5,
+            p: 1.5,
+            borderRadius: 1,
+            bgcolor: "rgba(255,255,255,0.03)",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <FormControl size="small" sx={{ flex: "1 1 150px" }}>
+            <InputLabel>Line Up</InputLabel>
+            <Select label="Line Up" value={lineup} onChange={(e) => handleLineupChange(e.target.value)}>
+              <MenuItem value=""><em>All</em></MenuItem>
+              {lineupOptions.map((opt) => (
+                <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ flex: "1 1 150px" }}>
+            <InputLabel>Series</InputLabel>
+            <Select label="Series" value={series} onChange={(e) => handleSeriesChange(e.target.value)}>
+              <MenuItem value=""><em>All</em></MenuItem>
+              {seriesOptions.map((opt) => (
+                <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ flex: "1 1 150px" }}>
+            <InputLabel>Group</InputLabel>
+            <Select label="Group" value={group} onChange={(e) => handleGroupChange(e.target.value)}>
+              <MenuItem value=""><em>All</em></MenuItem>
+              {groupOptions.map((opt) => (
+                <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          {([
+            { key: "revival",       label: "Revival"        },
+            { key: "metalBody",     label: "Metal Body"     },
+            { key: "originalColor", label: "Original Color" },
+            { key: "plainCloth",    label: "Plain Cloth"    },
+            { key: "battleDamaged", label: "Battle Damaged" },
+            { key: "goldenArmor",   label: "Golden Armor"   },
+            { key: "gold24k",       label: "Gold 24K"       },
+            { key: "manga",         label: "Manga Version"  },
+            { key: "multiPack",     label: "Multi-Pack"     },
+            { key: "articulable",   label: "Articulable"    },
+          ] as { key: string; label: string }[]).map(({ key, label }) => (
+            <FormControl key={key} size="small" sx={{ flex: "1 1 130px" }}>
+              <InputLabel>{label}</InputLabel>
+              <Select
+                label={label}
+                value={searchParams.get(key) ?? ""}
+                onChange={(e) => handleBoolChange(key, e.target.value)}
+              >
+                <MenuItem value=""><em>All</em></MenuItem>
+                <MenuItem value="true">Yes</MenuItem>
+                <MenuItem value="false">No</MenuItem>
+              </Select>
+            </FormControl>
+          ))}
+        </Box>
+      </Collapse>
+
+      {/* Active filter chips */}
+      {activeFilterCount > 0 && (
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2, alignItems: "center" }}>
+          {lineup && (
+            <Chip size="small" label={`Line Up: ${lineupOptions.find((o) => String(o.id) === lineup)?.description ?? lineup}`} onDelete={() => handleLineupChange("")} />
+          )}
+          {series && (
+            <Chip size="small" label={`Series: ${seriesOptions.find((o) => String(o.id) === series)?.description ?? series}`} onDelete={() => handleSeriesChange("")} />
+          )}
+          {group && (
+            <Chip size="small" label={`Group: ${groupOptions.find((o) => String(o.id) === group)?.description ?? group}`} onDelete={() => handleGroupChange("")} />
+          )}
+          {([
+            { key: "revival",       label: "Revival",        value: revival       },
+            { key: "metalBody",     label: "Metal Body",     value: metalBody     },
+            { key: "originalColor", label: "Original Color", value: originalColor },
+            { key: "plainCloth",    label: "Plain Cloth",    value: plainCloth    },
+            { key: "battleDamaged", label: "Battle Damaged", value: battleDamaged },
+            { key: "goldenArmor",   label: "Golden Armor",   value: goldenArmor   },
+            { key: "gold24k",       label: "Gold 24K",       value: gold24k       },
+            { key: "manga",         label: "Manga",          value: manga         },
+            { key: "multiPack",     label: "Multi-Pack",     value: multiPack     },
+            { key: "articulable",   label: "Articulable",    value: articulable   },
+          ] as { key: string; label: string; value: string }[])
+            .filter(({ value }) => Boolean(value))
+            .map(({ key, label, value }) => (
+              <Chip
+                key={key}
+                size="small"
+                label={`${label}: ${value === "true" ? "Yes" : "No"}`}
+                onDelete={() => handleBoolChange(key, "")}
+              />
+            ))}
+        </Box>
+      )}
 
       {/* Status line */}
       {!displayLoading && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           {isFilterMode
-            ? (() => {
-                const lineupLabel = lineupOptions.find((o) => String(o.id) === lineup)?.description;
-                const seriesLabel = seriesOptions.find((o) => String(o.id) === series)?.description;
-                const groupLabel  = groupOptions.find((o)  => String(o.id) === group)?.description;
-                const parts: string[] = [];
-                if (query)       parts.push(`matching "${query}"`);
-                if (lineupLabel) parts.push(`in ${lineupLabel}`);
-                if (seriesLabel) parts.push(`· ${seriesLabel}`);
-                if (groupLabel)  parts.push(`· ${groupLabel}`);
-                if (revival)     parts.push(`· Revival: ${revival === "true" ? "Yes" : "No"}`);
-                return `${displayTotal.toLocaleString()} result${displayTotal !== 1 ? "s" : ""}${parts.length ? " " + parts.join(" ") : ""}`;
-              })()
+            ? `${displayTotal.toLocaleString()} result${displayTotal !== 1 ? "s" : ""}${query ? ` matching "${query}"` : ""}`
             : displayTotal > 0 ? `${displayTotal.toLocaleString()} figurines · page ${page} of ${displayPages}` : null
           }
         </Typography>
@@ -570,6 +635,17 @@ export default function FigurineCollectionPage() {
           />
         </Box>
       )}
+
+      <Snackbar
+        open={Boolean(successMessage)}
+        autoHideDuration={4000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="success" onClose={() => setSuccessMessage(null)}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
 
       <Snackbar
         open={Boolean(errorMessage)}

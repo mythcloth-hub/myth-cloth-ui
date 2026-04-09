@@ -22,3 +22,7 @@ export const updateFigurine = async (id: number, data: unknown): Promise<Figurin
   const res = await httpClient.put(`${BASE}/${id}`, data);
   return res.data;
 };
+
+export const deleteFigurine = async (id: number): Promise<void> => {
+  await httpClient.delete(`${BASE}/${id}`);
+};
