@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Box,
   Button,
@@ -211,9 +211,10 @@ function CardSkeleton() {
 
 export default function FigurineCollectionPage() {
   const navigate = useNavigate();
-  const [figurines, setFigurines] = useState<Figurine[]>([]);;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Number(searchParams.get("page") ?? "1");
+  const [figurines, setFigurines] = useState<Figurine[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1); // MUI Pagination is 1-based
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -235,7 +236,7 @@ export default function FigurineCollectionPage() {
   }, [page]);
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
+    setSearchParams({ page: String(value) });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

@@ -8,7 +8,6 @@ import {
   CircularProgress,
   Divider,
   FormControlLabel,
-  FormHelperText,
   Grid,
   IconButton,
   MenuItem,
@@ -21,6 +20,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
+import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import axios from "axios";
 
 import { getFigurineById, createFigurine, updateFigurine } from "../api/figurineApi";
@@ -140,6 +140,7 @@ export default function FigurineFormPage() {
 
   const [form,           setForm]           = useState<FormData | null>(null);
   const [errors,         setErrors]         = useState<FormErrors>({});
+  const [imgErrors,      setImgErrors]      = useState<Record<number, boolean>>({});
   const [loadingForm,    setLoadingForm]     = useState(true);
   const [saving,         setSaving]         = useState(false);
   const [serverError,    setServerError]    = useState<string | null>(null);
@@ -233,6 +234,7 @@ export default function FigurineFormPage() {
     });
 
   const setImageUrl = (i: number, value: string) => {
+    setImgErrors((prev) => ({ ...prev, [i]: false }));
     setForm((prev) => {
       if (!prev) return prev;
       const updated = [...prev.officialImageUrls];
@@ -439,37 +441,116 @@ export default function FigurineFormPage() {
 
           {/* ── Image URLs ── */}
           <SectionLabel>Official Image URLs</SectionLabel>
-          {form.officialImageUrls.map((url, i) => (
-            <Box key={i} sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
-              <Box sx={{ flex: 1 }}>
-                <TextField
-                  label={`Image URL ${i + 1}`}
-                  value={url}
-                  onChange={(e) => setImageUrl(i, e.target.value)}
-                  fullWidth
-                  placeholder="https://example.com/image.jpg"
-                  error={Boolean(errors[`imageUrl_${i}`])}
-                  slotProps={{ htmlInput: { maxLength: 512 } }}
-                />
-                {errors[`imageUrl_${i}`] && (
-                  <FormHelperText error>{errors[`imageUrl_${i}`]}</FormHelperText>
-                )}
-              </Box>
-              {form.officialImageUrls.length > 1 && (
-                <Tooltip title="Remove">
-                  <IconButton onClick={() => removeImageUrl(i)} sx={{ mt: 1, color: "error.main" }}>
-                    <DeleteOutlineIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Box>
-          ))}
-          <Box>
-            <Button size="small" startIcon={<AddIcon />} onClick={addImageUrl} sx={{ color: "primary.main" }}>
-              Add Image URL
-            </Button>
-          </Box>
+          <Grid container spacing={2}>
+            {form.officialImageUrls.map((url, i) => (
+              <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Paper
+                  variant="outlined"
+                  sx={{ borderColor: errors[`imageUrl_${i}`] ? "error.main" : "rgba(212,175,55,0.15)", borderRadius: 2, overflow: "hidden" }}
+                >
+                  {/* Preview area */}
+                  <Box
+                    sx={{
+                      height: 220,
+                      backgroundColor: "rgba(0,0,0,0.45)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      position: "relative",
+                    }}
+                  >
+                    {url.trim() && !imgErrors[i] ? (
+                      <Box
+                        component="img"
+                        src={url.trim()}
+                        alt={`Image ${i + 1}`}
+                        onError={() => setImgErrors((prev) => ({ ...prev, [i]: true }))}
+                        sx={{ width: "100%", height: "100%", objectFit: "contain" }}
+                      />
+                    ) : (
+                      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, opacity: 0.4 }}>
+                        <ImageNotSupportedOutlinedIcon sx={{ fontSize: 48 }} />
+                        <Typography variant="caption">
+                          {url.trim() && imgErrors[i] ? "Failed to load" : "No image"}
+                        </Typography>
+                      </Box>
+                    )}
+                    {/* Badge */}
+                    <Box
+                      sx={{
+                        position: "absolute", top: 8, left: 8,
+                        bgcolor: "rgba(0,0,0,0.6)", borderRadius: 1,
+                        px: 1, py: 0.25,
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700 }}>
+                        #{i + 1}
+                      </Typography>
+                    </Box>
+                    {/* Remove button */}
+                    {form.officialImageUrls.length > 1 && (
+                      <Tooltip title="Remove">
+                        <IconButton
+                          size="small"
+                          onClick={() => removeImageUrl(i)}
+                          sx={{
+                            position: "absolute", top: 4, right: 4,
+                            bgcolor: "rgba(0,0,0,0.55)",
+                            color: "error.main",
+                            "&:hover": { bgcolor: "rgba(180,0,0,0.3)" },
+                          }}
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
+                  {/* URL input */}
+                  <Box sx={{ p: 1.5 }}>
+                    <TextField
+                      size="small"
+                      value={url}
+                      onChange={(e) => setImageUrl(i, e.target.value)}
+                      fullWidth
+                      placeholder="https://example.com/image.jpg"
+                      error={Boolean(errors[`imageUrl_${i}`])}
+                      helperText={errors[`imageUrl_${i}`]}
+                      slotProps={{ htmlInput: { maxLength: 512 } }}
+                    />
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
 
+            {/* Add new card */}
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Paper
+                variant="outlined"
+                onClick={addImageUrl}
+                sx={{
+                  height: "100%",
+                  minHeight: 280,
+                  borderColor: "rgba(212,175,55,0.15)",
+                  borderRadius: 2,
+                  borderStyle: "dashed",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 1,
+                  cursor: "pointer",
+                  transition: "border-color 0.2s, background-color 0.2s",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    backgroundColor: "rgba(212,175,55,0.05)",
+                  },
+                }}
+              >
+                <AddIcon sx={{ color: "primary.main", fontSize: 32 }} />
+                <Typography variant="body2" sx={{ color: "primary.main" }}>Add Image</Typography>
+              </Paper>
+            </Grid>
+          </Grid>
           {/* ── Distributors ── */}
           <SectionLabel>Distributors</SectionLabel>
           {form.distributors.map((d, i) => (
