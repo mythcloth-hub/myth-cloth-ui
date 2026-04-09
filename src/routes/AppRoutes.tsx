@@ -6,13 +6,17 @@ import CatalogListPage from "../features/catalogs/pages/CatalogListPage";
 import CatalogFormPage from "../features/catalogs/pages/CatalogFormPage";
 import AnniversaryListPage from "../features/anniversaries/pages/AnniversaryListPage";
 import AnniversaryFormPage from "../features/anniversaries/pages/AnniversaryFormPage";
+import FigurineCollectionPage from "../features/figurines/pages/FigurineCollectionPage";
+import FigurineDetailPage from "../features/figurines/pages/FigurineDetailPage";
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
-          <Route path="/" element={<Navigate to="/distributors" />} />
+          <Route path="/" element={<Navigate to="/figurines" />} />
+          <Route path="/figurines" element={<FigurineCollectionPage />} />
+          <Route path="/figurines/:id" element={<FigurineDetailPage />} />
           <Route path="/distributors" element={<DistributorListPage />} />
           <Route path="/distributors/new" element={<DistributorFormPage />} />
           <Route path="/distributors/edit/:id" element={<DistributorFormPage />} />

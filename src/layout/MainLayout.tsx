@@ -15,6 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import CollectionsOutlinedIcon from "@mui/icons-material/CollectionsOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import CakeOutlinedIcon from "@mui/icons-material/CakeOutlined";
 import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
@@ -39,6 +40,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: "",
     items: [
+      { label: "Collection",    path: "/figurines",      icon: <CollectionsOutlinedIcon /> },
       { label: "Distributors",  path: "/distributors",   icon: <LocalShippingOutlinedIcon /> },
       { label: "Anniversaries", path: "/anniversaries",  icon: <CakeOutlinedIcon /> },
     ],
