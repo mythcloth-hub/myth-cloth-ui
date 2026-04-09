@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   Alert,
   Box,
+  Button,
   Chip,
   CircularProgress,
   Divider,
@@ -13,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
@@ -100,9 +102,17 @@ export default function FigurineDetailPage() {
             <ArrowBackIcon />
           </IconButton>
         </Tooltip>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.4rem", md: "2rem" } }}>
+        <Typography variant="h4" sx={{ fontSize: { xs: "1.4rem", md: "2rem" }, flex: 1 }}>
           {figurine.name}
         </Typography>
+        <Button
+          variant="outlined"
+          startIcon={<EditOutlinedIcon />}
+          onClick={() => navigate(`/figurines/${id}/edit`)}
+          sx={{ flexShrink: 0 }}
+        >
+          Edit
+        </Button>
       </Box>
 
       <Grid container spacing={{ xs: 2, md: 4 }}>

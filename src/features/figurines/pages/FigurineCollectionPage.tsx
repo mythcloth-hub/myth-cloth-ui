@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
+  Button,
   Card,
   CardContent,
   CardMedia,
@@ -241,15 +242,20 @@ export default function FigurineCollectionPage() {
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
       {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
-          Collection
-        </Typography>
-        {!loading && totalElements > 0 && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            {totalElements.toLocaleString()} figurines · page {page} of {totalPages}
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
+            Collection
           </Typography>
-        )}
+          {!loading && totalElements > 0 && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {totalElements.toLocaleString()} figurines · page {page} of {totalPages}
+            </Typography>
+          )}
+        </Box>
+        <Button variant="contained" onClick={() => navigate("/figurines/new")}>
+          + New Figurine
+        </Button>
       </Box>
 
       {/* Grid */}

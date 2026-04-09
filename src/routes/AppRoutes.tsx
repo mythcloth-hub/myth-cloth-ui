@@ -8,6 +8,7 @@ import AnniversaryListPage from "../features/anniversaries/pages/AnniversaryList
 import AnniversaryFormPage from "../features/anniversaries/pages/AnniversaryFormPage";
 import FigurineCollectionPage from "../features/figurines/pages/FigurineCollectionPage";
 import FigurineDetailPage from "../features/figurines/pages/FigurineDetailPage";
+import FigurineFormPage from "../features/figurines/pages/FigurineFormPage";
 
 export default function AppRoutes() {
   return (
@@ -16,7 +17,9 @@ export default function AppRoutes() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Navigate to="/figurines" />} />
           <Route path="/figurines" element={<FigurineCollectionPage />} />
+          <Route path="/figurines/new" element={<FigurineFormPage />} />
           <Route path="/figurines/:id" element={<FigurineDetailPage />} />
+          <Route path="/figurines/:id/edit" element={<FigurineFormPage />} />
           <Route path="/distributors" element={<DistributorListPage />} />
           <Route path="/distributors/new" element={<DistributorFormPage />} />
           <Route path="/distributors/edit/:id" element={<DistributorFormPage />} />
