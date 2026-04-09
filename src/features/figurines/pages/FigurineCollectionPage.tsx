@@ -230,6 +230,16 @@ export default function FigurineCollectionPage() {
   const navigate = useNavigate();
   const location  = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Persist current search params so the sidebar can restore them
+  useEffect(() => {
+    const qs = searchParams.toString();
+    if (qs) {
+      sessionStorage.setItem("figurineCollectionSearch", qs);
+    } else {
+      sessionStorage.removeItem("figurineCollectionSearch");
+    }
+  }, [searchParams]);
   const query  = searchParams.get("q")      ?? "";
   const lineup  = searchParams.get("lineup") ?? "";
   const series  = searchParams.get("series") ?? "";

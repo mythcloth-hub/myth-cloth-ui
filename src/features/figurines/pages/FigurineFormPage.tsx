@@ -379,8 +379,7 @@ export default function FigurineFormPage() {
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
         <Tooltip title="Back">
           <IconButton
-            onClick={() => isEdit ? navigate(`/figurines/${id}`) : navigate("/figurines")}
-            sx={{ color: "primary.main" }}
+            onClick={() => isEdit ? navigate(-1) : navigate("/figurines")}
           >
             <ArrowBackIcon />
           </IconButton>
@@ -682,7 +681,7 @@ export default function FigurineFormPage() {
                 Delete
               </Button>
             )}
-            <Button variant="outlined" onClick={() => isEdit ? navigate(`/figurines/${id}`) : navigate("/figurines")}>
+            <Button variant="outlined" onClick={() => isEdit ? navigate(-1) : navigate("/figurines")}>
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving || Boolean(successMessage)}>
@@ -696,7 +695,7 @@ export default function FigurineFormPage() {
       <Snackbar
         open={Boolean(successMessage)}
         autoHideDuration={1500}
-        onClose={() => { setSuccessMessage(null); if (isEdit) navigate(`/figurines/${id}`); }}
+        onClose={() => { setSuccessMessage(null); if (isEdit) navigate(`/figurines/${id}`, { replace: true }); }}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert severity="success">{successMessage}</Alert>

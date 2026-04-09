@@ -63,7 +63,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   const handleClick = (path: string) => {
-    navigate(path);
+    if (path === "/figurines") {
+      const saved = sessionStorage.getItem("figurineCollectionSearch");
+      navigate(saved ? `${path}?${saved}` : path);
+    } else {
+      navigate(path);
+    }
     onNavigate?.();
   };
 
