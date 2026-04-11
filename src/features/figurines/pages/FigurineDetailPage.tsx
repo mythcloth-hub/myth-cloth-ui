@@ -105,7 +105,24 @@ export default function FigurineDetailPage() {
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
       {/* Back button + title + prev/next */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          mb: 3,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          bgcolor: "background.default",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          mx: { xs: -1.5, sm: -2, md: -3 },
+          px: { xs: 1.5, sm: 2, md: 3 },
+          py: 1,
+          borderBottom: "1px solid rgba(212,175,55,0.1)",
+        }}
+      >
         <Tooltip title="Back to collection">
           <IconButton onClick={() => navigate(-1)} sx={{ color: "primary.main" }}>
             <ArrowBackIcon />
