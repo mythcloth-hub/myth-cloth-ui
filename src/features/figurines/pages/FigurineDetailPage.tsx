@@ -20,6 +20,8 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 import { getFigurineById } from "../api/figurineApi";
 import type { Figurine } from "../types/figurine";
@@ -61,6 +63,11 @@ export default function FigurineDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const navList: number[] = JSON.parse(sessionStorage.getItem("figurineNavList") ?? "[]");
+  const currentIndex = navList.indexOf(Number(id));
+  const prevId = currentIndex > 0 ? navList[currentIndex - 1] : null;
+  const nextId = currentIndex !== -1 && currentIndex < navList.length - 1 ? navList[currentIndex + 1] : null;
+
   useEffect(() => {
     setLoading(true);
     getFigurineById(Number(id))
@@ -97,7 +104,7 @@ export default function FigurineDetailPage() {
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
-      {/* Back button + title */}
+      {/* Back button + title + prev/next */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
         <Tooltip title="Back to collection">
           <IconButton onClick={() => navigate(-1)} sx={{ color: "primary.main" }}>
@@ -107,6 +114,38 @@ export default function FigurineDetailPage() {
         <Typography variant="h4" sx={{ fontSize: { xs: "1.4rem", md: "2rem" }, flex: 1 }}>
           {figurine.name}
         </Typography>
+        {/* Prev / Next arrows */}
+        {navList.length > 0 && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Tooltip title={prevId ? "Previous figurine" : ""}>
+              <span>
+                <IconButton
+                  onClick={() => prevId && navigate(`/figurines/${prevId}`, { replace: true })}
+                  disabled={!prevId}
+                  size="small"
+                  sx={{ color: prevId ? "primary.main" : "text.disabled" }}
+                >
+                  <ChevronLeftIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Typography variant="caption" sx={{ color: "text.secondary", minWidth: 40, textAlign: "center" }}>
+              {currentIndex + 1} / {navList.length}
+            </Typography>
+            <Tooltip title={nextId ? "Next figurine" : ""}>
+              <span>
+                <IconButton
+                  onClick={() => nextId && navigate(`/figurines/${nextId}`, { replace: true })}
+                  disabled={!nextId}
+                  size="small"
+                  sx={{ color: nextId ? "primary.main" : "text.disabled" }}
+                >
+                  <ChevronRightIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        )}
         <Button
           variant="outlined"
           startIcon={<EditOutlinedIcon />}

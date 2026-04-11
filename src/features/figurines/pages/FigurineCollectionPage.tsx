@@ -600,7 +600,16 @@ export default function FigurineCollectionPage() {
             ))
           : displayItems.map((fig) => (
               <Grid key={fig.id} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
-                <FigurineCard figurine={fig} onClick={() => navigate(`/figurines/${fig.id}`)} />
+                <FigurineCard
+                  figurine={fig}
+                  onClick={() => {
+                    sessionStorage.setItem(
+                      "figurineNavList",
+                      JSON.stringify(displayItems.map((f) => f.id))
+                    );
+                    navigate(`/figurines/${fig.id}`);
+                  }}
+                />
               </Grid>
             ))}
       </Grid>
