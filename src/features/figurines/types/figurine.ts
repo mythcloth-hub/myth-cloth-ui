@@ -12,10 +12,11 @@ export type FigurineDistributor = {
     website?: string;
   };
   currency: string;
-  price: number;
+  price?: number;
+  priceWithTax?: number;
+  preorderOpensAt?: string;
+  releaseDate?: string;
   releaseDateConfirmed: boolean;
-  announcedAt?: string;
-  releasedAt?: string;
 };
 
 export type FigurineEvent = {

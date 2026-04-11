@@ -303,52 +303,125 @@ export default function FigurineDetailPage() {
           {figurine.distributors?.length > 0 && (
             <>
               <Divider sx={{ borderColor: "rgba(212,175,55,0.1)", mb: 1.5 }} />
-              <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem" }}>
+              <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}>
                 Distributors
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 0.5 }}>
-                {figurine.distributors.map((d, i) => (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25, mt: 0.75 }}>
+                {figurine.distributors.map((d, i) => {
+                  const formatDate = (dateStr: string, confirmed: boolean) => {
+                    const parts = dateStr.split("-");
+                    const year = parts[0] ?? "";
+                    const monthAbbr = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][parseInt(parts[1] ?? "0", 10) - 1] ?? "";
+                    const day = parts[2] ?? "";
+                    return confirmed ? `${monthAbbr} ${day}, ${year}` : `${monthAbbr} ${year}`;
+                  };
+                  return (
                   <Box
                     key={i}
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
                       bgcolor: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(212,175,55,0.08)",
-                      borderRadius: 1,
-                      px: 1.5,
-                      py: 1,
+                      border: "1px solid rgba(212,175,55,0.12)",
+                      borderRadius: 2,
+                      overflow: "hidden",
                     }}
                   >
-                    <Box>
-                      <Typography variant="body2" fontWeight={600} color="text.primary">
-                        {d.distributor.description}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {d.currency}
-                        {d.price > 0 ? ` · ${d.price.toLocaleString()}` : ""}
-                        {d.announcedAt ? ` · Announced ${d.announcedAt}` : ""}
-                        {d.releasedAt  ? ` · Released ${d.releasedAt}`  : ""}
-                        {!d.releaseDateConfirmed ? " · TBD" : ""}
-                      </Typography>
+                    {/* Header row */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        px: 1.5,
+                        py: 1,
+                        bgcolor: "rgba(0,0,0,0.18)",
+                        borderBottom: "1px solid rgba(212,175,55,0.08)",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Tooltip title={d.distributor.countryCode} placement="top" arrow>
+                          <Typography component="span" sx={{ fontSize: "1.1rem", lineHeight: 1, cursor: "default" }}>
+                            {countryCodeToFlag(d.distributor.countryCode)}
+                          </Typography>
+                        </Tooltip>
+                        <Typography variant="body2" fontWeight={700} color="text.primary">
+                          {d.distributor.description}
+                        </Typography>
+                      </Box>
+                      {d.distributor.website && (
+                        <Tooltip title={d.distributor.website}>
+                          <IconButton
+                            component="a"
+                            href={d.distributor.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            size="small"
+                            sx={{ color: "secondary.main", "&:hover": { color: "primary.main" } }}
+                          >
+                            <OpenInNewIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Box>
-                    {d.distributor.website && (
-                      <Tooltip title={d.distributor.website}>
-                        <IconButton
-                          component="a"
-                          href={d.distributor.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          size="small"
-                          sx={{ color: "secondary.main" }}
-                        >
-                          <OpenInNewIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
+
+                    {/* Details grid */}
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0, px: 1.5, py: 1 }}>
+                      {/* Price */}
+                      <Box sx={{ flex: "1 1 120px", py: 0.5, pr: 2 }}>
+                        <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", display: "block" }}>
+                          Price
+                        </Typography>
+                        <Typography variant="body2" fontWeight={600} color="primary.main">
+                          {d.price != null ? `${d.price.toLocaleString()} ${d.currency}` : (
+                            <Typography component="span" variant="body2" sx={{ color: "text.disabled", fontStyle: "italic" }}>
+                              N/A
+                            </Typography>
+                          )}
+                        </Typography>
+                        {d.priceWithTax != null && d.priceWithTax !== d.price && d.distributor.countryCode !== "MX" && (
+                          <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.7rem" }}>
+                            {d.priceWithTax.toLocaleString()} {d.currency} w/ tax
+                          </Typography>
+                        )}
+                      </Box>
+
+                      {/* Pre-order */}
+                      {d.preorderOpensAt && (
+                        <Box sx={{ flex: "1 1 120px", py: 0.5, pr: 2 }}>
+                          <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", display: "block" }}>
+                            Pre-order
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500} color="text.primary">
+                            {formatDate(d.preorderOpensAt, true)}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {/* Release date */}
+                      <Box sx={{ flex: "1 1 120px", py: 0.5, pr: 2 }}>
+                        <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", display: "block" }}>
+                          Release
+                        </Typography>
+                        {d.releaseDate ? (
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                            <Typography variant="body2" fontWeight={500} color="text.primary">
+                              {formatDate(d.releaseDate, d.releaseDateConfirmed)}
+                            </Typography>
+                            {!d.releaseDateConfirmed && (
+                              <Typography variant="caption" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: "0.68rem" }}>
+                                (unconfirmed)
+                              </Typography>
+                            )}
+                          </Box>
+                        ) : (
+                          <Typography variant="body2" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: "0.8rem" }}>
+                            TBD
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
                   </Box>
-                ))}
+                  );
+                })}
               </Box>
             </>
           )}
