@@ -21,6 +21,7 @@ export type FigurineDistributor = {
 export type FigurineEvent = {
   id: number;
   date: string;
+  dateConfirmed: boolean;
   type: string;
   region: string;
   description: string;

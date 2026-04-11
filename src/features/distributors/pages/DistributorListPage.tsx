@@ -11,13 +11,7 @@ import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { getAllDistributors, deleteDistributor } from "../api/distributorApi";
 import type { Distributor } from "../types/distributor";
 import type { GridColDef } from "@mui/x-data-grid";
-
-const countryCodeToFlag = (code: string) =>
-  code
-    .toUpperCase()
-    .split("")
-    .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
-    .join("");
+import { countryCodeToFlag } from "../../../utils/countryFlag";
 
 function CustomNoRowsOverlay() {
   return (

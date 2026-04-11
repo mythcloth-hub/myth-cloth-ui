@@ -19,9 +19,11 @@ import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupported
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 
 import { getFigurineById } from "../api/figurineApi";
 import type { Figurine } from "../types/figurine";
+import { countryCodeToFlag } from "../../../utils/countryFlag";
 
 type Badge = { label: string; color: "warning" | "info" | "success" | "error" | "default" };
 
@@ -312,31 +314,149 @@ export default function FigurineDetailPage() {
             </>
           )}
 
-          {/* Events */}
+          {/* Events timeline */}
           {figurine.events && figurine.events.length > 0 && (
             <>
               <Divider sx={{ borderColor: "rgba(212,175,55,0.1)", mt: 2, mb: 1.5 }} />
-              <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem" }}>
-                Events
+              <Typography
+                variant="overline"
+                sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}
+              >
+                Chronology
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75, mt: 0.5 }}>
-                {figurine.events.map((ev) => (
-                  <Box key={ev.id} sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
-                    <Box sx={{ minWidth: 90 }}>
-                      <Typography variant="caption" color="primary.main" fontWeight={700}>
-                        {ev.date}
-                      </Typography>
+
+              <Box sx={{ position: "relative", mt: 1.5, ml: 1 }}>
+                {/* Vertical connector line */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    left: 7,
+                    top: 8,
+                    bottom: 8,
+                    width: 2,
+                    bgcolor: "rgba(212,175,55,0.18)",
+                    borderRadius: 1,
+                  }}
+                />
+
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {figurine.events.map((ev) => {
+                    const isRelease = ev.type.toUpperCase().includes("RELEASE");
+                    return (
+                    <Box key={ev.id} sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                      {/* Timeline dot */}
+                      <Box
+                        sx={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          bgcolor: isRelease ? "primary.main" : "background.paper",
+                          border: "2px solid",
+                          borderColor: "primary.main",
+                          boxShadow: isRelease
+                            ? "0 0 12px rgba(212,175,55,0.7), 0 0 4px rgba(212,175,55,0.9)"
+                            : "0 0 6px rgba(212,175,55,0.4)",
+                          flexShrink: 0,
+                          mt: 0.25,
+                          zIndex: 1,
+                        }}
+                      />
+
+                      {/* Content card */}
+                      <Box
+                        sx={{
+                          flex: 1,
+                          display: "flex",
+                          alignItems: "stretch",
+                          bgcolor: isRelease ? "rgba(212,175,55,0.09)" : "rgba(212,175,55,0.04)",
+                          border: "1px solid",
+                          borderColor: isRelease ? "rgba(212,175,55,0.4)" : "rgba(212,175,55,0.12)",
+                          borderRadius: 2,
+                          overflow: "hidden",
+                          boxShadow: isRelease ? "0 2px 12px rgba(212,175,55,0.12)" : "none",
+                        }}
+                      >
+                        {/* Date badge column */}
+                        {(() => {
+                          const parts = ev.date.split("-");
+                          const year = parts[0] ?? "";
+                          const day = parts[2] ?? "";
+                          const monthAbbr = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][parseInt(parts[1] ?? "0", 10) - 1] ?? "";
+                          return (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                minWidth: 52,
+                                px: 1,
+                                py: 1.25,
+                                bgcolor: isRelease ? "rgba(212,175,55,0.12)" : "rgba(0,0,0,0.15)",
+                                borderRight: "1px solid",
+                                borderColor: isRelease ? "rgba(212,175,55,0.3)" : "rgba(255,255,255,0.07)",
+                                flexShrink: 0,
+                              }}
+                            >
+                              <Typography sx={{ fontSize: "0.58rem", fontWeight: 800, color: "primary.main", letterSpacing: "0.1em", lineHeight: 1 }}>
+                                {monthAbbr}
+                              </Typography>
+                              {ev.dateConfirmed ? (
+                                <Typography sx={{ fontSize: "1.45rem", fontWeight: 800, color: isRelease ? "primary.main" : "text.primary", lineHeight: 1.1, mt: 0.25 }}>
+                                  {day}
+                                </Typography>
+                              ) : null}
+                              <Typography sx={{ fontSize: "0.58rem", color: "text.secondary", letterSpacing: "0.04em", lineHeight: 1, mt: 0.25 }}>
+                                {year}
+                              </Typography>
+                            </Box>
+                          );
+                        })()}
+
+                        {/* Main content */}
+                        <Box sx={{ flex: 1, px: 1.5, py: 1.25 }}>
+                          {/* Flag + release badge */}
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5, flexWrap: "wrap" }}>
+                          <Tooltip title={ev.region} placement="top" arrow>
+                            <Typography
+                              component="span"
+                              sx={{ fontSize: "1rem", lineHeight: 1, cursor: "default" }}
+                            >
+                              {countryCodeToFlag(ev.region)}
+                            </Typography>
+                          </Tooltip>
+                          {isRelease && (
+                            <Chip
+                              icon={<RocketLaunchOutlinedIcon sx={{ fontSize: "0.75rem !important" }} />}
+                              label="Release"
+                              size="small"
+                              sx={{
+                                height: 18,
+                                fontSize: "0.62rem",
+                                fontWeight: 700,
+                                letterSpacing: "0.05em",
+                                bgcolor: "rgba(212,175,55,0.18)",
+                                color: "primary.main",
+                                border: "1px solid rgba(212,175,55,0.35)",
+                                "& .MuiChip-icon": { color: "primary.main" },
+                              }}
+                            />
+                          )}
+                        </Box>
+
+                        {/* Description */}
+                        <Typography
+                          variant="body2"
+                          sx={{ color: isRelease ? "text.primary" : "text.secondary", fontSize: "0.82rem", lineHeight: 1.5 }}
+                        >
+                          {ev.description}
+                        </Typography>
+                        </Box>{/* end main content */}
+                      </Box>
                     </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: "uppercase", fontSize: "0.62rem", letterSpacing: "0.06em" }}>
-                        {ev.type} · {ev.region}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>
-                        {ev.description}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
+                    );
+                  })}
+                </Box>
               </Box>
             </>
           )}
