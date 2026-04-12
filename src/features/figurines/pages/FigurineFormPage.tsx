@@ -41,8 +41,8 @@ type DistributorEntry = {
   distributorId: string;
   currency: string;
   price: string;
-  announcedAt: string;
-  releasedAt: string;
+  preorderOpensAt: string;
+  releaseDate: string;
   releaseDateConfirmed: boolean;
 };
 
@@ -72,8 +72,8 @@ const emptyDistributor = (): DistributorEntry => ({
   distributorId: "",
   currency: "JPY",
   price: "0",
-  announcedAt: "",
-  releasedAt: "",
+  preorderOpensAt: "",
+  releaseDate: "",
   releaseDateConfirmed: false,
 });
 
@@ -197,9 +197,9 @@ export default function FigurineFormPage() {
               ? f.distributors.map((d) => ({
                   distributorId:      String(d.distributor.id),
                   currency:           d.currency,
-                  price:              String(d.price),
-                  announcedAt:        d.announcedAt ?? "",
-                  releasedAt:         d.releasedAt  ?? "",
+                  price:              d.price != null ? String(d.price) : "",
+                  preorderOpensAt:    d.preorderOpensAt ?? "",
+                  releaseDate:        d.releaseDate ?? "",
                   releaseDateConfirmed: d.releaseDateConfirmed,
                 }))
               : [emptyDistributor()],
@@ -333,8 +333,8 @@ export default function FigurineFormPage() {
         distributorId:        Number(d.distributorId),
         currency:             d.currency,
         price:                Number(d.price) || 0,
-        announcedAt:          d.announcedAt.trim() || null,
-        releasedAt:           d.releasedAt.trim()  || null,
+        preorderOpensAt:      d.preorderOpensAt.trim() || null,
+        releaseDate:          d.releaseDate.trim() || null,
         releaseDateConfirmed: d.releaseDateConfirmed,
       })),
     };
@@ -630,21 +630,21 @@ export default function FigurineFormPage() {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
-                    label="Announced At"
+                    label="Pre-order Opens"
                     type="date"
                     fullWidth
-                    value={d.announcedAt}
-                    onChange={(e) => setDistributorField(i, "announcedAt", e.target.value)}
+                    value={d.preorderOpensAt}
+                    onChange={(e) => setDistributorField(i, "preorderOpensAt", e.target.value)}
                     slotProps={{ inputLabel: { shrink: true } }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
-                    label="Released At"
+                    label="Release Date"
                     type="date"
                     fullWidth
-                    value={d.releasedAt}
-                    onChange={(e) => setDistributorField(i, "releasedAt", e.target.value)}
+                    value={d.releaseDate}
+                    onChange={(e) => setDistributorField(i, "releaseDate", e.target.value)}
                     slotProps={{ inputLabel: { shrink: true } }}
                   />
                 </Grid>

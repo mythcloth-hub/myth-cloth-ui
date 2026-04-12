@@ -33,7 +33,7 @@ import { lineupsApi, seriesApi, groupsApi } from "../../catalogs/api/catalogApi"
 import type { Catalog } from "../../catalogs/types/catalog";
 import type { Figurine } from "../types/figurine";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 24;
 
 type Badge = { label: string; color: "warning" | "info" | "success" | "error" | "default" };
 
@@ -41,13 +41,8 @@ function getBadges(f: Figurine): Badge[] {
   const badges: Badge[] = [];
   if (f.isOriginalColorEdition) badges.push({ label: "OCE",          color: "warning" });
   if (f.isRevival)              badges.push({ label: "Revival",      color: "info"    });
-  if (f.isBattleDamaged)        badges.push({ label: "Battle Dmg",   color: "error"   });
   if (f.isMetalBody)            badges.push({ label: "Metal Body",   color: "default" });
-  if (f.isGoldenArmor)          badges.push({ label: "Gold Armor",   color: "warning" });
   if (f.isGold24kEdition)       badges.push({ label: "Gold 24K",     color: "warning" });
-  if (f.isMangaVersion)         badges.push({ label: "Manga",        color: "info"    });
-  if (f.isPlainCloth)           badges.push({ label: "Plain Cloth",  color: "default" });
-  if (f.isMultiPack)            badges.push({ label: "Multi-Pack",   color: "success" });
   return badges;
 }
 
@@ -149,6 +144,13 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
                   fontWeight: 700,
                   letterSpacing: "0.03em",
                   opacity: 0.92,
+                  ...(b.label === "Revival"
+                    ? {
+                        bgcolor: "primary.main",
+                        color: "#1a1202",
+                        "& .MuiChip-label": { color: "#1a1202" },
+                      }
+                    : {}),
                 }}
               />
             ))}
@@ -415,80 +417,96 @@ export default function FigurineCollectionPage() {
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
-      {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2, gap: 2, flexWrap: "wrap" }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" }, flexShrink: 0 }}>
-          Collection
-        </Typography>
-        <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
-          + New Figurine
-        </Button>
-      </Box>
-
-      {/* Search bar + filter toggle */}
-      <Box sx={{ display: "flex", gap: 1.5, mb: 1.5, alignItems: "center" }}>
-        <TextField
-          size="small"
-          placeholder="Search by name…"
-          defaultValue={query}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSearch((e.target as HTMLInputElement).value);
-          }}
-          onBlur={(e) => handleSearch(e.target.value)}
-          sx={{ flex: 1, maxWidth: 480 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: "text.disabled", fontSize: 20 }} />
-                </InputAdornment>
-              ),
-              endAdornment: query ? (
-                <InputAdornment position="end">
-                  <IconButton size="small" onClick={handleClearSearch} sx={{ color: "text.disabled" }}>
-                    <ClearIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ) : null,
-            },
-          }}
-        />
-        <Badge badgeContent={activeFilterCount || null} color="primary" sx={{ flexShrink: 0 }}>
-          <Button
-            variant={filtersOpen ? "contained" : "outlined"}
-            size="small"
-            startIcon={<TuneIcon fontSize="small" />}
-            onClick={() => setFiltersOpen((o) => !o)}
-          >
-            Filters
+      <Box
+        sx={{
+          position: "sticky",
+          top: 0,
+          zIndex: 9,
+          bgcolor: "background.default",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          mx: { xs: -1.5, sm: -2, md: -3 },
+          px: { xs: 1.5, sm: 2, md: 3 },
+          pt: 0.25,
+          pb: 1,
+          mb: 2,
+          borderBottom: "1px solid rgba(212,175,55,0.08)",
+        }}
+      >
+        {/* Header */}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5, gap: 2, flexWrap: "wrap" }}>
+          <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" }, flexShrink: 0 }}>
+            Myth Cloth Collection
+          </Typography>
+          <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
+            + New Figurine
           </Button>
-        </Badge>
-        {activeFilterCount > 0 && (
-          <Button
-            size="small"
-            onClick={clearAllFilters}
-            sx={{ color: "text.secondary", whiteSpace: "nowrap", flexShrink: 0 }}
-          >
-            Clear all
-          </Button>
-        )}
-      </Box>
+        </Box>
 
-      {/* Collapsible filter panel */}
-      <Collapse in={filtersOpen}>
-        <Box
-          sx={{
-            display: "flex",
-            gap: 1.5,
-            flexWrap: "wrap",
-            mb: 1.5,
-            p: 1.5,
-            borderRadius: 1,
-            bgcolor: "rgba(255,255,255,0.03)",
-            border: "1px solid",
-            borderColor: "divider",
-          }}
-        >
+        {/* Search bar + filter toggle */}
+        <Box sx={{ display: "flex", gap: 1.5, mb: 1.5, alignItems: "center" }}>
+          <TextField
+            size="small"
+            placeholder="Search by name…"
+            defaultValue={query}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearch((e.target as HTMLInputElement).value);
+            }}
+            onBlur={(e) => handleSearch(e.target.value)}
+            sx={{ flex: 1, maxWidth: 480 }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: "text.disabled", fontSize: 20 }} />
+                  </InputAdornment>
+                ),
+                endAdornment: query ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={handleClearSearch} sx={{ color: "text.disabled" }}>
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              },
+            }}
+          />
+          <Badge badgeContent={activeFilterCount || null} color="primary" sx={{ flexShrink: 0 }}>
+            <Button
+              variant={filtersOpen ? "contained" : "outlined"}
+              size="small"
+              startIcon={<TuneIcon fontSize="small" />}
+              onClick={() => setFiltersOpen((o) => !o)}
+            >
+              Filters
+            </Button>
+          </Badge>
+          {activeFilterCount > 0 && (
+            <Button
+              size="small"
+              onClick={clearAllFilters}
+              sx={{ color: "text.secondary", whiteSpace: "nowrap", flexShrink: 0 }}
+            >
+              Clear all
+            </Button>
+          )}
+        </Box>
+
+        {/* Collapsible filter panel */}
+        <Collapse in={filtersOpen}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1.5,
+              flexWrap: "wrap",
+              mb: 1.5,
+              p: 1.5,
+              borderRadius: 1,
+              bgcolor: "rgba(255,255,255,0.03)",
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
           <FormControl size="small" sx={{ flex: "1 1 150px" }}>
             <InputLabel>Line Up</InputLabel>
             <Select label="Line Up" value={lineup} onChange={(e) => handleLineupChange(e.target.value)}>
@@ -541,44 +559,45 @@ export default function FigurineCollectionPage() {
               </Select>
             </FormControl>
           ))}
-        </Box>
-      </Collapse>
+          </Box>
+        </Collapse>
 
-      {/* Active filter chips */}
-      {activeFilterCount > 0 && (
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2, alignItems: "center" }}>
-          {lineup && (
-            <Chip size="small" label={`Line Up: ${lineupOptions.find((o) => String(o.id) === lineup)?.description ?? lineup}`} onDelete={() => handleLineupChange("")} />
-          )}
-          {series && (
-            <Chip size="small" label={`Series: ${seriesOptions.find((o) => String(o.id) === series)?.description ?? series}`} onDelete={() => handleSeriesChange("")} />
-          )}
-          {group && (
-            <Chip size="small" label={`Group: ${groupOptions.find((o) => String(o.id) === group)?.description ?? group}`} onDelete={() => handleGroupChange("")} />
-          )}
-          {([
-            { key: "revival",       label: "Revival",        value: revival       },
-            { key: "metalBody",     label: "Metal Body",     value: metalBody     },
-            { key: "originalColor", label: "Original Color", value: originalColor },
-            { key: "plainCloth",    label: "Plain Cloth",    value: plainCloth    },
-            { key: "battleDamaged", label: "Battle Damaged", value: battleDamaged },
-            { key: "goldenArmor",   label: "Golden Armor",   value: goldenArmor   },
-            { key: "gold24k",       label: "Gold 24K",       value: gold24k       },
-            { key: "manga",         label: "Manga",          value: manga         },
-            { key: "multiPack",     label: "Multi-Pack",     value: multiPack     },
-            { key: "articulable",   label: "Articulable",    value: articulable   },
-          ] as { key: string; label: string; value: string }[])
-            .filter(({ value }) => Boolean(value))
-            .map(({ key, label, value }) => (
-              <Chip
-                key={key}
-                size="small"
-                label={`${label}: ${value === "true" ? "Yes" : "No"}`}
-                onDelete={() => handleBoolChange(key, "")}
-              />
-            ))}
-        </Box>
-      )}
+        {/* Active filter chips */}
+        {activeFilterCount > 0 && (
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
+            {lineup && (
+              <Chip size="small" label={`Line Up: ${lineupOptions.find((o) => String(o.id) === lineup)?.description ?? lineup}`} onDelete={() => handleLineupChange("")} />
+            )}
+            {series && (
+              <Chip size="small" label={`Series: ${seriesOptions.find((o) => String(o.id) === series)?.description ?? series}`} onDelete={() => handleSeriesChange("")} />
+            )}
+            {group && (
+              <Chip size="small" label={`Group: ${groupOptions.find((o) => String(o.id) === group)?.description ?? group}`} onDelete={() => handleGroupChange("")} />
+            )}
+            {([
+              { key: "revival",       label: "Revival",        value: revival       },
+              { key: "metalBody",     label: "Metal Body",     value: metalBody     },
+              { key: "originalColor", label: "Original Color", value: originalColor },
+              { key: "plainCloth",    label: "Plain Cloth",    value: plainCloth    },
+              { key: "battleDamaged", label: "Battle Damaged", value: battleDamaged },
+              { key: "goldenArmor",   label: "Golden Armor",   value: goldenArmor   },
+              { key: "gold24k",       label: "Gold 24K",       value: gold24k       },
+              { key: "manga",         label: "Manga",          value: manga         },
+              { key: "multiPack",     label: "Multi-Pack",     value: multiPack     },
+              { key: "articulable",   label: "Articulable",    value: articulable   },
+            ] as { key: string; label: string; value: string }[])
+              .filter(({ value }) => Boolean(value))
+              .map(({ key, label, value }) => (
+                <Chip
+                  key={key}
+                  size="small"
+                  label={`${label}: ${value === "true" ? "Yes" : "No"}`}
+                  onDelete={() => handleBoolChange(key, "")}
+                />
+              ))}
+          </Box>
+        )}
+      </Box>
 
       {/* Status line */}
       {!displayLoading && (

@@ -123,7 +123,7 @@ export default function FigurineDetailPage() {
           borderBottom: "1px solid rgba(212,175,55,0.1)",
         }}
       >
-        <Tooltip title="Back to collection">
+        <Tooltip title="Back to Myth Cloth Collection">
           <IconButton onClick={() => navigate(-1)} sx={{ color: "primary.main" }}>
             <ArrowBackIcon />
           </IconButton>
