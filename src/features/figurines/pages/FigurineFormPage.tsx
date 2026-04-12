@@ -153,6 +153,7 @@ export default function FigurineFormPage() {
   const [saving,         setSaving]         = useState(false);
   const [serverError,    setServerError]    = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successRedirectPath, setSuccessRedirectPath] = useState<string | null>(null);
 
   // Load catalog options + (optionally) figurine data in parallel
   useEffect(() => {
@@ -230,6 +231,7 @@ export default function FigurineFormPage() {
       updated[i] = { ...updated[i], [key]: value };
       return { ...prev, distributors: updated };
     });
+    setErrors((prev) => ({ ...prev, [`dist_${i}_${key}`]: undefined }));
   };
 
   const addDistributor = () =>
@@ -285,6 +287,7 @@ export default function FigurineFormPage() {
     form.distributors.forEach((d, i) => {
       if (!d.distributorId) newErrors[`dist_${i}_id`] = "Select a distributor";
       if (!d.currency)      newErrors[`dist_${i}_currency`] = "Currency is required";
+      if (!d.price.trim() || Number(d.price) <= 0) newErrors[`dist_${i}_price`] = "Price must be greater than 0";
     });
 
     setErrors(newErrors);
@@ -330,9 +333,9 @@ export default function FigurineFormPage() {
       notes:                 form.notes.trim() || null,
       officialImageUrls:     form.officialImageUrls.filter((u) => u.trim()),
       distributors:          form.distributors.map((d) => ({
-        distributorId:        Number(d.distributorId),
+        supplierId:           Number(d.distributorId),
         currency:             d.currency,
-        price:                Number(d.price) || 0,
+        price:                Number(d.price),
         preorderOpensAt:      d.preorderOpensAt.trim() || null,
         releaseDate:          d.releaseDate.trim() || null,
         releaseDateConfirmed: d.releaseDateConfirmed,
@@ -343,12 +346,11 @@ export default function FigurineFormPage() {
       if (isEdit) {
         await updateFigurine(Number(id), payload);
         setSuccessMessage("Figurine updated successfully.");
+        setSuccessRedirectPath(`/figurines/${id}`);
       } else {
         const created = await createFigurine(payload);
         setSuccessMessage("Figurine created successfully.");
-        // store created id so the snackbar redirect works
-        navigate(`/figurines/${created.id}`, { replace: true });
-        return;
+        setSuccessRedirectPath(`/figurines/${created.id}`);
       }
     } catch (err) {
       console.error(err);
@@ -396,8 +398,8 @@ export default function FigurineFormPage() {
             <Alert severity="error" onClose={() => setServerError(null)}>{serverError}</Alert>
           )}
 
-          {/* ── Identity ── */}
-          <SectionLabel>Identity</SectionLabel>
+          {/* ── Myth Cloth ── */}
+          <SectionLabel>Myth Cloth</SectionLabel>
           <TextField
             label="Name"
             value={form.name}
@@ -625,7 +627,9 @@ export default function FigurineFormPage() {
                     fullWidth
                     value={d.price}
                     onChange={(e) => setDistributorField(i, "price", e.target.value)}
-                    slotProps={{ htmlInput: { min: 0 } }}
+                    error={Boolean(errors[`dist_${i}_price`])}
+                    helperText={errors[`dist_${i}_price`]}
+                    slotProps={{ htmlInput: { min: 0.01, step: "0.01" } }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
@@ -695,10 +699,27 @@ export default function FigurineFormPage() {
       <Snackbar
         open={Boolean(successMessage)}
         autoHideDuration={1500}
-        onClose={() => { setSuccessMessage(null); if (isEdit) navigate(`/figurines/${id}`, { replace: true }); }}
+        onClose={() => {
+          setSuccessMessage(null);
+          if (successRedirectPath) {
+            navigate(successRedirectPath, { replace: true });
+            setSuccessRedirectPath(null);
+          }
+        }}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert severity="success">{successMessage}</Alert>
+        <Alert
+          severity="success"
+          onClose={() => {
+            setSuccessMessage(null);
+            if (successRedirectPath) {
+              navigate(successRedirectPath, { replace: true });
+              setSuccessRedirectPath(null);
+            }
+          }}
+        >
+          {successMessage}
+        </Alert>
       </Snackbar>
 
       {/* Delete confirmation dialog */}
