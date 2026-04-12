@@ -27,30 +27,25 @@ import { getFigurineById } from "../api/figurineApi";
 import type { Figurine } from "../types/figurine";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 
-type Badge = { label: string; color: "warning" | "info" | "success" | "error" | "default" };
-
-function getBadges(f: Figurine): Badge[] {
-  const badges: Badge[] = [];
-  if (f.isOriginalColorEdition) badges.push({ label: "Original Color Edition", color: "warning" });
-  if (f.isRevival)              badges.push({ label: "Revival",                color: "info"    });
-  if (f.isBattleDamaged)        badges.push({ label: "Battle Damaged",         color: "error"   });
-  if (f.isMetalBody)            badges.push({ label: "Metal Body",             color: "default" });
-  if (f.isGoldenArmor)          badges.push({ label: "Golden Armor",           color: "warning" });
-  if (f.isGold24kEdition)       badges.push({ label: "Gold 24K Edition",       color: "warning" });
-  if (f.isMangaVersion)         badges.push({ label: "Manga Version",          color: "info"    });
-  if (f.isPlainCloth)           badges.push({ label: "Plain Cloth",            color: "default" });
-  if (f.isMultiPack)            badges.push({ label: "Multi-Pack",             color: "success" });
-  return badges;
-}
-
 function BoolRow({ label, value }: { label: string; value: boolean }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 0.5 }}>
-      <Typography variant="body2" color="text.secondary">{label}</Typography>
-      {value
-        ? <CheckCircleOutlineIcon sx={{ fontSize: 18, color: "success.main" }} />
-        : <CancelOutlinedIcon    sx={{ fontSize: 18, color: "text.disabled" }} />}
-    </Box>
+    <Chip
+      label={label}
+      size="small"
+      icon={value
+        ? <CheckCircleOutlineIcon style={{ fontSize: 13 }} />
+        : <CancelOutlinedIcon style={{ fontSize: 13 }} />}
+      sx={{
+        fontWeight: value ? 700 : 400,
+        fontSize: "0.72rem",
+        height: 24,
+        bgcolor: value ? "rgba(212,175,55,0.15)" : "transparent",
+        color: value ? "primary.main" : "text.disabled",
+        border: "1px solid",
+        borderColor: value ? "rgba(212,175,55,0.4)" : "rgba(255,255,255,0.1)",
+        "& .MuiChip-icon": { color: value ? "primary.main" : "text.disabled" },
+      }}
+    />
   );
 }
 
@@ -98,9 +93,14 @@ export default function FigurineDetailPage() {
     );
   }
 
-  const badges = getBadges(figurine);
   const images = figurine.officialImageUrls ?? [];
   const mainImage = images[selectedImage] ?? null;
+  const catalogDetails = [
+    { label: "Series", value: figurine.series.description },
+    { label: "Line Up", value: figurine.lineUp.description },
+    { label: "Group", value: figurine.group.description },
+    { label: "Distribution", value: figurine.distribution?.description },
+  ].filter((item): item is { label: string; value: string } => Boolean(item.value));
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -188,6 +188,29 @@ export default function FigurineDetailPage() {
               border: "1px solid rgba(212,175,55,0.18)",
             }}
           >
+            {figurine.isRevival && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 14,
+                  left: -34,
+                  zIndex: 2,
+                  width: 150,
+                  py: 0.6,
+                  textAlign: "center",
+                  transform: "rotate(-35deg)",
+                  bgcolor: "primary.main",
+                  color: "#1a1202",
+                  fontSize: "0.72rem",
+                  fontWeight: 800,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  boxShadow: "0 10px 24px rgba(0,0,0,0.35)",
+                }}
+              >
+                Revival
+              </Box>
+            )}
             {mainImage ? (
               <Box
                 component="img"
@@ -249,15 +272,6 @@ export default function FigurineDetailPage() {
 
         {/* ── Right column: info ── */}
         <Grid size={{ xs: 12, md: 7 }}>
-          {/* Edition badges */}
-          {badges.length > 0 && (
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 2 }}>
-              {badges.map((b) => (
-                <Chip key={b.label} label={b.label} color={b.color} size="small" sx={{ fontWeight: 600 }} />
-              ))}
-            </Box>
-          )}
-
           {/* Core catalog info */}
           <Box
             sx={{
@@ -269,12 +283,8 @@ export default function FigurineDetailPage() {
             }}
           >
             <Grid container spacing={1}>
-              {[
-                { label: "Series",  value: figurine.series.description  },
-                { label: "Line Up", value: figurine.lineUp.description  },
-                { label: "Group",   value: figurine.group.description   },
-              ].map(({ label, value }) => (
-                <Grid key={label} size={{ xs: 12, sm: 4 }}>
+              {catalogDetails.map(({ label, value }) => (
+                <Grid key={label} size={{ xs: 12, sm: 6, md: 3 }}>
                   <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "0.65rem" }}>
                     {label}
                   </Typography>
@@ -283,6 +293,34 @@ export default function FigurineDetailPage() {
                   </Typography>
                 </Grid>
               ))}
+              {figurine.tamashiiUrl && (
+                <Grid size={{ xs: 12 }}>
+                  <Box
+                    sx={{
+                      mt: 0.75,
+                      pt: 1.25,
+                      borderTop: "1px solid rgba(212,175,55,0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: { xs: "stretch", sm: "flex-end" },
+                      gap: 1,
+                      flexDirection: { xs: "column", sm: "row" },
+                    }}
+                  >
+                    <Button
+                      component="a"
+                      href={figurine.tamashiiUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="outlined"
+                      endIcon={<OpenInNewIcon />}
+                      sx={{ flexShrink: 0, alignSelf: { xs: "stretch", sm: "auto" } }}
+                    >
+                      Open Official Page
+                    </Button>
+                  </Box>
+                </Grid>
+              )}
             </Grid>
           </Box>
 
@@ -290,17 +328,17 @@ export default function FigurineDetailPage() {
           <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem" }}>
             Attributes
           </Typography>
-          <Box sx={{ mb: 2 }}>
-            <BoolRow label="Metal Body"            value={figurine.isMetalBody} />
-            <BoolRow label="Articulable"           value={figurine.isArticulable} />
-            <BoolRow label="Revival"               value={figurine.isRevival} />
-            <BoolRow label="Original Color Ed."    value={figurine.isOriginalColorEdition} />
-            <BoolRow label="Battle Damaged"        value={figurine.isBattleDamaged} />
-            <BoolRow label="Golden Armor"          value={figurine.isGoldenArmor} />
-            <BoolRow label="Gold 24K Edition"      value={figurine.isGold24kEdition} />
-            <BoolRow label="Manga Version"         value={figurine.isMangaVersion} />
-            <BoolRow label="Plain Cloth"           value={figurine.isPlainCloth} />
-            <BoolRow label="Multi-Pack"            value={figurine.isMultiPack} />
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 2, mt: 0.5 }}>
+            <BoolRow label="Metal Body"          value={figurine.isMetalBody} />
+            <BoolRow label="Articulable"         value={figurine.isArticulable} />
+            <BoolRow label="Revival"             value={figurine.isRevival} />
+            <BoolRow label="Original Color Ed." value={figurine.isOriginalColorEdition} />
+            <BoolRow label="Battle Damaged"      value={figurine.isBattleDamaged} />
+            <BoolRow label="Golden Armor"        value={figurine.isGoldenArmor} />
+            <BoolRow label="Gold 24K Edition"    value={figurine.isGold24kEdition} />
+            <BoolRow label="Manga Version"       value={figurine.isMangaVersion} />
+            <BoolRow label="Plain Cloth"         value={figurine.isPlainCloth} />
+            <BoolRow label="Multi-Pack"          value={figurine.isMultiPack} />
           </Box>
 
           {/* Notes */}

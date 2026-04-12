@@ -32,7 +32,9 @@ export type Figurine = {
   id: number;
   name: string;
   displayableName: string;
+  tamashiiUrl?: string;
   distributors: FigurineDistributor[];
+  distribution?: CatalogRef;
   lineUp: CatalogRef;
   series: CatalogRef;
   group: CatalogRef;
