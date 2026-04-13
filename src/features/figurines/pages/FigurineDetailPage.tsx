@@ -62,6 +62,11 @@ export default function FigurineDetailPage() {
   const currentIndex = navList.indexOf(Number(id));
   const prevId = currentIndex > 0 ? navList[currentIndex - 1] : null;
   const nextId = currentIndex !== -1 && currentIndex < navList.length - 1 ? navList[currentIndex + 1] : null;
+  const collectionSearch = sessionStorage.getItem("figurineCollectionSearch");
+
+  const handleBackToCollection = () => {
+    navigate(collectionSearch ? `/figurines?${collectionSearch}` : "/figurines");
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -124,7 +129,7 @@ export default function FigurineDetailPage() {
         }}
       >
         <Tooltip title="Back to Myth Cloth Collection">
-          <IconButton onClick={() => navigate(-1)} sx={{ color: "primary.main" }}>
+          <IconButton onClick={handleBackToCollection} sx={{ color: "primary.main" }}>
             <ArrowBackIcon />
           </IconButton>
         </Tooltip>
