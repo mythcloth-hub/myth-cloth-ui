@@ -1,3 +1,5 @@
+export type ReleaseStatus = "ANNOUNCED" | "RELEASED" | "RUMORED" | "PROTOTYPE";
+
 export type CatalogRef = {
   id: number;
   description: string;
@@ -33,6 +35,7 @@ export type Figurine = {
   name: string;
   displayableName: string;
   tamashiiUrl?: string;
+  releaseStatus: ReleaseStatus;
   distributors: FigurineDistributor[];
   distribution?: CatalogRef;
   lineUp: CatalogRef;

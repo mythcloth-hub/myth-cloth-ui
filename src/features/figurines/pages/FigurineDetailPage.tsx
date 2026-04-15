@@ -24,8 +24,15 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 import { getFigurineById } from "../api/figurineApi";
-import type { Figurine } from "../types/figurine";
+import type { Figurine, ReleaseStatus } from "../types/figurine";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
+
+const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: string; borderColor: string }> = {
+  RELEASED:  { label: "Released",  color: "#4caf50", borderColor: "rgba(76,175,80,0.30)"   },
+  ANNOUNCED: { label: "Announced", color: "#42a5f5", borderColor: "rgba(66,165,245,0.30)"  },
+  RUMORED:   { label: "Rumored",   color: "#ff9800", borderColor: "rgba(255,152,0,0.35)"   },
+  PROTOTYPE: { label: "Prototype", color: "#90a4ae", borderColor: "rgba(144,164,174,0.30)" },
+};
 
 function BoolRow({ label, value }: { label: string; value: boolean }) {
   return (
@@ -298,6 +305,22 @@ export default function FigurineDetailPage() {
                   </Typography>
                 </Grid>
               ))}
+              {figurine.releaseStatus && (() => {
+                const cfg = RELEASE_STATUS_CONFIG[figurine.releaseStatus];
+                return (
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "0.65rem" }}>
+                      Release Status
+                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5 }}>
+                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: cfg.color, border: `1px solid ${cfg.borderColor}`, flexShrink: 0 }} />
+                      <Typography variant="body2" sx={{ color: cfg.color, fontWeight: 600 }}>
+                        {cfg.label}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                );
+              })()}
               {figurine.tamashiiUrl && (
                 <Grid size={{ xs: 12 }}>
                   <Box

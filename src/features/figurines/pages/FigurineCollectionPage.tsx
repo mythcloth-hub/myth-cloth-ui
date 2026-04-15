@@ -31,11 +31,18 @@ import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupported
 import { getFigurines } from "../api/figurineApi";
 import { lineupsApi, seriesApi, groupsApi } from "../../catalogs/api/catalogApi";
 import type { Catalog } from "../../catalogs/types/catalog";
-import type { Figurine } from "../types/figurine";
+import type { Figurine, ReleaseStatus } from "../types/figurine";
 
 const PAGE_SIZE = 24;
 
 type Badge = { label: string; color: "warning" | "info" | "success" | "error" | "default" };
+
+const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: string; borderColor: string; hoverGlow: string }> = {
+  RELEASED:  { label: "Released",  color: "#4caf50", borderColor: "rgba(76,175,80,0.28)",   hoverGlow: "rgba(76,175,80,0.14)"   },
+  ANNOUNCED: { label: "Announced", color: "#42a5f5", borderColor: "rgba(66,165,245,0.28)",  hoverGlow: "rgba(66,165,245,0.14)"  },
+  RUMORED:   { label: "Rumored",   color: "#ff9800", borderColor: "rgba(255,152,0,0.32)",   hoverGlow: "rgba(255,152,0,0.14)"   },
+  PROTOTYPE: { label: "Prototype", color: "#90a4ae", borderColor: "rgba(144,164,174,0.30)", hoverGlow: "rgba(144,164,174,0.12)" },
+};
 
 function getBadges(f: Figurine): Badge[] {
   const badges: Badge[] = [];
@@ -49,21 +56,23 @@ function getBadges(f: Figurine): Badge[] {
 function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () => void }) {
   const imageUrl = figurine.officialImageUrls?.[0] ?? null;
   const badges = getBadges(figurine);
+  const statusCfg = figurine.releaseStatus ? RELEASE_STATUS_CONFIG[figurine.releaseStatus] : null;
 
   return (
     <Card
       onClick={onClick}
-      sx={
-        {
+      sx={{
         height: "100%",
         display: "flex",
         flexDirection: "column",
         cursor: "pointer",
-        transition: "transform 0.2s, box-shadow 0.2s, border-color 0.2s",
+        transition: "transform 0.2s, box-shadow 0.2s",
+        borderTop: statusCfg ? `2px solid ${statusCfg.borderColor}` : undefined,
         "&:hover": {
           transform: "translateY(-3px)",
-          boxShadow: "0 12px 40px rgba(212, 175, 55, 0.25)",
-          borderColor: "rgba(212, 175, 55, 0.5)",
+          boxShadow: statusCfg
+            ? `0 12px 40px ${statusCfg.hoverGlow}`
+            : "0 12px 40px rgba(212, 175, 55, 0.25)",
         },
       }}
     >
@@ -81,6 +90,11 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
               width: "100%",
               height: "100%",
               objectFit: "cover",
+              ...(figurine.releaseStatus === "PROTOTYPE" && {
+                filter: "grayscale(100%)",
+                transition: "filter 0.4s ease",
+                "&:hover": { filter: "grayscale(0%)" },
+              }),
             }}
           />
         ) : (
@@ -207,6 +221,28 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
         >
           {figurine.group.description}
         </Typography>
+
+        {/* Release status indicator */}
+        {statusCfg && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.75 }}>
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                bgcolor: statusCfg.color,
+                opacity: 0.7,
+                flexShrink: 0,
+              }}
+            />
+            <Typography
+              variant="caption"
+              sx={{ fontSize: "0.62rem", color: "text.disabled", letterSpacing: "0.04em" }}
+            >
+              {statusCfg.label}
+            </Typography>
+          </Box>
+        )}
       </CardContent>
     </Card>
   );
@@ -597,17 +633,39 @@ export default function FigurineCollectionPage() {
               ))}
           </Box>
         )}
-      </Box>
 
-      {/* Status line */}
-      {!displayLoading && (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {isFilterMode
-            ? `${displayTotal.toLocaleString()} result${displayTotal !== 1 ? "s" : ""}${query ? ` matching "${query}"` : ""}`
-            : displayTotal > 0 ? `${displayTotal.toLocaleString()} figurines · page ${page} of ${displayPages}` : null
-          }
-        </Typography>
-      )}
+        {/* Status + compact pagination row – always visible in the sticky bar */}
+        {!displayLoading && (
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mt: activeFilterCount > 0 ? 1 : 0 }}>
+            <Typography variant="body2" color="text.secondary">
+              {isFilterMode
+                ? `${displayTotal.toLocaleString()} result${displayTotal !== 1 ? "s" : ""}${query ? ` matching "${query}"` : ""}`
+                : displayTotal > 0 ? `${displayTotal.toLocaleString()} figurines · page ${page} of ${displayPages}` : null
+              }
+            </Typography>
+            {displayPages > 1 && (
+              <Pagination
+                count={displayPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+                shape="rounded"
+                size="small"
+                showFirstButton
+                showLastButton
+                sx={{
+                  "& .MuiPaginationItem-root": { color: "text.secondary" },
+                  "& .MuiPaginationItem-root.Mui-selected": {
+                    backgroundColor: "rgba(212, 175, 55, 0.2)",
+                    color: "primary.main",
+                    fontWeight: 700,
+                  },
+                }}
+              />
+            )}
+          </Box>
+        )}
+      </Box>
 
       {/* Grid */}
       <Grid container spacing={{ xs: 1.5, sm: 2 }}>
