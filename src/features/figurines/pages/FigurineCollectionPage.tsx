@@ -53,10 +53,34 @@ function getBadges(f: Figurine): Badge[] {
   return badges;
 }
 
+function getReleaseDateLabel(figurine: Figurine): string | null {
+  if (figurine.releaseStatus !== "ANNOUNCED" && figurine.releaseStatus !== "RELEASED") {
+    return null;
+  }
+
+  const distributorWithDate = figurine.distributors
+    ?.filter((d) => Boolean(d.releaseDate))
+    .sort((a, b) => (a.releaseDate ?? "").localeCompare(b.releaseDate ?? ""))[0];
+
+  if (!distributorWithDate?.releaseDate) {
+    return null;
+  }
+
+  const [year, month, day] = distributorWithDate.releaseDate.split("-");
+  const monthIndex = Number(month) - 1;
+  if (!year || Number.isNaN(monthIndex) || monthIndex < 0 || monthIndex > 11) {
+    return distributorWithDate.releaseDate;
+  }
+
+  const monthShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
+  return distributorWithDate.releaseDateConfirmed ? `${monthShort} ${day}, ${year}` : `${monthShort} ${year}`;
+}
+
 function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () => void }) {
   const imageUrl = figurine.officialImageUrls?.[0] ?? null;
   const badges = getBadges(figurine);
   const statusCfg = figurine.releaseStatus ? RELEASE_STATUS_CONFIG[figurine.releaseStatus] : null;
+  const releaseDateLabel = getReleaseDateLabel(figurine);
 
   return (
     <Card
@@ -222,7 +246,7 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
           {figurine.group.description}
         </Typography>
 
-        {/* Release status indicator */}
+        {/* Release status + date in one compact line */}
         {statusCfg && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.75 }}>
             <Box
@@ -238,8 +262,10 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
             <Typography
               variant="caption"
               sx={{ fontSize: "0.62rem", color: "text.disabled", letterSpacing: "0.04em" }}
+              noWrap
+              title={releaseDateLabel ? `${statusCfg.label} - ${releaseDateLabel}` : statusCfg.label}
             >
-              {statusCfg.label}
+              {releaseDateLabel ? `${statusCfg.label} - ${releaseDateLabel}` : statusCfg.label}
             </Typography>
           </Box>
         )}
