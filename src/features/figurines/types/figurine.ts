@@ -16,6 +16,7 @@ export type FigurineDistributor = {
   currency: string;
   price?: number;
   priceWithTax?: number;
+  announcedAt?: string;
   preorderOpensAt?: string;
   releaseDate?: string;
   releaseDateConfirmed: boolean;

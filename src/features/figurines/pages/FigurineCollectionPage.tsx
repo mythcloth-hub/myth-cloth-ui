@@ -64,34 +64,54 @@ function getBadges(f: Figurine): Badge[] {
   return badges;
 }
 
-function getReleaseDateLabel(figurine: Figurine): string | null {
-  if (figurine.releaseStatus !== "ANNOUNCED" && figurine.releaseStatus !== "RELEASED") {
-    return null;
-  }
-
-  const distributorWithDate = figurine.distributors
-    ?.filter((d) => Boolean(d.releaseDate))
-    .sort((a, b) => (a.releaseDate ?? "").localeCompare(b.releaseDate ?? ""))[0];
-
-  if (!distributorWithDate?.releaseDate) {
-    return null;
-  }
-
-  const [year, month, day] = distributorWithDate.releaseDate.split("-");
+function formatCompactDate(dateStr: string, includeDay = true): string {
+  const [year, month, day] = dateStr.split("-");
   const monthIndex = Number(month) - 1;
   if (!year || Number.isNaN(monthIndex) || monthIndex < 0 || monthIndex > 11) {
-    return distributorWithDate.releaseDate;
+    return dateStr;
   }
 
   const monthShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
-  return distributorWithDate.releaseDateConfirmed ? `${monthShort} ${day}, ${year}` : `${monthShort} ${year}`;
+  return includeDay && day ? `${monthShort} ${day}, ${year}` : `${monthShort} ${year}`;
+}
+
+function getStatusDateLabel(figurine: Figurine): string | null {
+  if (figurine.releaseStatus === "ANNOUNCED" || figurine.releaseStatus === "RELEASED") {
+    const distributorWithDate = figurine.distributors
+      ?.filter((d) => Boolean(d.releaseDate))
+      .sort((a, b) => (a.releaseDate ?? "").localeCompare(b.releaseDate ?? ""))[0];
+
+    if (!distributorWithDate?.releaseDate) {
+      return null;
+    }
+
+    return formatCompactDate(distributorWithDate.releaseDate, distributorWithDate.releaseDateConfirmed);
+  }
+
+  if (figurine.releaseStatus === "PROTOTYPE" || figurine.releaseStatus === "UNRELEASED") {
+    const distributorWithAnnouncement = figurine.distributors
+      ?.filter((d) => Boolean(d.announcedAt))
+      .sort((a, b) => (a.announcedAt ?? "").localeCompare(b.announcedAt ?? ""))[0];
+
+    if (!distributorWithAnnouncement?.announcedAt) {
+      return null;
+    }
+
+    const announcedParts = distributorWithAnnouncement.announcedAt.split("-");
+    return formatCompactDate(
+      distributorWithAnnouncement.announcedAt,
+      announcedParts.length >= 3 && Boolean(announcedParts[2])
+    );
+  }
+
+  return null;
 }
 
 function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () => void }) {
   const imageUrl = figurine.officialImageUrls?.[0] ?? null;
   const badges = getBadges(figurine);
   const statusCfg = figurine.releaseStatus ? RELEASE_STATUS_CONFIG[figurine.releaseStatus] : null;
-  const releaseDateLabel = getReleaseDateLabel(figurine);
+  const releaseDateLabel = getStatusDateLabel(figurine);
   const isAnnounced = figurine.releaseStatus === "ANNOUNCED";
   const isReleased = figurine.releaseStatus === "RELEASED";
   const isUnreleased = figurine.releaseStatus === "UNRELEASED";
