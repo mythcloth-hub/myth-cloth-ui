@@ -283,12 +283,6 @@ export default function FigurineFormPage() {
       }
     });
 
-    form.distributors.forEach((d, i) => {
-      if (!d.distributorId) newErrors[`dist_${i}_id`] = "Select a distributor";
-      if (!d.currency)      newErrors[`dist_${i}_currency`] = "Currency is required";
-      if (!d.price.trim() || Number(d.price) <= 0) newErrors[`dist_${i}_price`] = "Price must be greater than 0";
-    });
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -314,6 +308,18 @@ export default function FigurineFormPage() {
     if (!validate() || !form) return;
     setSaving(true);
 
+    const distributorPayload = form.distributors
+      // Ignore blank distributor rows so optional fields do not block submit.
+      .filter((d) => Boolean(d.distributorId))
+      .map((d) => ({
+        supplierId: Number(d.distributorId),
+        currency: d.currency || "JPY",
+        price: d.price.trim() ? Number(d.price) : null,
+        preorderOpensAt: d.preorderOpensAt.trim() || null,
+        releaseDate: d.releaseDate.trim() || null,
+        releaseDateConfirmed: d.releaseDateConfirmed,
+      }));
+
     const payload = {
       name:                  form.name.trim(),
       lineUpId:              Number(form.lineUpId),
@@ -331,14 +337,7 @@ export default function FigurineFormPage() {
       isArticulable:         form.isArticulable,
       notes:                 form.notes.trim() || null,
       officialImageUrls:     form.officialImageUrls.filter((u) => u.trim()),
-      distributors:          form.distributors.map((d) => ({
-        supplierId:           Number(d.distributorId),
-        currency:             d.currency,
-        price:                Number(d.price),
-        preorderOpensAt:      d.preorderOpensAt.trim() || null,
-        releaseDate:          d.releaseDate.trim() || null,
-        releaseDateConfirmed: d.releaseDateConfirmed,
-      })),
+      distributors:          distributorPayload,
     };
 
     try {
@@ -597,13 +596,14 @@ export default function FigurineFormPage() {
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
-                    select required fullWidth
+                    select fullWidth
                     label="Distributor"
                     value={d.distributorId}
                     onChange={(e) => setDistributorField(i, "distributorId", e.target.value)}
                     error={Boolean(errors[`dist_${i}_id`])}
                     helperText={errors[`dist_${i}_id`]}
                   >
+                    <MenuItem value=""><em>None</em></MenuItem>
                     {distributors.map((dist) => (
                       <MenuItem key={dist.id} value={String(dist.id)}>{dist.name}</MenuItem>
                     ))}
@@ -611,7 +611,7 @@ export default function FigurineFormPage() {
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <TextField
-                    select required fullWidth
+                    select fullWidth
                     label="Currency"
                     value={d.currency}
                     onChange={(e) => setDistributorField(i, "currency", e.target.value)}
