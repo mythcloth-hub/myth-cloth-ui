@@ -1,4 +1,4 @@
-export type ReleaseStatus = "ANNOUNCED" | "RELEASED" | "RUMORED" | "PROTOTYPE";
+export type ReleaseStatus = "ANNOUNCED" | "RELEASED" | "RUMORED" | "PROTOTYPE" | "UNRELEASED";
 
 export type CatalogRef = {
   id: number;

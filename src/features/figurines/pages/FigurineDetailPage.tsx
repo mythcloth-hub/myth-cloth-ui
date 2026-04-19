@@ -32,6 +32,7 @@ const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: strin
   ANNOUNCED: { label: "Announced", color: "#42a5f5", borderColor: "rgba(66,165,245,0.30)"  },
   RUMORED:   { label: "Rumored",   color: "#ff9800", borderColor: "rgba(255,152,0,0.35)"   },
   PROTOTYPE: { label: "Prototype", color: "#90a4ae", borderColor: "rgba(144,164,174,0.30)" },
+  UNRELEASED: { label: "Unreleased", color: "#ef5350", borderColor: "rgba(239,83,80,0.30)" },
 };
 
 function BoolRow({ label, value }: { label: string; value: boolean }) {

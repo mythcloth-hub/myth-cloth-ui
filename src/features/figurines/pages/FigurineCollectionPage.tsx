@@ -42,6 +42,7 @@ const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: strin
   ANNOUNCED: { label: "Announced", color: "#42a5f5", borderColor: "rgba(66,165,245,0.28)",  hoverGlow: "rgba(66,165,245,0.14)"  },
   RUMORED:   { label: "Rumored",   color: "#ff9800", borderColor: "rgba(255,152,0,0.32)",   hoverGlow: "rgba(255,152,0,0.14)"   },
   PROTOTYPE: { label: "Prototype", color: "#90a4ae", borderColor: "rgba(144,164,174,0.30)", hoverGlow: "rgba(144,164,174,0.12)" },
+  UNRELEASED: { label: "Unreleased", color: "#ef5350", borderColor: "rgba(239,83,80,0.30)", hoverGlow: "rgba(239,83,80,0.14)" },
 };
 
 function getBadges(f: Figurine): Badge[] {
@@ -81,6 +82,9 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
   const badges = getBadges(figurine);
   const statusCfg = figurine.releaseStatus ? RELEASE_STATUS_CONFIG[figurine.releaseStatus] : null;
   const releaseDateLabel = getReleaseDateLabel(figurine);
+  const isAnnounced = figurine.releaseStatus === "ANNOUNCED";
+  const isReleased = figurine.releaseStatus === "RELEASED";
+  const isUnreleased = figurine.releaseStatus === "UNRELEASED";
 
   return (
     <Card
@@ -122,10 +126,20 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              ...(figurine.releaseStatus === "PROTOTYPE" && {
-                filter: "grayscale(100%)",
-                transition: "filter 0.4s ease",
-                "&:hover": { filter: "grayscale(0%)" },
+              ...(isReleased && {
+                filter: "saturate(108%) contrast(102%) brightness(1.02)",
+                transition: "filter 0.4s ease, transform 0.4s ease",
+                "&:hover": { filter: "saturate(116%) contrast(104%) brightness(1.04)" },
+              }),
+              ...(isAnnounced && {
+                filter: "saturate(82%) brightness(0.94) hue-rotate(-8deg)",
+                transition: "filter 0.4s ease, transform 0.4s ease",
+                "&:hover": { filter: "saturate(100%) brightness(1) hue-rotate(0deg)" },
+              }),
+              ...(isUnreleased && {
+                filter: "grayscale(45%) saturate(70%) brightness(0.82)",
+                transition: "filter 0.4s ease, transform 0.4s ease",
+                "&:hover": { filter: "grayscale(0%) saturate(100%) brightness(1)" },
               }),
             }}
           />
@@ -150,6 +164,42 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
               No image
             </Typography>
           </Box>
+        )}
+
+        {imageUrl && isUnreleased && (
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(180deg, rgba(122, 24, 24, 0.16) 0%, rgba(75, 0, 0, 0.10) 55%, rgba(10, 11, 20, 0.12) 100%)",
+              mixBlendMode: "multiply",
+              pointerEvents: "none",
+            }}
+          />
+        )}
+
+        {imageUrl && isAnnounced && (
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(180deg, rgba(55, 105, 180, 0.14) 0%, rgba(28, 61, 112, 0.08) 52%, rgba(10, 11, 20, 0.08) 100%)",
+              mixBlendMode: "screen",
+              pointerEvents: "none",
+            }}
+          />
+        )}
+
+        {imageUrl && isReleased && (
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              background: "radial-gradient(90% 70% at 50% 10%, rgba(255, 221, 145, 0.14) 0%, rgba(255, 221, 145, 0.04) 42%, transparent 70%)",
+              mixBlendMode: "screen",
+              pointerEvents: "none",
+            }}
+          />
         )}
 
         {/* Bottom gradient overlay */}
