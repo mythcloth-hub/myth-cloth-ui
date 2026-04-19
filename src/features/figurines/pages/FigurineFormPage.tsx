@@ -15,6 +15,7 @@ import {
   FormControlLabel,
   Grid,
   IconButton,
+  InputAdornment,
   MenuItem,
   Paper,
   Snackbar,
@@ -81,7 +82,27 @@ const emptyDistributor = (): DistributorEntry => ({
   releaseDateConfirmed: false,
 });
 
-const CURRENCIES = ["JPY", "USD", "EUR", "MXN", "CNY", "GBP"];
+const CURRENCIES = ["EUR", "MXN", "CAD", "CNY", "JPY", "USD"];
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  EUR: "€",
+  MXN: "MX$",
+  CAD: "CA$",
+  CNY: "CN¥",
+  JPY: "JPY ¥",
+  USD: "US$",
+};
+
+const PRICE_INPUT_PATTERN = /^\d*(\.\d{0,2})?$/;
+const PRICE_SUBMIT_PATTERN = /^\d+(\.\d{1,2})?$/;
+const MAX_PRICE_INTEGER_PART = 50000;
+
+function isPriceIntegerPartWithinLimit(value: string): boolean {
+  const integerPartRaw = value.split(".")[0] ?? "";
+  if (!integerPartRaw) return true;
+  const integerPart = Number(integerPartRaw);
+  return Number.isFinite(integerPart) && integerPart <= MAX_PRICE_INTEGER_PART;
+}
 
 const emptyForm: FormData = {
   name:                   "",
@@ -287,6 +308,16 @@ export default function FigurineFormPage() {
 
       if (!Number.isFinite(priceValue) || priceValue < 0) {
         newErrors[`dist_${i}_price`] = "Price must be a valid number";
+        return;
+      }
+
+      if (!PRICE_SUBMIT_PATTERN.test(priceRaw)) {
+        newErrors[`dist_${i}_price`] = "Price can include up to 2 decimals";
+        return;
+      }
+
+      if (!isPriceIntegerPartWithinLimit(priceRaw)) {
+        newErrors[`dist_${i}_price`] = `Price integer part cannot exceed ${MAX_PRICE_INTEGER_PART}`;
       }
     });
 
@@ -648,10 +679,24 @@ export default function FigurineFormPage() {
                     fullWidth
                     required={Boolean(d.distributorId)}
                     value={d.price}
-                    onChange={(e) => setDistributorField(i, "price", e.target.value)}
+                    onChange={(e) => {
+                      const nextValue = e.target.value;
+                      if (PRICE_INPUT_PATTERN.test(nextValue) && isPriceIntegerPartWithinLimit(nextValue)) {
+                        setDistributorField(i, "price", nextValue);
+                      }
+                    }}
                     error={Boolean(errors[`dist_${i}_price`])}
                     helperText={errors[`dist_${i}_price`]}
-                    slotProps={{ htmlInput: { min: 0.01, step: "0.01" } }}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            {CURRENCY_SYMBOLS[d.currency] ?? d.currency}
+                          </InputAdornment>
+                        ),
+                      },
+                      htmlInput: { min: 0.01, step: "0.01" },
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
