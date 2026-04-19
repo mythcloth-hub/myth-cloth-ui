@@ -181,7 +181,7 @@ export default function FigurineFormPage() {
             name:                  f.name,
             lineUpId:              String(f.lineUp.id),
             seriesId:              String(f.series.id),
-            groupId:               String(f.group.id),
+            groupId:               f.group ? String(f.group.id) : "",
             isMetalBody:           f.isMetalBody,
             isOriginalColorEdition:f.isOriginalColorEdition,
             isRevival:             f.isRevival,
@@ -270,7 +270,6 @@ export default function FigurineFormPage() {
     if (!form.name.trim())    newErrors.name    = "Name is required";
     if (!form.lineUpId)       newErrors.lineUpId = "Line Up is required";
     if (!form.seriesId)       newErrors.seriesId = "Series is required";
-    if (!form.groupId)        newErrors.groupId  = "Group is required";
 
     form.officialImageUrls.forEach((url, i) => {
       if (url.trim()) {
@@ -319,7 +318,7 @@ export default function FigurineFormPage() {
       name:                  form.name.trim(),
       lineUpId:              Number(form.lineUpId),
       seriesId:              Number(form.seriesId),
-      groupId:               Number(form.groupId),
+      ...(form.groupId ? { groupId: Number(form.groupId) } : {}),
       isMetalBody:           form.isMetalBody,
       isOriginalColorEdition:form.isOriginalColorEdition,
       isRevival:             form.isRevival,
@@ -418,13 +417,15 @@ export default function FigurineFormPage() {
             ] as { key: "lineUpId" | "seriesId" | "groupId"; label: string; items: Catalog[] }[]).map(({ key, label, items }) => (
               <Grid key={key} size={{ xs: 12, sm: 4 }}>
                 <TextField
-                  select required fullWidth
+                  select fullWidth
+                  required={key !== "groupId"}
                   label={label}
                   value={form[key]}
                   onChange={(e) => setField(key, e.target.value)}
                   error={Boolean(errors[key])}
                   helperText={errors[key]}
                 >
+                  {key === "groupId" && <MenuItem value=""><em>None</em></MenuItem>}
                   {items.map((it) => (
                     <MenuItem key={it.id} value={String(it.id)}>{it.description}</MenuItem>
                   ))}

@@ -110,7 +110,7 @@ export default function FigurineDetailPage() {
   const catalogDetails = [
     { label: "Series", value: figurine.series.description },
     { label: "Line Up", value: figurine.lineUp.description },
-    { label: "Group", value: figurine.group.description },
+    { label: "Group", value: figurine.group?.description },
     { label: "Distribution", value: figurine.distribution?.description },
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
 

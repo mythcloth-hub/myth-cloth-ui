@@ -85,6 +85,14 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
   return (
     <Card
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       sx={{
         height: "100%",
         display: "flex",
@@ -233,18 +241,20 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
           {figurine.series.description}
         </Typography>
 
-        <Typography
-          variant="caption"
-          sx={{
-            color: "rgba(212, 175, 55, 0.55)",
-            display: "block",
-            fontSize: "0.68rem",
-          }}
-          noWrap
-          title={figurine.group.description}
-        >
-          {figurine.group.description}
-        </Typography>
+        {figurine.group?.description && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: "rgba(212, 175, 55, 0.55)",
+              display: "block",
+              fontSize: "0.68rem",
+            }}
+            noWrap
+            title={figurine.group.description}
+          >
+            {figurine.group.description}
+          </Typography>
+        )}
 
         {/* Release status + date in one compact line */}
         {statusCfg && (
@@ -406,7 +416,7 @@ export default function FigurineCollectionPage() {
       results = results.filter((f) => String(f.series.id) === series);
     }
     if (group) {
-      results = results.filter((f) => String(f.group.id) === group);
+      results = results.filter((f) => String(f.group?.id) === group);
     }
     if (revival === "true")        results = results.filter((f) => f.isRevival === true);
     if (revival === "false")       results = results.filter((f) => f.isRevival === false);
@@ -478,7 +488,7 @@ export default function FigurineCollectionPage() {
   const clearAllFilters     = () => setSearchParams(query ? { q: query, page: "1" } : { page: "1" });
 
   return (
-    <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
+        <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
       <Box
         sx={{
           position: "sticky",

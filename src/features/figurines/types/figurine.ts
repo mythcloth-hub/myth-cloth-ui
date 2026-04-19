@@ -40,7 +40,7 @@ export type Figurine = {
   distribution?: CatalogRef;
   lineUp: CatalogRef;
   series: CatalogRef;
-  group: CatalogRef;
+  group?: CatalogRef;
   isMetalBody: boolean;
   isOriginalColorEdition: boolean;
   isRevival: boolean;
