@@ -75,7 +75,7 @@ type FormErrors = Partial<Record<string, string>>;
 const emptyDistributor = (): DistributorEntry => ({
   distributorId: "",
   currency: "JPY",
-  price: "0",
+  price: "",
   preorderOpensAt: "",
   releaseDate: "",
   releaseDateConfirmed: false,
@@ -274,6 +274,21 @@ export default function FigurineFormPage() {
     if (!form.name.trim())    newErrors.name    = "Name is required";
     if (!form.lineUpId)       newErrors.lineUpId = "Line Up is required";
     if (!form.seriesId)       newErrors.seriesId = "Series is required";
+
+    form.distributors.forEach((d, i) => {
+      if (!d.distributorId) return;
+
+      const priceRaw = d.price.trim();
+      const priceValue = Number(priceRaw);
+      if (!priceRaw || priceValue === 0) {
+        newErrors[`dist_${i}_price`] = "Price is required";
+        return;
+      }
+
+      if (!Number.isFinite(priceValue) || priceValue < 0) {
+        newErrors[`dist_${i}_price`] = "Price must be a valid number";
+      }
+    });
 
     form.officialImageUrls.forEach((url, i) => {
       if (url.trim()) {
@@ -631,6 +646,7 @@ export default function FigurineFormPage() {
                     label="Price"
                     type="number"
                     fullWidth
+                    required={Boolean(d.distributorId)}
                     value={d.price}
                     onChange={(e) => setDistributorField(i, "price", e.target.value)}
                     error={Boolean(errors[`dist_${i}_price`])}
