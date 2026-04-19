@@ -45,6 +45,16 @@ const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: strin
   UNRELEASED: { label: "Unreleased", color: "#ef5350", borderColor: "rgba(239,83,80,0.30)", hoverGlow: "rgba(239,83,80,0.14)" },
 };
 
+const STATUS_ORDER: ReleaseStatus[] = ["ANNOUNCED", "RELEASED", "PROTOTYPE", "UNRELEASED", "RUMORED"];
+
+const STATUS_HELPER_TEXT: Record<ReleaseStatus, string> = {
+  RELEASED: "Already available in the market.",
+  ANNOUNCED: "Future releases that were officially announced.",
+  RUMORED: "Unconfirmed releases with circulating information.",
+  PROTOTYPE: "Prototype-stage figures; design may still change.",
+  UNRELEASED: "Canceled or indefinitely unreleased figures.",
+};
+
 function getBadges(f: Figurine): Badge[] {
   const badges: Badge[] = [];
   if (f.isOriginalColorEdition) badges.push({ label: "OCE",          color: "warning" });
@@ -500,6 +510,22 @@ export default function FigurineCollectionPage() {
   const displayTotal   = isFilterMode ? filteredFigurines.length : totalElements;
   const displayPages   = isFilterMode ? filterTotalPages : totalPages;
 
+  const groupedByStatus = useMemo(() => {
+    const grouped: Record<ReleaseStatus, Figurine[]> = {
+      RELEASED: [],
+      ANNOUNCED: [],
+      RUMORED: [],
+      PROTOTYPE: [],
+      UNRELEASED: [],
+    };
+
+    displayItems.forEach((fig) => {
+      grouped[fig.releaseStatus].push(fig);
+    });
+
+    return grouped;
+  }, [displayItems]);
+
   // Build params preserving all active filters; override value "" removes that key
   const makeParams = (overrides: Record<string, string>) => {
     const p: Record<string, string> = {};
@@ -753,29 +779,72 @@ export default function FigurineCollectionPage() {
         )}
       </Box>
 
-      {/* Grid */}
-      <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-        {displayLoading
-          ? Array.from({ length: PAGE_SIZE }).map((_, i) => (
-              <Grid key={i} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
-                <CardSkeleton />
-              </Grid>
-            ))
-          : displayItems.map((fig) => (
-              <Grid key={fig.id} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
-                <FigurineCard
-                  figurine={fig}
-                  onClick={() => {
-                    sessionStorage.setItem(
-                      "figurineNavList",
-                      JSON.stringify(displayItems.map((f) => f.id))
-                    );
-                    navigate(`/figurines/${fig.id}`);
-                  }}
-                />
-              </Grid>
-            ))}
-      </Grid>
+      {/* Grid / Status board */}
+      {displayLoading ? (
+        <Grid container spacing={{ xs: 1.5, sm: 2 }}>
+          {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+            <Grid key={i} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
+              <CardSkeleton />
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          {STATUS_ORDER.map((status) => {
+            const sectionItems = groupedByStatus[status];
+            if (!sectionItems.length) return null;
+            const cfg = RELEASE_STATUS_CONFIG[status];
+
+            return (
+              <Box
+                key={status}
+                sx={{
+                  borderRadius: 2,
+                  p: { xs: 1, sm: 1.5 },
+                  bgcolor: "rgba(255,255,255,0.02)",
+                  border: `1px solid ${cfg.borderColor}`,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: 0.5 }}>
+                  <Chip
+                    label={cfg.label}
+                    size="small"
+                    sx={{
+                      bgcolor: cfg.color,
+                      color: "#fff",
+                      fontWeight: 700,
+                      "& .MuiChip-label": { color: "#fff" },
+                    }}
+                  />
+                  <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.72rem" }}>
+                    {sectionItems.length} figurine{sectionItems.length !== 1 ? "s" : ""}
+                  </Typography>
+                </Box>
+                <Typography variant="caption" sx={{ color: "text.disabled", display: "block", mb: 1.5 }}>
+                  {STATUS_HELPER_TEXT[status]}
+                </Typography>
+
+                <Grid container spacing={{ xs: 1.5, sm: 2 }}>
+                  {sectionItems.map((fig) => (
+                    <Grid key={fig.id} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
+                      <FigurineCard
+                        figurine={fig}
+                        onClick={() => {
+                          sessionStorage.setItem(
+                            "figurineNavList",
+                            JSON.stringify(displayItems.map((f) => f.id))
+                          );
+                          navigate(`/figurines/${fig.id}`);
+                        }}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            );
+          })}
+        </Box>
+      )}
 
       {/* Empty state */}
       {!displayLoading && displayItems.length === 0 && !errorMessage && (
