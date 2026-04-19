@@ -22,11 +22,15 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import axios from "axios";
+import dayjs from "dayjs";
 
 import { getFigurineById, createFigurine, updateFigurine, deleteFigurine } from "../api/figurineApi";
 import { groupsApi, lineupsApi, seriesApi } from "../../catalogs/api/catalogApi";
@@ -389,8 +393,9 @@ export default function FigurineFormPage() {
         </Typography>
       </Box>
 
-      <Paper sx={{ p: { xs: 2, sm: 3 } }}>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Paper sx={{ p: { xs: 2, sm: 3 } }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 
           {serverError && (
             <Alert severity="error" onClose={() => setServerError(null)}>{serverError}</Alert>
@@ -634,23 +639,29 @@ export default function FigurineFormPage() {
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
+                  <DatePicker
                     label="Pre-order Opens"
-                    type="date"
-                    fullWidth
-                    value={d.preorderOpensAt}
-                    onChange={(e) => setDistributorField(i, "preorderOpensAt", e.target.value)}
-                    slotProps={{ inputLabel: { shrink: true } }}
+                    format="YYYY-MM-DD"
+                    value={d.preorderOpensAt ? dayjs(d.preorderOpensAt) : null}
+                    onChange={(value) => setDistributorField(i, "preorderOpensAt", value ? value.format("YYYY-MM-DD") : "")}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                      },
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
+                  <DatePicker
                     label="Release Date"
-                    type="date"
-                    fullWidth
-                    value={d.releaseDate}
-                    onChange={(e) => setDistributorField(i, "releaseDate", e.target.value)}
-                    slotProps={{ inputLabel: { shrink: true } }}
+                    format="YYYY-MM-DD"
+                    value={d.releaseDate ? dayjs(d.releaseDate) : null}
+                    onChange={(value) => setDistributorField(i, "releaseDate", value ? value.format("YYYY-MM-DD") : "")}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                      },
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
@@ -694,8 +705,9 @@ export default function FigurineFormPage() {
             </Button>
           </Box>
 
-        </Box>
-      </Paper>
+          </Box>
+        </Paper>
+      </LocalizationProvider>
 
       <Snackbar
         open={Boolean(successMessage)}
