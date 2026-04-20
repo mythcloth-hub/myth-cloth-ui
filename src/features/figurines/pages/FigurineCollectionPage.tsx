@@ -29,6 +29,7 @@ import TuneIcon from "@mui/icons-material/Tune";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
 import { getFigurines } from "../api/figurineApi";
+import { countryCodeToFlag } from "../../../utils/countryFlag";
 import { lineupsApi, seriesApi, groupsApi } from "../../catalogs/api/catalogApi";
 import type { Catalog } from "../../catalogs/types/catalog";
 import type { Figurine, ReleaseStatus } from "../types/figurine";
@@ -115,6 +116,12 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
   const isAnnounced = figurine.releaseStatus === "ANNOUNCED";
   const isReleased = figurine.releaseStatus === "RELEASED";
   const isUnreleased = figurine.releaseStatus === "UNRELEASED";
+
+  // Get all distributor flags (unique by country code)
+  const distributorFlags = (figurine.distributors || [])
+    .map((d) => d.distributor?.countryCode)
+    .filter(Boolean)
+    .map((code) => countryCodeToFlag(code));
 
   return (
     <Card
@@ -336,7 +343,7 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
           </Typography>
         )}
 
-        {/* Release status + date in one compact line */}
+        {/* Release status + date in one compact line, with distributor flags at the end */}
         {statusCfg && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.75 }}>
             <Box
@@ -357,6 +364,13 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
             >
               {releaseDateLabel ? `${statusCfg.label} - ${releaseDateLabel}` : statusCfg.label}
             </Typography>
+            {distributorFlags.length > 0 && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, ml: 0.5 }}>
+                {distributorFlags.map((flag, idx) => (
+                  <span key={idx} style={{ fontSize: "1.08rem", lineHeight: 1 }}>{flag}</span>
+                ))}
+              </Box>
+            )}
           </Box>
         )}
       </CardContent>
