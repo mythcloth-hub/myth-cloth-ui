@@ -394,7 +394,8 @@ export default function FigurineCollectionPage() {
       sessionStorage.removeItem("figurineCollectionSearch");
     }
   }, [searchParams]);
-  const query  = searchParams.get("q")      ?? "";
+  const query  = searchParams.get("name")      ?? "";
+  const [searchInput, setSearchInput] = useState(query);
   const lineup  = searchParams.get("lineup") ?? "";
   const series  = searchParams.get("series") ?? "";
   const group   = searchParams.get("group")  ?? "";
@@ -433,7 +434,7 @@ export default function FigurineCollectionPage() {
   const [filtersOpen,    setFiltersOpen]    = useState(false);
 
   const isFilterMode =
-    Boolean(query) || Boolean(lineup) || Boolean(series) || Boolean(group) ||
+    Boolean(lineup) || Boolean(series) || Boolean(group) ||
     Boolean(revival) || Boolean(metalBody) || Boolean(originalColor) || Boolean(plainCloth) ||
     Boolean(battleDamaged) || Boolean(goldenArmor) || Boolean(gold24k) ||
     Boolean(manga) || Boolean(multiPack) || Boolean(articulable);
@@ -447,12 +448,26 @@ export default function FigurineCollectionPage() {
     groupsApi.getAll().then(setGroupOptions).catch(console.error);
   }, []);
 
-  // Fetch paginated data (normal browse mode)
+  // Debounced search effect for search bar (only if >= 3 chars)
+  useEffect(() => {
+    if (isFilterMode) return;
+    const handler = setTimeout(() => {
+      if (searchInput.length === 0 || searchInput.length >= 3) {
+        setSearchParams(makeParams({ name: searchInput }));
+      }
+    }, 350);
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  // Fetch paginated data (normal browse mode, with server-side search by name)
   useEffect(() => {
     if (isFilterMode) return;
     setLoading(true);
     setFigurines([]);
-    getFigurines(page - 1, PAGE_SIZE)
+    const params: Record<string, any> = {};
+    if (query) params.name = query;
+    getFigurines(page - 1, PAGE_SIZE, params)
       .then((data) => {
         setFigurines(data.content);
         setTotalPages(data.totalPages);
@@ -463,7 +478,7 @@ export default function FigurineCollectionPage() {
         setErrorMessage("Failed to load figurines. Please check your connection and try again.");
       })
       .finally(() => setLoading(false));
-  }, [page, isFilterMode]);
+  }, [page, isFilterMode, query]);
 
   // Fetch full collection once when filter mode is first activated
   useEffect(() => {
@@ -549,7 +564,7 @@ export default function FigurineCollectionPage() {
   // Build params preserving all active filters; override value "" removes that key
   const makeParams = (overrides: Record<string, string>) => {
     const p: Record<string, string> = {};
-    if (query)        p.q            = query;
+    if (query)        p.name            = query;
     if (lineup)       p.lineup       = lineup;
     if (series)       p.series       = series;
     if (group)        p.group        = group;
@@ -575,13 +590,18 @@ export default function FigurineCollectionPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSearch        = (value: string) => setSearchParams(makeParams({ q: value.trim() }));
-  const handleClearSearch   = ()              => setSearchParams(makeParams({ q: "" }));
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+  };
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setSearchParams(makeParams({ name: "" }));
+  };
   const handleLineupChange  = (value: string) => setSearchParams(makeParams({ lineup:  value }));
   const handleSeriesChange  = (value: string) => setSearchParams(makeParams({ series:  value }));
   const handleGroupChange   = (value: string) => setSearchParams(makeParams({ group:   value }));
   const handleBoolChange    = (key: string, value: string) => setSearchParams(makeParams({ [key]: value }));
-  const clearAllFilters     = () => setSearchParams(query ? { q: query, page: "1" } : { page: "1" });
+  const clearAllFilters     = () => setSearchParams(query ? { name: query, page: "1" } : { page: "1" });
 
   return (
         <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -616,11 +636,8 @@ export default function FigurineCollectionPage() {
           <TextField
             size="small"
             placeholder="Search by name…"
-            defaultValue={query}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSearch((e.target as HTMLInputElement).value);
-            }}
-            onBlur={(e) => handleSearch(e.target.value)}
+            value={searchInput}
+            onChange={handleSearchInputChange}
             sx={{ flex: 1, maxWidth: 480 }}
             slotProps={{
               input: {
@@ -629,7 +646,7 @@ export default function FigurineCollectionPage() {
                     <SearchIcon sx={{ color: "text.disabled", fontSize: 20 }} />
                   </InputAdornment>
                 ),
-                endAdornment: query ? (
+                endAdornment: searchInput ? (
                   <InputAdornment position="end">
                     <IconButton size="small" onClick={handleClearSearch} sx={{ color: "text.disabled" }}>
                       <ClearIcon fontSize="small" />
