@@ -412,8 +412,10 @@ export default function FigurineCollectionPage() {
 
   // Persist current search params so the sidebar can restore them
   useEffect(() => {
+    // Only update sessionStorage if the page param is present (prevents double fetch on initial mount)
     const qs = searchParams.toString();
-    if (qs) {
+    const hasPage = searchParams.get("page");
+    if (qs && hasPage) {
       sessionStorage.setItem("figurineCollectionSearch", qs);
     } else {
       sessionStorage.removeItem("figurineCollectionSearch");
@@ -477,13 +479,14 @@ export default function FigurineCollectionPage() {
   useEffect(() => {
     if (isFilterMode) return;
     const handler = setTimeout(() => {
-      if (searchInput.length === 0 || searchInput.length >= 3) {
+      // Only update search params if the search input is different from the current query param
+      if ((searchInput.length === 0 || searchInput.length >= 3) && searchInput !== query) {
         setSearchParams(makeParams({ name: searchInput }));
       }
     }, 350);
     return () => clearTimeout(handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput]);
+  }, [searchInput, query]);
 
   // Fetch paginated data (normal browse mode, with server-side search by name)
   useEffect(() => {
@@ -587,6 +590,11 @@ export default function FigurineCollectionPage() {
   }, [displayItems]);
 
   // Build params preserving all active filters; override value "" removes that key
+  /**
+   * Builds search params for navigation and filter/search changes.
+   * If a filter/search is changed (overrides contains a key other than 'page'), resets page to 1.
+   * If only page is changed, preserves the page.
+   */
   const makeParams = (overrides: Record<string, string>) => {
     const p: Record<string, string> = {};
     if (query)        p.name            = query;
@@ -603,7 +611,16 @@ export default function FigurineCollectionPage() {
     if (manga)        p.manga        = manga;
     if (multiPack)    p.multiPack    = multiPack;
     if (articulable)  p.articulable  = articulable;
-    p.page = "1";
+
+    // If any override key is not 'page', reset page to 1
+    const overrideKeys = Object.keys(overrides).filter((k) => k !== 'page');
+    if (overrideKeys.length > 0) {
+      p.page = "1";
+    } else {
+      // Otherwise, preserve current page
+      p.page = String(page);
+    }
+
     for (const [k, v] of Object.entries(overrides)) {
       if (v) p[k] = v; else delete p[k];
     }
@@ -896,7 +913,8 @@ export default function FigurineCollectionPage() {
                             "figurineNavList",
                             JSON.stringify(displayItems.map((f) => f.id))
                           );
-                          navigate(`/figurines/${fig.id}`);
+                          // Preserve current search params (including page) in the detail URL
+                          navigate(`/figurines/${fig.id}?${searchParams.toString()}`);
                         }}
                       />
                     </Grid>
