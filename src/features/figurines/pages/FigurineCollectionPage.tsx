@@ -33,6 +33,8 @@ import { countryCodeToFlag } from "../../../utils/countryFlag";
 import { lineupsApi, seriesApi, groupsApi } from "../../catalogs/api/catalogApi";
 import type { Catalog } from "../../catalogs/types/catalog";
 import type { Figurine, ReleaseStatus } from "../types/figurine";
+import AnniversaryIcon from "./AnniversaryIcon";
+import { Tooltip } from "@mui/material";
 
 const PAGE_SIZE = 24;
 
@@ -122,6 +124,8 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
     .map((d) => d.distributor?.countryCode)
     .filter(Boolean)
     .map((code) => countryCodeToFlag(code));
+
+  const hasAnniversary = Boolean((figurine as any).anniversary);
 
   return (
     <Card
@@ -253,7 +257,7 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
         />
 
         {/* Edition badges – top-right corner */}
-        {badges.length > 0 && (
+        {(badges.length > 0 || hasAnniversary) && (
           <Box
             sx={{
               position: "absolute",
@@ -287,6 +291,13 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
                 }}
               />
             ))}
+            {hasAnniversary && (
+              <Tooltip title={(figurine as any).anniversary?.description || "Anniversary Edition"} arrow>
+                <span>
+                  <AnniversaryIcon sx={{ fontSize: 22, color: "#bfa100", bgcolor: "#fffde7", borderRadius: "50%", boxShadow: 1, p: 0.2 }} />
+                </span>
+              </Tooltip>
+            )}
           </Box>
         )}
 
