@@ -68,8 +68,16 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   const handleClick = (path: string) => {
     if (path === "/figurines") {
+      // Remove page param from sessionStorage so Collection always goes to page 1
       const saved = sessionStorage.getItem("figurineCollectionSearch");
-      navigate(saved ? `${path}?${saved}` : path);
+      if (saved) {
+        const params = new URLSearchParams(saved);
+        params.set("page", "1");
+        sessionStorage.setItem("figurineCollectionSearch", params.toString());
+        navigate(`${path}?${params.toString()}`);
+      } else {
+        navigate(path);
+      }
     } else {
       navigate(path);
     }
