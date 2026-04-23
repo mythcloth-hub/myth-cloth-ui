@@ -37,12 +37,7 @@ const DISTRIBUTOR_NAMES: { label: string; value: string }[] = [
   { value: "DTM",              label: "Distribuidora Toyvision México" },
 ];
 
-const countryCodeToFlag = (code: string) =>
-  code
-    .toUpperCase()
-    .split("")
-    .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
-    .join("");
+import { countryCodeToFlag } from "../../../utils/countryFlag";
 
 const COUNTRIES: { value: string; label: string }[] = [
   { value: "CN", label: "China" },

@@ -1,29 +1,38 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMediaQuery, useTheme } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-
-import { Box, Typography, Tooltip, IconButton, Button, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Tooltip,
+  IconButton,
+  Button,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
-
-import { getAllDistributors, deleteDistributor } from "../api/distributorApi";
-import type { Distributor } from "../types/distributor";
 import type { GridColDef } from "@mui/x-data-grid";
-import { countryCodeToFlag } from "../../../utils/countryFlag";
 
-function CustomNoRowsOverlay() {
-  return (
-    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 1 }}>
-      <Typography variant="body1" color="text.secondary">No distributors yet.</Typography>
-      <Typography variant="body2" color="text.secondary">Click + Add Distributor to get started.</Typography>
-    </Box>
-  );
-}
+import { catalogApiMap } from "../api/catalogApi";
+import { CATALOG_META } from "../types/catalog";
+import type { Catalog, CatalogType } from "../types/catalog";
 
-export default function DistributorListPage() {
-  const [distributors, setDistributors] = useState<Distributor[]>([]);
+export default function CatalogListPage() {
+  const { catalogType } = useParams<{ catalogType: string }>();
+  const navigate = useNavigate();
+
+  const api = catalogApiMap[catalogType as CatalogType];
+  const meta = CATALOG_META[catalogType as CatalogType];
+  const { plural, singular } = meta ?? { plural: "Entries", singular: "Entry" };
+
+  const [items, setItems] = useState<Catalog[]>([]);
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -31,25 +40,24 @@ export default function DistributorListPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
   const loadData = async () => {
+    if (!api) { setLoading(false); return; }
     try {
-      const data = await getAllDistributors();
-      setDistributors(data);
+      const data = await api.getAll();
+      setItems(data);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to load distributors. Please check your connection and try again.");
+      setErrorMessage(`Failed to load ${plural.toLowerCase()}. Please check your connection and try again.`);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    setLoading(true);
+    setItems([]);
     loadData();
-  }, []);
+  }, [catalogType]);
 
   const handleDeleteClick = (id: number) => {
     setPendingDeleteId(id);
@@ -57,70 +65,38 @@ export default function DistributorListPage() {
   };
 
   const handleConfirmDelete = async () => {
-    if (pendingDeleteId === null) return;
+    if (pendingDeleteId === null || !api) return;
     setConfirmOpen(false);
     setDeleting(true);
     try {
-      await deleteDistributor(pendingDeleteId);
+      await api.remove(pendingDeleteId);
       await loadData();
       setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to delete distributor. Please try again.");
+      setErrorMessage("Failed to delete entry. Please try again.");
     } finally {
       setDeleting(false);
       setPendingDeleteId(null);
     }
   };
 
+  const NoRowsOverlay = useMemo(
+    () => () => (
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 1 }}>
+        <Typography variant="body1" color="text.secondary">No {plural.toLowerCase()} yet.</Typography>
+        <Typography variant="body2" color="text.secondary">Click + Add {singular} to get started.</Typography>
+      </Box>
+    ),
+    [plural, singular],
+  );
+
   const columns: GridColDef[] = [
-    {
-      field: "description",
-      headerName: "Description",
-      flex: 2,
-    },
-    {
-      field: "countryCode",
-      headerName: "Country",
-      width: 130,
-      sortable: false,
-      renderCell: (params) => (
-        <Tooltip title={params.value}>
-          <span style={{ fontSize: "1.5rem" }}>
-            {countryCodeToFlag(params.value)}
-          </span>
-        </Tooltip>
-      )
-    },
-    {
-      field: "website",
-      headerName: "Website",
-      width: 120,
-      align: "center",
-      headerAlign: "center",
-      sortable: false,
-      renderCell: (params) =>
-        params.value ? (
-          <Tooltip title={params.value}>
-            <IconButton
-              component="a"
-              href={params.value}
-              target="_blank"
-              rel="noopener noreferrer"
-              size="small"
-              sx={{ color: "secondary.main", "&:hover": { color: "primary.main" } }}
-            >
-              <OpenInNewIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        ) : (
-          ""
-        ),
-    },
+    { field: "description", headerName: "Description", flex: 1 },
     {
       field: "actions",
       headerName: "Actions",
-      width: 130,
+      width: 120,
       sortable: false,
       align: "center",
       headerAlign: "center",
@@ -129,7 +105,7 @@ export default function DistributorListPage() {
           <Tooltip title="Edit">
             <IconButton
               size="small"
-              onClick={() => navigate(`/distributors/edit/${params.row.id}`)}
+              onClick={() => navigate(`/catalogs/${catalogType}/edit/${params.row.id}`)}
               sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
             >
               <EditIcon fontSize="small" />
@@ -146,40 +122,37 @@ export default function DistributorListPage() {
           </Tooltip>
         </>
       ),
-    }
+    },
   ];
 
   return (
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
         <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
-          Distributors
+          {plural}
         </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate("/distributors/new")}
-        >
-          + Add Distributor
+        <Button variant="contained" onClick={() => navigate(`/catalogs/${catalogType}/new`)}>
+          + Add {singular}
         </Button>
       </Box>
 
       <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>
         <DataGrid
-          rows={distributors}
+          rows={items}
           columns={columns}
           loading={loading}
           getRowId={(row) => row.id}
-          columnVisibilityModel={{ website: !isMobile }}
-          onRowDoubleClick={(params) => navigate(`/distributors/edit/${params.row.id}`)}
-          slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+          onRowDoubleClick={(params) => navigate(`/catalogs/${catalogType}/edit/${params.row.id}`)}
+          slots={{ noRowsOverlay: NoRowsOverlay }}
           sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
         />
       </div>
+
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <DialogTitle>Delete Distributor</DialogTitle>
+        <DialogTitle>Delete {singular}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this distributor? This action cannot be undone.
+            Are you sure you want to delete this entry? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -189,6 +162,7 @@ export default function DistributorListPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={5000}
@@ -196,7 +170,7 @@ export default function DistributorListPage() {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert severity="success" onClose={() => setSnackbarOpen(false)}>
-          Distributor deleted successfully.
+          {singular} deleted successfully.
         </Alert>
       </Snackbar>
       <Snackbar

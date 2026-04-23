@@ -1,29 +1,39 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMediaQuery, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-
-import { Box, Typography, Tooltip, IconButton, Button, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Tooltip,
+  IconButton,
+  Button,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
-
-import { getAllDistributors, deleteDistributor } from "../api/distributorApi";
-import type { Distributor } from "../types/distributor";
 import type { GridColDef } from "@mui/x-data-grid";
-import { countryCodeToFlag } from "../../../utils/countryFlag";
 
-function CustomNoRowsOverlay() {
+import { getAllAnniversaries, deleteAnniversary } from "../api/anniversaryApi";
+import type { Anniversary } from "../types/anniversary";
+
+function NoRowsOverlay() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 1 }}>
-      <Typography variant="body1" color="text.secondary">No distributors yet.</Typography>
-      <Typography variant="body2" color="text.secondary">Click + Add Distributor to get started.</Typography>
+      <Typography variant="body1" color="text.secondary">No anniversaries yet.</Typography>
+      <Typography variant="body2" color="text.secondary">Click + Add Anniversary to get started.</Typography>
     </Box>
   );
 }
 
-export default function DistributorListPage() {
-  const [distributors, setDistributors] = useState<Distributor[]>([]);
+export default function AnniversaryListPage() {
+  const [items, setItems] = useState<Anniversary[]>([]);
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -32,16 +42,14 @@ export default function DistributorListPage() {
   const [deleting, setDeleting] = useState(false);
 
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const loadData = async () => {
     try {
-      const data = await getAllDistributors();
-      setDistributors(data);
+      const data = await getAllAnniversaries();
+      setItems(data);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to load distributors. Please check your connection and try again.");
+      setErrorMessage("Failed to load anniversaries. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -61,12 +69,12 @@ export default function DistributorListPage() {
     setConfirmOpen(false);
     setDeleting(true);
     try {
-      await deleteDistributor(pendingDeleteId);
+      await deleteAnniversary(pendingDeleteId);
       await loadData();
       setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to delete distributor. Please try again.");
+      setErrorMessage("Failed to delete anniversary. Please try again.");
     } finally {
       setDeleting(false);
       setPendingDeleteId(null);
@@ -74,53 +82,12 @@ export default function DistributorListPage() {
   };
 
   const columns: GridColDef[] = [
-    {
-      field: "description",
-      headerName: "Description",
-      flex: 2,
-    },
-    {
-      field: "countryCode",
-      headerName: "Country",
-      width: 130,
-      sortable: false,
-      renderCell: (params) => (
-        <Tooltip title={params.value}>
-          <span style={{ fontSize: "1.5rem" }}>
-            {countryCodeToFlag(params.value)}
-          </span>
-        </Tooltip>
-      )
-    },
-    {
-      field: "website",
-      headerName: "Website",
-      width: 120,
-      align: "center",
-      headerAlign: "center",
-      sortable: false,
-      renderCell: (params) =>
-        params.value ? (
-          <Tooltip title={params.value}>
-            <IconButton
-              component="a"
-              href={params.value}
-              target="_blank"
-              rel="noopener noreferrer"
-              size="small"
-              sx={{ color: "secondary.main", "&:hover": { color: "primary.main" } }}
-            >
-              <OpenInNewIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        ) : (
-          ""
-        ),
-    },
+    { field: "description", headerName: "Description", flex: 2 },
+    { field: "year", headerName: "Year", width: 100 },
     {
       field: "actions",
       headerName: "Actions",
-      width: 130,
+      width: 120,
       sortable: false,
       align: "center",
       headerAlign: "center",
@@ -129,7 +96,7 @@ export default function DistributorListPage() {
           <Tooltip title="Edit">
             <IconButton
               size="small"
-              onClick={() => navigate(`/distributors/edit/${params.row.id}`)}
+              onClick={() => navigate(`/anniversaries/edit/${params.row.id}`)}
               sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
             >
               <EditIcon fontSize="small" />
@@ -146,40 +113,37 @@ export default function DistributorListPage() {
           </Tooltip>
         </>
       ),
-    }
+    },
   ];
 
   return (
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
         <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
-          Distributors
+          Anniversaries
         </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate("/distributors/new")}
-        >
-          + Add Distributor
+        <Button variant="contained" onClick={() => navigate("/anniversaries/new")}>
+          + Add Anniversary
         </Button>
       </Box>
 
       <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>
         <DataGrid
-          rows={distributors}
+          rows={items}
           columns={columns}
           loading={loading}
           getRowId={(row) => row.id}
-          columnVisibilityModel={{ website: !isMobile }}
-          onRowDoubleClick={(params) => navigate(`/distributors/edit/${params.row.id}`)}
-          slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+          onRowDoubleClick={(params) => navigate(`/anniversaries/edit/${params.row.id}`)}
+          slots={{ noRowsOverlay: NoRowsOverlay }}
           sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
         />
       </div>
+
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <DialogTitle>Delete Distributor</DialogTitle>
+        <DialogTitle>Delete Anniversary</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this distributor? This action cannot be undone.
+            Are you sure you want to delete this anniversary? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -189,6 +153,7 @@ export default function DistributorListPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={5000}
@@ -196,7 +161,7 @@ export default function DistributorListPage() {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert severity="success" onClose={() => setSnackbarOpen(false)}>
-          Distributor deleted successfully.
+          Anniversary deleted successfully.
         </Alert>
       </Snackbar>
       <Snackbar
