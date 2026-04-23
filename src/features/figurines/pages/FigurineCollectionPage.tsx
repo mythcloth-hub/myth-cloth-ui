@@ -403,7 +403,7 @@ function CardSkeleton() {
 }
 
 // How many results per page when browsing normally or searching
-const SEARCH_BATCH = 5000; // fetch all to enable full-collection search
+// Removed SEARCH_BATCH and filter mode logic
 
 export default function FigurineCollectionPage() {
   const navigate = useNavigate();
@@ -438,16 +438,11 @@ export default function FigurineCollectionPage() {
   const articulable   = searchParams.get("articulable")   ?? "";
   const page    = Number(searchParams.get("page") ?? "1");
 
-  // Normal-mode state (paginated from server)
+  // State for paginated data from server
   const [figurines,     setFigurines]     = useState<Figurine[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [totalPages,    setTotalPages]    = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-
-  // Filter-mode state (full collection cached locally)
-  const [allFigurines,  setAllFigurines]  = useState<Figurine[]>([]);
-  const [filterLoading, setFilterLoading] = useState(false);
-  const allFetched = useRef(false);
 
   // Lineup, series & group options for the dropdowns
   const [lineupOptions, setLineupOptions] = useState<Catalog[]>([]);
@@ -460,12 +455,6 @@ export default function FigurineCollectionPage() {
   );
   const [filtersOpen,    setFiltersOpen]    = useState(false);
 
-  const isFilterMode =
-    Boolean(lineup) || Boolean(series) || Boolean(group) ||
-    Boolean(revival) || Boolean(metalBody) || Boolean(originalColor) || Boolean(plainCloth) ||
-    Boolean(battleDamaged) || Boolean(goldenArmor) || Boolean(gold24k) ||
-    Boolean(manga) || Boolean(multiPack) || Boolean(articulable);
-
   const activeFilterCount = [lineup, series, group, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
 
   // Fetch dropdown options once on mount
@@ -477,9 +466,7 @@ export default function FigurineCollectionPage() {
 
   // Debounced search effect for search bar (only if >= 3 chars)
   useEffect(() => {
-    if (isFilterMode) return;
     const handler = setTimeout(() => {
-      // Only update search params if the search input is different from the current query param
       if ((searchInput.length === 0 || searchInput.length >= 3) && searchInput !== query) {
         setSearchParams(makeParams({ name: searchInput }));
       }
@@ -488,13 +475,16 @@ export default function FigurineCollectionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput, query]);
 
-  // Fetch paginated data (normal browse mode, with server-side search by name)
+  // Always fetch paginated data from server with current filters/search
   useEffect(() => {
-    if (isFilterMode) return;
     setLoading(true);
     setFigurines([]);
     const params: Record<string, any> = {};
+
     if (query) params.name = query;
+    if (lineup) params.lineUpId = lineup;
+    if (series) params.seriesId = series;
+
     getFigurines(page - 1, PAGE_SIZE, params)
       .then((data) => {
         setFigurines(data.content);
@@ -506,72 +496,18 @@ export default function FigurineCollectionPage() {
         setErrorMessage("Failed to load figurines. Please check your connection and try again.");
       })
       .finally(() => setLoading(false));
-  }, [page, isFilterMode, query]);
+  }, [page, query, lineup, series]);
 
-  // Fetch full collection once when filter mode is first activated
-  useEffect(() => {
-    if (!isFilterMode || allFetched.current) return;
-    setFilterLoading(true);
-    getFigurines(0, SEARCH_BATCH)
-      .then((data) => {
-        setAllFigurines(data.content);
-        allFetched.current = true;
-      })
-      .catch((err) => {
-        console.error(err);
-        setErrorMessage("Failed to load figurines for filtering.");
-      })
-      .finally(() => setFilterLoading(false));
-  }, [isFilterMode]);
+
 
   // Apply all active filters client-side
-  const filteredFigurines = useMemo(() => {
-    if (!isFilterMode) return [];
-    let results = allFigurines;
-    if (query) {
-      const q = query.toLowerCase();
-      results = results.filter((f) => f.name.toLowerCase().includes(q));
-    }
-    if (lineup) {
-      results = results.filter((f) => String(f.lineUp.id) === lineup);
-    }
-    if (series) {
-      results = results.filter((f) => String(f.series.id) === series);
-    }
-    if (group) {
-      results = results.filter((f) => String(f.group?.id) === group);
-    }
-    if (revival === "true")        results = results.filter((f) => f.isRevival === true);
-    if (revival === "false")       results = results.filter((f) => f.isRevival === false);
-    if (metalBody === "true")      results = results.filter((f) => f.isMetalBody === true);
-    if (metalBody === "false")     results = results.filter((f) => f.isMetalBody === false);
-    if (originalColor === "true")  results = results.filter((f) => f.isOriginalColorEdition === true);
-    if (originalColor === "false") results = results.filter((f) => f.isOriginalColorEdition === false);
-    if (plainCloth === "true")     results = results.filter((f) => f.isPlainCloth === true);
-    if (plainCloth === "false")    results = results.filter((f) => f.isPlainCloth === false);
-    if (battleDamaged === "true")  results = results.filter((f) => f.isBattleDamaged === true);
-    if (battleDamaged === "false") results = results.filter((f) => f.isBattleDamaged === false);
-    if (goldenArmor === "true")    results = results.filter((f) => f.isGoldenArmor === true);
-    if (goldenArmor === "false")   results = results.filter((f) => f.isGoldenArmor === false);
-    if (gold24k === "true")        results = results.filter((f) => f.isGold24kEdition === true);
-    if (gold24k === "false")       results = results.filter((f) => f.isGold24kEdition === false);
-    if (manga === "true")          results = results.filter((f) => f.isMangaVersion === true);
-    if (manga === "false")         results = results.filter((f) => f.isMangaVersion === false);
-    if (multiPack === "true")      results = results.filter((f) => f.isMultiPack === true);
-    if (multiPack === "false")     results = results.filter((f) => f.isMultiPack === false);
-    if (articulable === "true")    results = results.filter((f) => f.isArticulable === true);
-    if (articulable === "false")   results = results.filter((f) => f.isArticulable === false);
-    return results;
-  }, [query, lineup, series, group, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, allFigurines, isFilterMode]);
 
-  const filterTotalPages = Math.ceil(filteredFigurines.length / PAGE_SIZE);
-  const filterPageItems  = filteredFigurines.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // Unified display values
-  const displayLoading = isFilterMode ? filterLoading : loading;
-  const displayItems   = isFilterMode ? filterPageItems : figurines;
-  const displayTotal   = isFilterMode ? filteredFigurines.length : totalElements;
-  const displayPages   = isFilterMode ? filterTotalPages : totalPages;
+  const displayLoading = loading;
+  const displayItems   = figurines;
+  const displayTotal   = totalElements;
+  const displayPages   = totalPages;
 
   const groupedByStatus = useMemo(() => {
     const grouped: Record<ReleaseStatus, Figurine[]> = {
@@ -581,11 +517,9 @@ export default function FigurineCollectionPage() {
       PROTOTYPE: [],
       UNRELEASED: [],
     };
-
     displayItems.forEach((fig) => {
       grouped[fig.releaseStatus].push(fig);
     });
-
     return grouped;
   }, [displayItems]);
 
@@ -829,10 +763,9 @@ export default function FigurineCollectionPage() {
         {!displayLoading && (
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mt: activeFilterCount > 0 ? 1 : 0 }}>
             <Typography variant="body2" color="text.secondary">
-              {isFilterMode
-                ? `${displayTotal.toLocaleString()} result${displayTotal !== 1 ? "s" : ""}${query ? ` matching "${query}"` : ""}`
-                : displayTotal > 0 ? `${displayTotal.toLocaleString()} figurines · page ${page} of ${displayPages}` : null
-              }
+              {displayTotal > 0
+                ? `${displayTotal.toLocaleString()} figurine${displayTotal !== 1 ? "s" : ""}${query ? ` matching "${query}"` : ""} · page ${page} of ${displayPages}`
+                : null}
             </Typography>
             {displayPages > 1 && (
               <Pagination
@@ -939,7 +872,9 @@ export default function FigurineCollectionPage() {
           }}
         >
           <Typography variant="body1" color="text.secondary">
-            {isFilterMode ? "No figurines match the current filters." : "No figurines in the collection yet."}
+            {query || activeFilterCount > 0
+              ? "No figurines match the current filters."
+              : "No figurines in the collection yet."}
           </Typography>
         </Box>
       )}

@@ -4,9 +4,15 @@ import type { Figurine, PaginatedFigurines } from "../types/figurine";
 const BASE = "/figurines";
 
 // Accepts optional name param for filtering
-export const getFigurines = async (page = 0, size = 12, params?: { name?: string }): Promise<PaginatedFigurines> => {
+export const getFigurines = async (
+  page = 0,
+  size = 12,
+  params?: { name?: string; lineUpId?: string; seriesId?: string }
+): Promise<PaginatedFigurines> => {
   const queryParams: Record<string, any> = { page, size };
   if (params?.name) queryParams.name = params.name;
+  if (params?.lineUpId) queryParams.lineUpId = params.lineUpId;
+  if (params?.seriesId) queryParams.seriesId = params.seriesId;
   const res = await httpClient.get(BASE, { params: queryParams });
   return res.data;
 };
