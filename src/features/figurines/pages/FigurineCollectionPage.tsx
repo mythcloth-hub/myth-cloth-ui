@@ -484,6 +484,9 @@ export default function FigurineCollectionPage() {
     if (query) params.name = query;
     if (lineup) params.lineUpId = lineup;
     if (series) params.seriesId = series;
+    if (group) params.groupId = group;
+    if (metalBody) params.metalBody = metalBody;
+    if (originalColor) params.oce = originalColor;
 
     getFigurines(page - 1, PAGE_SIZE, params)
       .then((data) => {
@@ -496,7 +499,7 @@ export default function FigurineCollectionPage() {
         setErrorMessage("Failed to load figurines. Please check your connection and try again.");
       })
       .finally(() => setLoading(false));
-  }, [page, query, lineup, series]);
+  }, [page, query, lineup, series, group, metalBody, originalColor]);
 
 
 
