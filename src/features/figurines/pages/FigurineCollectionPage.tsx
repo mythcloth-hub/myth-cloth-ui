@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
   Badge,
@@ -488,6 +488,13 @@ export default function FigurineCollectionPage() {
     if (metalBody) params.metalBody = metalBody;
     if (originalColor) params.oce = originalColor;
     if (revival) params.revival = revival;
+    if (plainCloth) params.plainCloth = plainCloth;
+    if (battleDamaged) params.broken = battleDamaged;
+    if (goldenArmor) params.golden = goldenArmor;
+    if (gold24k) params.gold = gold24k;
+    if (manga) params.manga = manga;
+    if (multiPack) params.set = multiPack;
+    if (articulable) params.articulable = articulable;
 
     getFigurines(page - 1, PAGE_SIZE, params)
       .then((data) => {
@@ -500,7 +507,7 @@ export default function FigurineCollectionPage() {
         setErrorMessage("Failed to load figurines. Please check your connection and try again.");
       })
       .finally(() => setLoading(false));
-  }, [page, query, lineup, series, group, metalBody, originalColor, revival]);
+  }, [page, query, lineup, series, group, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable]);
 
 
 
