@@ -7,7 +7,7 @@ const BASE = "/figurines";
 export const getFigurines = async (
   page = 0,
   size = 12,
-  params?: { name?: string; lineUpId?: string; seriesId?: string; groupId?: string; metalBody?: boolean; oce?: boolean }
+  params?: { name?: string; lineUpId?: string; seriesId?: string; groupId?: string; metalBody?: boolean; oce?: boolean; revival?: boolean }
 ): Promise<PaginatedFigurines> => {
   const queryParams: Record<string, any> = { page, size };
   if (params?.name) queryParams.name = params.name;
@@ -16,6 +16,7 @@ export const getFigurines = async (
   if (params?.groupId) queryParams.groupId = params.groupId;
   if (params?.metalBody) queryParams.metalBody = params.metalBody;
   if (params?.oce) queryParams.oce = params.oce;
+  if (params?.revival) queryParams.revival = params.revival;
   const res = await httpClient.get(BASE, { params: queryParams });
   return res.data;
 };

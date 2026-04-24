@@ -487,6 +487,7 @@ export default function FigurineCollectionPage() {
     if (group) params.groupId = group;
     if (metalBody) params.metalBody = metalBody;
     if (originalColor) params.oce = originalColor;
+    if (revival) params.revival = revival;
 
     getFigurines(page - 1, PAGE_SIZE, params)
       .then((data) => {
@@ -499,7 +500,7 @@ export default function FigurineCollectionPage() {
         setErrorMessage("Failed to load figurines. Please check your connection and try again.");
       })
       .finally(() => setLoading(false));
-  }, [page, query, lineup, series, group, metalBody, originalColor]);
+  }, [page, query, lineup, series, group, metalBody, originalColor, revival]);
 
 
 
@@ -699,9 +700,9 @@ export default function FigurineCollectionPage() {
             </Select>
           </FormControl>
           {([
-            { key: "revival",       label: "Revival"        },
             { key: "metalBody",     label: "Metal Body"     },
-            { key: "originalColor", label: "Original Color" },
+            { key: "originalColor", label: "OCE" },
+            { key: "revival",       label: "Revival"        },
             { key: "plainCloth",    label: "Plain Cloth"    },
             { key: "battleDamaged", label: "Battle Damaged" },
             { key: "goldenArmor",   label: "Golden Armor"   },
