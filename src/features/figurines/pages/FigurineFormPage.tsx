@@ -96,7 +96,6 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 };
 
 const PRICE_INPUT_PATTERN = /^\d*(\.\d{0,2})?$/;
-const PRICE_SUBMIT_PATTERN = /^\d+(\.\d{1,2})?$/;
 const MAX_PRICE_INTEGER_PART = 50000;
 
 function isPriceIntegerPartWithinLimit(value: string): boolean {
@@ -304,20 +303,11 @@ export default function FigurineFormPage() {
 
       const priceRaw = d.price.trim();
       const priceValue = Number(priceRaw);
-      //if (!priceRaw || priceValue === 0) {
-      //  newErrors[`dist_${i}_price`] = "Price is required";
-      //  return;
-      //}
 
       if (!Number.isFinite(priceValue) || priceValue < 0) {
         newErrors[`dist_${i}_price`] = "Price must be a valid number";
         return;
       }
-
-      //if (!PRICE_SUBMIT_PATTERN.test(priceRaw)) {
-      //  newErrors[`dist_${i}_price`] = "Price can include up to 2 decimals";
-      //  return;
-      //}
 
       if (!isPriceIntegerPartWithinLimit(priceRaw)) {
         newErrors[`dist_${i}_price`] = `Price integer part cannot exceed ${MAX_PRICE_INTEGER_PART}`;
