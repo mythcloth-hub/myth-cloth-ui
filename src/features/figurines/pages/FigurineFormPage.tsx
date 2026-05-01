@@ -47,6 +47,7 @@ type DistributorEntry = {
   currency: string;
   price: string;
   preorderOpensAt: string;
+  announcedAt: string; // New field for backend mapping
   releaseDate: string;
   releaseDateConfirmed: boolean;
 };
@@ -78,6 +79,7 @@ const emptyDistributor = (): DistributorEntry => ({
   currency: "JPY",
   price: "",
   preorderOpensAt: "",
+  announcedAt: "",
   releaseDate: "",
   releaseDateConfirmed: false,
 });
@@ -94,7 +96,6 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 };
 
 const PRICE_INPUT_PATTERN = /^\d*(\.\d{0,2})?$/;
-const PRICE_SUBMIT_PATTERN = /^\d+(\.\d{1,2})?$/;
 const MAX_PRICE_INTEGER_PART = 50000;
 
 function isPriceIntegerPartWithinLimit(value: string): boolean {
@@ -225,6 +226,7 @@ export default function FigurineFormPage() {
                   currency:           d.currency,
                   price:              d.price != null ? String(d.price) : "",
                   preorderOpensAt:    d.preorderOpensAt ?? "",
+                  announcedAt:        d.announcedAt ?? "", // Map backend field
                   releaseDate:        d.releaseDate ?? "",
                   releaseDateConfirmed: d.releaseDateConfirmed,
                 }))
@@ -301,18 +303,9 @@ export default function FigurineFormPage() {
 
       const priceRaw = d.price.trim();
       const priceValue = Number(priceRaw);
-      if (!priceRaw || priceValue === 0) {
-        newErrors[`dist_${i}_price`] = "Price is required";
-        return;
-      }
 
       if (!Number.isFinite(priceValue) || priceValue < 0) {
         newErrors[`dist_${i}_price`] = "Price must be a valid number";
-        return;
-      }
-
-      if (!PRICE_SUBMIT_PATTERN.test(priceRaw)) {
-        newErrors[`dist_${i}_price`] = "Price can include up to 2 decimals";
         return;
       }
 
@@ -366,6 +359,7 @@ export default function FigurineFormPage() {
         currency: d.currency || "JPY",
         price: d.price.trim() ? Number(d.price) : null,
         preorderOpensAt: d.preorderOpensAt.trim() || null,
+        announcedAt: d.announcedAt.trim() || null,
         releaseDate: d.releaseDate.trim() || null,
         releaseDateConfirmed: d.releaseDateConfirmed,
       }));
@@ -696,6 +690,19 @@ export default function FigurineFormPage() {
                         ),
                       },
                       htmlInput: { min: 0.01, step: "0.01" },
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <DatePicker
+                    label="Announced At"
+                    format="YYYY-MM-DD"
+                    value={d.announcedAt ? dayjs(d.announcedAt) : null}
+                    onChange={(value) => setDistributorField(i, "announcedAt", value ? value.format("YYYY-MM-DD") : "")}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                      },
                     }}
                   />
                 </Grid>

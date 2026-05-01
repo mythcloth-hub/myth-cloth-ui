@@ -426,6 +426,7 @@ export default function FigurineCollectionPage() {
   const lineup  = searchParams.get("lineup") ?? "";
   const series  = searchParams.get("series") ?? "";
   const group   = searchParams.get("group")  ?? "";
+  const releaseStatus = searchParams.get("releaseStatus") ?? "";
   const revival       = searchParams.get("revival")       ?? "";
   const metalBody     = searchParams.get("metalBody")     ?? "";
   const originalColor = searchParams.get("originalColor") ?? "";
@@ -455,7 +456,7 @@ export default function FigurineCollectionPage() {
   );
   const [filtersOpen,    setFiltersOpen]    = useState(false);
 
-  const activeFilterCount = [lineup, series, group, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
+  const activeFilterCount = [lineup, series, group, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
 
   // Fetch dropdown options once on mount
   useEffect(() => {
@@ -485,6 +486,7 @@ export default function FigurineCollectionPage() {
     if (lineup) params.lineUpId = lineup;
     if (series) params.seriesId = series;
     if (group) params.groupId = group;
+    if (releaseStatus) params.releaseStatus = releaseStatus;
     if (metalBody) params.metalBody = metalBody;
     if (originalColor) params.oce = originalColor;
     if (revival) params.revival = revival;
@@ -507,7 +509,7 @@ export default function FigurineCollectionPage() {
         setErrorMessage("Failed to load figurines. Please check your connection and try again.");
       })
       .finally(() => setLoading(false));
-  }, [page, query, lineup, series, group, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable]);
+  }, [page, query, lineup, series, group, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable]);
 
 
 
@@ -540,12 +542,14 @@ export default function FigurineCollectionPage() {
    * If a filter/search is changed (overrides contains a key other than 'page'), resets page to 1.
    * If only page is changed, preserves the page.
    */
+
   const makeParams = (overrides: Record<string, string>) => {
     const p: Record<string, string> = {};
     if (query)        p.name            = query;
     if (lineup)       p.lineup       = lineup;
     if (series)       p.series       = series;
     if (group)        p.group        = group;
+    if (releaseStatus) p.releaseStatus = releaseStatus;
     if (revival)      p.revival      = revival;
     if (metalBody)    p.metalBody    = metalBody;
     if (originalColor) p.originalColor = originalColor;
@@ -571,6 +575,8 @@ export default function FigurineCollectionPage() {
     }
     return p;
   };
+
+  const handleReleaseStatusChange = (value: string) => setSearchParams(makeParams({ releaseStatus: value }));
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setSearchParams(makeParams({ page: String(value) }));
@@ -706,6 +712,16 @@ export default function FigurineCollectionPage() {
               ))}
             </Select>
           </FormControl>
+          <FormControl size="small" sx={{ flex: "1 1 170px" }}>
+            <InputLabel>Release Status</InputLabel>
+            <Select label="Release Status" value={releaseStatus} onChange={(e) => handleReleaseStatusChange(e.target.value)}>
+              <MenuItem value=""><em>All</em></MenuItem>
+              <MenuItem value="ANNOUNCED">Announced</MenuItem>
+              <MenuItem value="RELEASED">Released</MenuItem>
+              <MenuItem value="PROTOTYPE">Prototype</MenuItem>
+              <MenuItem value="RUMORED">Rumored</MenuItem>
+            </Select>
+          </FormControl>
           {([
             { key: "metalBody",     label: "Metal Body"     },
             { key: "originalColor", label: "OCE" },
@@ -745,6 +761,9 @@ export default function FigurineCollectionPage() {
             )}
             {group && (
               <Chip size="small" label={`Group: ${groupOptions.find((o) => String(o.id) === group)?.description ?? group}`} onDelete={() => handleGroupChange("")} />
+            )}
+            {releaseStatus && (
+              <Chip size="small" label={`Status: ${releaseStatus.charAt(0) + releaseStatus.slice(1).toLowerCase()}`} onDelete={() => handleReleaseStatusChange("")} />
             )}
             {([
               { key: "revival",       label: "Revival",        value: revival       },
