@@ -22,14 +22,35 @@ export type FigurineDistributor = {
   releaseDateConfirmed: boolean;
 };
 
+
 export type FigurineEvent = {
   id: number;
   date: string;
   dateConfirmed: boolean;
-  type: string;
-  region: string;
+  type: FigurineEventType;
+  region: FigurineEventRegion;
   description: string;
 };
+
+export type FigurineEventReq = {
+  description: string;
+  date: string;
+  dateConfirmed: boolean;
+  region: FigurineEventRegion;
+  type: FigurineEventType;
+  figurineId: number;
+};
+
+export type FigurineEventType =
+  | "ANNOUNCEMENT"
+  | "PREORDER_OPEN"
+  | "PREORDER_CLOSE"
+  | "RELEASE"
+  | "RESTOCK"
+  | "LOCAL_CONFIRMATION"
+  | "LOCAL_RELEASE";
+
+export type FigurineEventRegion = "JP" | "MX" | "ES" | "US" | "CN";
 
 export type Figurine = {
   id: number;
