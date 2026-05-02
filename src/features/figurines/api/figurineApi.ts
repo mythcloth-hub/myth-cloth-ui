@@ -1,7 +1,29 @@
 import httpClient from "../../../api/httpClient";
 import type { Figurine, PaginatedFigurines } from "../types/figurine";
 
+import type { FigurineEvent, FigurineEventReq } from "../types/figurine";
+
 const BASE = "/figurines";
+
+// Figurine Events API
+export const getFigurineEvents = async (figurineId: number): Promise<FigurineEvent[]> => {
+  const res = await httpClient.get(`${BASE}/${figurineId}/events`);
+  return res.data;
+};
+
+export const createFigurineEvent = async (figurineId: number, data: FigurineEventReq): Promise<FigurineEvent> => {
+  const res = await httpClient.post(`${BASE}/${figurineId}/events`, data);
+  return res.data;
+};
+
+export const updateFigurineEvent = async (figurineId: number, eventId: number, data: FigurineEventReq): Promise<FigurineEvent> => {
+  const res = await httpClient.put(`${BASE}/${figurineId}/events/${eventId}`, data);
+  return res.data;
+};
+
+export const deleteFigurineEvent = async (figurineId: number, eventId: number): Promise<void> => {
+  await httpClient.delete(`${BASE}/${figurineId}/events/${eventId}`);
+};
 
 // Accepts optional name param for filtering
 export const getFigurines = async (

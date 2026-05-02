@@ -27,18 +27,52 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import AddIcon from "@mui/icons-material/Add";
+import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import axios from "axios";
 import dayjs from "dayjs";
 
-import { getFigurineById, createFigurine, updateFigurine, deleteFigurine } from "../api/figurineApi";
+import {
+  getFigurineById,
+  createFigurine,
+  updateFigurine,
+  deleteFigurine,
+  getFigurineEvents,
+  createFigurineEvent,
+  updateFigurineEvent,
+  deleteFigurineEvent,
+} from "../api/figurineApi";
 import { groupsApi, lineupsApi, seriesApi } from "../../catalogs/api/catalogApi";
 import { getAllDistributors } from "../../distributors/api/distributorApi";
 import type { Catalog } from "../../catalogs/types/catalog";
 import type { Distributor } from "../../distributors/types/distributor";
-import type { Figurine } from "../types/figurine";
+import type {
+  Figurine,
+  FigurineEvent,
+  FigurineEventReq,
+  FigurineEventType,
+  FigurineEventRegion,
+} from "../types/figurine";
+// Event form helpers
+const EVENT_TYPES: { value: FigurineEventType; label: string }[] = [
+  { value: "ANNOUNCEMENT", label: "Announcement" },
+  { value: "PREORDER_OPEN", label: "Preorder Opens" },
+  { value: "PREORDER_CLOSE", label: "Preorder Closes" },
+  { value: "RELEASE", label: "Release" },
+  { value: "RESTOCK", label: "Restock" },
+  { value: "LOCAL_CONFIRMATION", label: "Local Confirmation" },
+  { value: "LOCAL_RELEASE", label: "Local Release" },
+];
+const EVENT_REGIONS: { value: FigurineEventRegion; label: string }[] = [
+  { value: "JP", label: "Japan" },
+  { value: "MX", label: "Mexico" },
+  { value: "ES", label: "Spain" },
+  { value: "US", label: "USA" },
+  { value: "CN", label: "China" },
+];
 
 // ── Form-level types (all IDs, strings for numeric inputs) ──────────────────
 
@@ -159,6 +193,22 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function FigurineFormPage() {
+      // ── Event dialog handlers ────────────────────────────────────────────────
+  // Event management state
+  const [events, setEvents] = useState<FigurineEvent[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+  const [eventsModalOpen, setEventsModalOpen] = useState(false);
+  const [eventDialogOpen, setEventDialogOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<FigurineEvent | null>(null);
+  const [eventForm, setEventForm] = useState<Omit<FigurineEventReq, "figurineId"> & { id?: number }>({
+    description: "",
+    date: "",
+    dateConfirmed: false,
+    region: "JP",
+    type: "ANNOUNCEMENT",
+  });
+  const [eventFormError, setEventFormError] = useState<string | null>(null);
+  const [deletingEventId, setDeletingEventId] = useState<number | null>(null);
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -171,6 +221,115 @@ export default function FigurineFormPage() {
   const [seriesList,   setSeriesList]   = useState<Catalog[]>([]);
   const [groups,       setGroups]       = useState<Catalog[]>([]);
   const [distributors, setDistributors] = useState<Distributor[]>([]);
+
+  // ── Event dialog handlers ────────────────────────────────────────────────
+  const openAddEventDialog = () => {
+    setEditingEvent(null);
+    setEventForm({ description: "", date: "", dateConfirmed: false, region: "JP", type: "ANNOUNCEMENT" });
+    setEventFormError(null);
+    setEventDialogOpen(true);
+  };
+
+  const openEditEventDialog = (event: FigurineEvent) => {
+    setEditingEvent(event);
+    setEventForm({
+      description: event.description,
+      date: event.date,
+      dateConfirmed: event.dateConfirmed,
+      region: event.region,
+      type: event.type,
+      id: event.id,
+    });
+    setEventFormError(null);
+    setEventDialogOpen(true);
+  };
+
+  const closeEventDialog = () => {
+    setEventDialogOpen(false);
+    setEditingEvent(null);
+    setEventForm({ description: "", date: "", dateConfirmed: false, region: "JP", type: "ANNOUNCEMENT" });
+    setEventFormError(null);
+  };
+
+  const handleEventFormChange = (key: "description" | "date" | "region" | "type" | "dateConfirmed", value: string | boolean) => {
+    setEventForm((prev) => ({
+      ...prev,
+      dateConfirmed: key === "dateConfirmed" ? Boolean(value) : prev.dateConfirmed,
+      [key]: key === "type"
+        ? value as FigurineEventType
+        : key === "region"
+          ? value as FigurineEventRegion
+          : key === "dateConfirmed"
+            ? Boolean(value)
+            : value as string,
+    }));
+    setEventFormError(null);
+  };
+
+  const handleEventFormSubmit = async () => {
+    if (!form || !id) return;
+    const { description, date, dateConfirmed, region, type, id: eventId } = eventForm;
+    if (!description.trim() || !date || !region || !type) {
+      setEventFormError("All fields are required.");
+      return;
+    }
+    if (description.trim().length > 100) {
+      setEventFormError("Description cannot exceed 100 characters.");
+      return;
+    }
+    if (dayjs(date).isAfter(dayjs(), "day")) {
+      setEventFormError("Event date cannot be in the future.");
+      return;
+    }
+    setEventFormError(null);
+    try {
+      setLoadingEvents(true);
+      const figurineId = Number(id);
+      if (editingEvent && eventId) {
+        // Update existing event
+        const updated = await updateFigurineEvent(figurineId, eventId, {
+          description: description.trim(),
+          date,
+          dateConfirmed,
+          region,
+          type,
+          figurineId,
+        });
+        setEvents((prev) => prev.map((ev) => (ev.id === eventId ? updated : ev)));
+      } else {
+        // Create new event
+        const created = await createFigurineEvent(figurineId, {
+          description: description.trim(),
+          date,
+          dateConfirmed,
+          region,
+          type,
+          figurineId,
+        });
+        setEvents((prev) => [...prev, created]);
+      }
+      closeEventDialog();
+    } catch (err) {
+      setEventFormError("Failed to save event.");
+      console.error(err);
+    } finally {
+      setLoadingEvents(false);
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: number) => {
+    if (!form || !id) return;
+    setDeletingEventId(eventId);
+    try {
+      await deleteFigurineEvent(Number(id), eventId);
+      setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
+    } catch (err) {
+      setEventFormError("Failed to delete event.");
+      console.error(err);
+    } finally {
+      setDeletingEventId(null);
+    }
+  };
 
   const [form,           setForm]           = useState<FormData | null>(null);
   const [errors,         setErrors]         = useState<FormErrors>({});
@@ -232,9 +391,17 @@ export default function FigurineFormPage() {
                 }))
               : [emptyDistributor()],
           });
+          // Load events for this figurine
+          setLoadingEvents(true);
+          getFigurineEvents(f.id)
+            .then(setEvents)
+            .catch(() => setEvents([]))
+            .finally(() => setLoadingEvents(false));
         } else {
           setForm(emptyForm);
+          setEvents([]);
         }
+
       })
       .catch((err) => {
         console.error(err);
@@ -431,6 +598,16 @@ export default function FigurineFormPage() {
         <Typography variant="h4" sx={{ fontSize: { xs: "1.4rem", md: "2rem" } }}>
           {isEdit ? "Edit Figurine" : "New Figurine"}
         </Typography>
+        {isEdit && (
+          <Button
+            variant="outlined"
+            startIcon={<EventOutlinedIcon />}
+            sx={{ ml: "auto" }}
+            onClick={() => setEventsModalOpen(true)}
+          >
+            Manage Events
+          </Button>
+        )}
       </Box>
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -775,6 +952,138 @@ export default function FigurineFormPage() {
 
           </Box>
         </Paper>
+      </LocalizationProvider>
+
+      {/* Events management modal */}
+      <Dialog
+        open={eventsModalOpen}
+        onClose={() => setEventsModalOpen(false)}
+        fullWidth
+        maxWidth="md"
+        PaperProps={{ sx: { maxHeight: "85vh" } }}
+      >
+        <DialogTitle>Manage Events</DialogTitle>
+        <DialogContent dividers sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Box sx={{ mb: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={openAddEventDialog}
+              sx={{ mb: 1 }}
+            >
+              Add Event
+            </Button>
+            <Box sx={{ maxHeight: { xs: "45vh", md: "52vh" }, overflowY: "auto", pr: 0.5 }}>
+              {loadingEvents ? (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <CircularProgress size={20} />
+                  <Typography variant="body2">Loading events...</Typography>
+                </Box>
+              ) : events.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">No events found.</Typography>
+              ) : (
+                <Grid container spacing={2}>
+                  {events.map((ev) => (
+                    <Grid key={ev.id} size={{ xs: 12, sm: 6 }}>
+                      <Paper variant="outlined" sx={{ p: 2, position: "relative" }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ mb: 0.5, pr: 8, overflowWrap: "anywhere", wordBreak: "break-word" }}
+                        >
+                          {ev.description}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ pr: 8, display: "block", overflowWrap: "anywhere" }}>
+                          {ev.date} | {EVENT_TYPES.find((t) => t.value === ev.type)?.label ?? ev.type} | {EVENT_REGIONS.find((r) => r.value === ev.region)?.label ?? ev.region}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Date {ev.dateConfirmed ? "confirmed" : "unconfirmed"}
+                        </Typography>
+                        <Box sx={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 1 }}>
+                          <Tooltip title="Edit">
+                            <IconButton size="small" onClick={() => openEditEventDialog(ev)}>
+                              <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton size="small" color="error" onClick={() => handleDeleteEvent(ev.id)} disabled={deletingEventId === ev.id}>
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEventsModalOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Event add/edit modal */}
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Dialog open={eventDialogOpen} onClose={closeEventDialog} fullWidth maxWidth="sm">
+          <DialogTitle>{editingEvent ? "Edit Event" : "Add Event"}</DialogTitle>
+          <DialogContent>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+              <TextField
+                label="Description"
+                value={eventForm.description}
+                onChange={(e) => handleEventFormChange("description", e.target.value)}
+                required
+                fullWidth
+                inputProps={{ maxLength: 100 }}
+              />
+              <DatePicker
+                label="Date"
+                format="YYYY-MM-DD"
+                disableFuture
+                value={eventForm.date ? dayjs(eventForm.date) : null}
+                onChange={(value) => handleEventFormChange("date", value ? value.format("YYYY-MM-DD") : "")}
+                slotProps={{ textField: { fullWidth: true, required: true } }}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={eventForm.dateConfirmed}
+                    onChange={(e) => handleEventFormChange("dateConfirmed", e.target.checked)}
+                  />
+                }
+                label="Date Confirmed"
+              />
+              <TextField
+                select
+                label="Type"
+                value={eventForm.type}
+                onChange={(e) => handleEventFormChange("type", e.target.value as FigurineEventType)}
+                fullWidth
+              >
+                {EVENT_TYPES.map((t) => (
+                  <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                select
+                label="Region"
+                value={eventForm.region}
+                onChange={(e) => handleEventFormChange("region", e.target.value as FigurineEventRegion)}
+                fullWidth
+              >
+                {EVENT_REGIONS.map((r) => (
+                  <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
+                ))}
+              </TextField>
+              {eventFormError && <Alert severity="error">{eventFormError}</Alert>}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeEventDialog}>Cancel</Button>
+            <Button onClick={handleEventFormSubmit} variant="contained">{editingEvent ? "Save" : "Add"}</Button>
+          </DialogActions>
+        </Dialog>
       </LocalizationProvider>
 
       <Snackbar
