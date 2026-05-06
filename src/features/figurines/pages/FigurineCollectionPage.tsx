@@ -324,7 +324,7 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
           variant="subtitle2"
           fontWeight={700}
           noWrap
-          title={figurine.name}
+          title={figurine.displayableName}
           sx={{ color: "text.primary", mb: 0.5, lineHeight: 1.3 }}
         >
           {figurine.name}

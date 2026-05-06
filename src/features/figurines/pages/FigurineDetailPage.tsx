@@ -142,7 +142,7 @@ export default function FigurineDetailPage() {
           </IconButton>
         </Tooltip>
         <Typography variant="h4" sx={{ fontSize: { xs: "1.4rem", md: "2rem" }, flex: 1 }}>
-          {figurine.name}
+          {figurine.displayableName}
         </Typography>
         {/* Prev / Next arrows */}
         {navList.length > 0 && (
