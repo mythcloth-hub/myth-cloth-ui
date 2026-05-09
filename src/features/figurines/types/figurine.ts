@@ -58,6 +58,11 @@ export type Figurine = {
   displayableName: string;
   tamashiiUrl?: string;
   releaseStatus: ReleaseStatus;
+  anniversary?: {
+    id: number;
+    description: string;
+    year: number;
+  };
   distributors: FigurineDistributor[];
   distribution?: CatalogRef;
   lineUp: CatalogRef;

@@ -33,6 +33,8 @@ import { countryCodeToFlag } from "../../../utils/countryFlag";
 import { lineupsApi, seriesApi, groupsApi } from "../../catalogs/api/catalogApi";
 import type { Catalog } from "../../catalogs/types/catalog";
 import type { Figurine, ReleaseStatus } from "../types/figurine";
+import { getAllAnniversaries } from "../../anniversaries/api/anniversaryApi";
+import type { Anniversary } from "../../anniversaries/types/anniversary";
 import AnniversaryIcon from "./AnniversaryIcon";
 import { Tooltip } from "@mui/material";
 
@@ -426,6 +428,7 @@ export default function FigurineCollectionPage() {
   const lineup  = searchParams.get("lineup") ?? "";
   const series  = searchParams.get("series") ?? "";
   const group   = searchParams.get("group")  ?? "";
+  const anniversary = searchParams.get("anniversary") ?? "";
   const releaseStatus = searchParams.get("releaseStatus") ?? "";
   const revival       = searchParams.get("revival")       ?? "";
   const metalBody     = searchParams.get("metalBody")     ?? "";
@@ -449,6 +452,7 @@ export default function FigurineCollectionPage() {
   const [lineupOptions, setLineupOptions] = useState<Catalog[]>([]);
   const [seriesOptions, setSeriesOptions] = useState<Catalog[]>([]);
   const [groupOptions,  setGroupOptions]  = useState<Catalog[]>([]);
+  const [anniversaryOptions, setAnniversaryOptions] = useState<Anniversary[]>([]);
 
   const [errorMessage,   setErrorMessage]   = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(
@@ -456,13 +460,14 @@ export default function FigurineCollectionPage() {
   );
   const [filtersOpen,    setFiltersOpen]    = useState(false);
 
-  const activeFilterCount = [lineup, series, group, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
+  const activeFilterCount = [lineup, series, group, anniversary, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
 
   // Fetch dropdown options once on mount
   useEffect(() => {
     lineupsApi.getAll().then(setLineupOptions).catch(console.error);
     seriesApi.getAll().then(setSeriesOptions).catch(console.error);
     groupsApi.getAll().then(setGroupOptions).catch(console.error);
+    getAllAnniversaries().then(setAnniversaryOptions).catch(console.error);
   }, []);
 
   // Debounced search effect for search bar (only if >= 3 chars)
@@ -486,6 +491,7 @@ export default function FigurineCollectionPage() {
     if (lineup) params.lineUpId = lineup;
     if (series) params.seriesId = series;
     if (group) params.groupId = group;
+    if (anniversary) params.anniversaryId = anniversary;
     if (releaseStatus) params.releaseStatus = releaseStatus;
     if (metalBody) params.metalBody = metalBody;
     if (originalColor) params.oce = originalColor;
@@ -509,7 +515,7 @@ export default function FigurineCollectionPage() {
         setErrorMessage("Failed to load figurines. Please check your connection and try again.");
       })
       .finally(() => setLoading(false));
-  }, [page, query, lineup, series, group, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable]);
+  }, [page, query, lineup, series, group, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable]);
 
 
 
@@ -549,6 +555,7 @@ export default function FigurineCollectionPage() {
     if (lineup)       p.lineup       = lineup;
     if (series)       p.series       = series;
     if (group)        p.group        = group;
+    if (anniversary)  p.anniversary  = anniversary;
     if (releaseStatus) p.releaseStatus = releaseStatus;
     if (revival)      p.revival      = revival;
     if (metalBody)    p.metalBody    = metalBody;
@@ -593,6 +600,7 @@ export default function FigurineCollectionPage() {
   const handleLineupChange  = (value: string) => setSearchParams(makeParams({ lineup:  value }));
   const handleSeriesChange  = (value: string) => setSearchParams(makeParams({ series:  value }));
   const handleGroupChange   = (value: string) => setSearchParams(makeParams({ group:   value }));
+  const handleAnniversaryChange = (value: string) => setSearchParams(makeParams({ anniversary: value }));
   const handleBoolChange    = (key: string, value: string) => setSearchParams(makeParams({ [key]: value }));
   const clearAllFilters     = () => setSearchParams(query ? { name: query, page: "1" } : { page: "1" });
 
@@ -713,6 +721,15 @@ export default function FigurineCollectionPage() {
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ flex: "1 1 170px" }}>
+            <InputLabel>Anniversary</InputLabel>
+            <Select label="Anniversary" value={anniversary} onChange={(e) => handleAnniversaryChange(e.target.value)}>
+              <MenuItem value=""><em>All</em></MenuItem>
+              {anniversaryOptions.map((opt) => (
+                <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ flex: "1 1 170px" }}>
             <InputLabel>Release Status</InputLabel>
             <Select label="Release Status" value={releaseStatus} onChange={(e) => handleReleaseStatusChange(e.target.value)}>
               <MenuItem value=""><em>All</em></MenuItem>
@@ -761,6 +778,13 @@ export default function FigurineCollectionPage() {
             )}
             {group && (
               <Chip size="small" label={`Group: ${groupOptions.find((o) => String(o.id) === group)?.description ?? group}`} onDelete={() => handleGroupChange("")} />
+            )}
+            {anniversary && (
+              <Chip
+                size="small"
+                label={`Anniversary: ${anniversaryOptions.find((o) => String(o.id) === anniversary)?.description ?? anniversary}`}
+                onDelete={() => handleAnniversaryChange("")}
+              />
             )}
             {releaseStatus && (
               <Chip size="small" label={`Status: ${releaseStatus.charAt(0) + releaseStatus.slice(1).toLowerCase()}`} onDelete={() => handleReleaseStatusChange("")} />

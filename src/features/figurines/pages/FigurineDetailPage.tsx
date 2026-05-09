@@ -26,6 +26,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { getFigurineById } from "../api/figurineApi";
 import type { Figurine, ReleaseStatus } from "../types/figurine";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
+import AnniversaryIcon from "./AnniversaryIcon";
 
 const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: string; borderColor: string }> = {
   RELEASED:  { label: "Released",  color: "#4caf50", borderColor: "rgba(76,175,80,0.30)"   },
@@ -323,6 +324,20 @@ export default function FigurineDetailPage() {
                   </Grid>
                 );
               })()}
+              {figurine.anniversary && (
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "0.65rem" }}>
+                    Anniversary
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5 }}>
+                    <AnniversaryIcon sx={{ fontSize: 18, color: "#bfa100" }} />
+                    <Typography variant="body2" sx={{ color: "text.primary" }}>
+                      {figurine.anniversary.description}
+                      {figurine.anniversary.year ? ` (${figurine.anniversary.year})` : ""}
+                    </Typography>
+                  </Box>
+                </Grid>
+              )}
               {figurine.tamashiiUrl && (
                 <Grid size={{ xs: 12 }}>
                   <Box

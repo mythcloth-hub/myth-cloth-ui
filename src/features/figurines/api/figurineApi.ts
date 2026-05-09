@@ -29,13 +29,14 @@ export const deleteFigurineEvent = async (figurineId: number, eventId: number): 
 export const getFigurines = async (
   page = 0,
   size = 12,
-  params?: { name?: string; lineUpId?: string; seriesId?: string; groupId?: string; releaseStatus?: string; metalBody?: boolean; oce?: boolean; revival?: boolean; plainCloth?: boolean; broken?: boolean; golden?: boolean; gold?: boolean; manga?: boolean; set?: boolean; articulable?: boolean }
+  params?: { name?: string; lineUpId?: string; seriesId?: string; groupId?: string; anniversaryId?: string; releaseStatus?: string; metalBody?: boolean; oce?: boolean; revival?: boolean; plainCloth?: boolean; broken?: boolean; golden?: boolean; gold?: boolean; manga?: boolean; set?: boolean; articulable?: boolean }
 ): Promise<PaginatedFigurines> => {
   const queryParams: Record<string, any> = { page, size };
   if (params?.name) queryParams.name = params.name;
   if (params?.lineUpId) queryParams.lineUpId = params.lineUpId;
   if (params?.seriesId) queryParams.seriesId = params.seriesId;
   if (params?.groupId) queryParams.groupId = params.groupId;
+  if (params?.anniversaryId) queryParams.anniversaryId = params.anniversaryId;
   if (params?.releaseStatus) queryParams.releaseStatus = params.releaseStatus;
   if (params?.metalBody) queryParams.metalBody = params.metalBody;
   if (params?.oce) queryParams.oce = params.oce;

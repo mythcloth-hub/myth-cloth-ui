@@ -45,8 +45,10 @@ import {
   updateFigurineEvent,
   deleteFigurineEvent,
 } from "../api/figurineApi";
+import { getAllAnniversaries } from "../../anniversaries/api/anniversaryApi";
 import { groupsApi, lineupsApi, seriesApi } from "../../catalogs/api/catalogApi";
 import { getAllDistributors } from "../../distributors/api/distributorApi";
+import type { Anniversary } from "../../anniversaries/types/anniversary";
 import type { Catalog } from "../../catalogs/types/catalog";
 import type { Distributor } from "../../distributors/types/distributor";
 import type {
@@ -91,6 +93,7 @@ type FormData = {
   lineUpId: string;
   seriesId: string;
   groupId: string;
+  anniversaryId: string;
   isMetalBody: boolean;
   isOriginalColorEdition: boolean;
   isRevival: boolean;
@@ -144,6 +147,7 @@ const emptyForm: FormData = {
   lineUpId:               "",
   seriesId:               "",
   groupId:                "",
+  anniversaryId:          "",
   isMetalBody:            false,
   isOriginalColorEdition: false,
   isRevival:              false,
@@ -220,6 +224,7 @@ export default function FigurineFormPage() {
   const [lineups,      setLineups]      = useState<Catalog[]>([]);
   const [seriesList,   setSeriesList]   = useState<Catalog[]>([]);
   const [groups,       setGroups]       = useState<Catalog[]>([]);
+  const [anniversaries, setAnniversaries] = useState<Anniversary[]>([]);
   const [distributors, setDistributors] = useState<Distributor[]>([]);
 
   // ── Event dialog handlers ────────────────────────────────────────────────
@@ -346,6 +351,7 @@ export default function FigurineFormPage() {
       lineupsApi.getAll(),
       seriesApi.getAll(),
       groupsApi.getAll(),
+      getAllAnniversaries(),
       getAllDistributors(),
     ];
     const requests = isEdit
@@ -354,10 +360,11 @@ export default function FigurineFormPage() {
 
     Promise.all(requests)
       .then((results) => {
-        const [lu, sr, gr, dist, fig] = results;
+        const [lu, sr, gr, ann, dist, fig] = results;
         setLineups(lu as Catalog[]);
         setSeriesList(sr as Catalog[]);
         setGroups(gr as Catalog[]);
+        setAnniversaries(ann as Anniversary[]);
         setDistributors(dist as Distributor[]);
 
         if (isEdit && fig) {
@@ -367,6 +374,7 @@ export default function FigurineFormPage() {
             lineUpId:              String(f.lineUp.id),
             seriesId:              String(f.series.id),
             groupId:               f.group ? String(f.group.id) : "",
+            anniversaryId:         f.anniversary ? String(f.anniversary.id) : "",
             isMetalBody:           f.isMetalBody,
             isOriginalColorEdition:f.isOriginalColorEdition,
             isRevival:             f.isRevival,
@@ -536,6 +544,7 @@ export default function FigurineFormPage() {
       lineUpId:              Number(form.lineUpId),
       seriesId:              Number(form.seriesId),
       ...(form.groupId ? { groupId: Number(form.groupId) } : {}),
+      ...(form.anniversaryId ? { anniversaryId: Number(form.anniversaryId) } : {}),
       isMetalBody:           form.isMetalBody,
       isOriginalColorEdition:form.isOriginalColorEdition,
       isRevival:             form.isRevival,
@@ -636,7 +645,7 @@ export default function FigurineFormPage() {
               { key: "seriesId", label: "Series",   items: seriesList   },
               { key: "groupId",  label: "Group",    items: groups       },
             ] as { key: "lineUpId" | "seriesId" | "groupId"; label: string; items: Catalog[] }[]).map(({ key, label, items }) => (
-              <Grid key={key} size={{ xs: 12, sm: 4 }}>
+              <Grid key={key} size={{ xs: 12, sm: 6, md: 3 }}>
                 <TextField
                   select fullWidth
                   required={key !== "groupId"}
@@ -653,6 +662,20 @@ export default function FigurineFormPage() {
                 </TextField>
               </Grid>
             ))}
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField
+                select
+                fullWidth
+                label="Anniversary"
+                value={form.anniversaryId}
+                onChange={(e) => setField("anniversaryId", e.target.value)}
+              >
+                <MenuItem value=""><em>None</em></MenuItem>
+                {anniversaries.map((it) => (
+                  <MenuItem key={it.id} value={String(it.id)}>{it.description}</MenuItem>
+                ))}
+              </TextField>
+            </Grid>
           </Grid>
 
           {/* ── Attributes ── */}
