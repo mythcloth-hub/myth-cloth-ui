@@ -115,6 +115,7 @@ export default function FigurineDetailPage() {
     { label: "Group", value: figurine.group?.description },
     { label: "Distribution", value: figurine.distribution?.description },
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
+  const notesText = figurine.notes ? figurine.notes.replace(/\\n/g, "\n") : "";
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -387,15 +388,32 @@ export default function FigurineDetailPage() {
           </Box>
 
           {/* Notes */}
-          {figurine.notes && (
+          {notesText && (
             <>
               <Divider sx={{ borderColor: "rgba(212,175,55,0.1)", mb: 1.5 }} />
-              <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem" }}>
-                Notes
+              <Typography
+                variant="overline"
+                sx={(theme) => theme.custom.magazineNotes.label}
+              >
+                Additional Information
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>
-                {figurine.notes}
-              </Typography>
+              <Box
+                sx={(theme) => ({
+                  ...theme.custom.magazineNotes.container,
+                  p: { xs: 1.25, sm: 1.5 },
+                  pb: { xs: 1.75, sm: 3 },
+                })}
+              >
+                <Typography
+                  sx={(theme) => ({
+                    ...theme.custom.magazineNotes.body,
+                    fontSize: { xs: "1rem", sm: "1.05rem" },
+                    whiteSpace: "pre-line",
+                  })}
+                >
+                  {notesText}
+                </Typography>
+              </Box>
             </>
           )}
 

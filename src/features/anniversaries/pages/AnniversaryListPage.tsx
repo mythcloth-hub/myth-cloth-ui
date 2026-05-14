@@ -23,6 +23,17 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { getAllAnniversaries, deleteAnniversary } from "../api/anniversaryApi";
 import type { Anniversary } from "../types/anniversary";
 
+const anniversaryTypeLabels: Record<NonNullable<Anniversary["type"]>, string> = {
+  TAMASHII_NATIONS_WORLD_TOUR: "Tamashii Nations World Tour",
+  SAINT_CLOTH_MYTH: "Saint Cloth Myth",
+  SAINT_SEIYA: "Saint Seiya",
+};
+
+function getAnniversaryTypeLabel(type?: Anniversary["type"]) {
+  if (!type) return "";
+  return anniversaryTypeLabels[type] ?? type;
+}
+
 function NoRowsOverlay() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 1 }}>
@@ -64,6 +75,10 @@ export default function AnniversaryListPage() {
     setConfirmOpen(true);
   };
 
+  const navigateToEdit = (anniversary: Anniversary) => {
+    navigate(`/anniversaries/edit/${anniversary.id}`, { state: { anniversary } });
+  };
+
   const handleConfirmDelete = async () => {
     if (pendingDeleteId === null) return;
     setConfirmOpen(false);
@@ -85,6 +100,13 @@ export default function AnniversaryListPage() {
     { field: "description", headerName: "Description", flex: 2 },
     { field: "year", headerName: "Year", width: 100 },
     {
+      field: "type",
+      headerName: "Type",
+      minWidth: 220,
+      flex: 1,
+      valueGetter: (_value, row: Anniversary) => getAnniversaryTypeLabel(row.type),
+    },
+    {
       field: "actions",
       headerName: "Actions",
       width: 120,
@@ -96,7 +118,7 @@ export default function AnniversaryListPage() {
           <Tooltip title="Edit">
             <IconButton
               size="small"
-              onClick={() => navigate(`/anniversaries/edit/${params.row.id}`)}
+              onClick={() => navigateToEdit(params.row as Anniversary)}
               sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
             >
               <EditIcon fontSize="small" />
@@ -133,7 +155,7 @@ export default function AnniversaryListPage() {
           columns={columns}
           loading={loading}
           getRowId={(row) => row.id}
-          onRowDoubleClick={(params) => navigate(`/anniversaries/edit/${params.row.id}`)}
+          onRowDoubleClick={(params) => navigateToEdit(params.row as Anniversary)}
           slots={{ noRowsOverlay: NoRowsOverlay }}
           sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
         />

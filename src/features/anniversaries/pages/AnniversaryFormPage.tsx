@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -8,21 +8,41 @@ import {
   Paper,
   Alert,
   Snackbar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
   CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 
-import { createAnniversary, getAnniversaryById, updateAnniversary } from "../api/anniversaryApi";
+import {
+  createAnniversary,
+  getAnniversaryById,
+  updateAnniversary,
+  type SaveAnniversaryPayload,
+  type UpdateAnniversaryPayload,
+} from "../api/anniversaryApi";
+import type { Anniversary, AnniversaryType } from "../types/anniversary";
 
-type FormData = { description: string; year: string };
+const ANNIVERSARY_TYPE_OPTIONS: { value: AnniversaryType; label: string }[] = [
+  { value: "TAMASHII_NATIONS_WORLD_TOUR", label: "Tamashii Nations World Tour" },
+  { value: "SAINT_CLOTH_MYTH", label: "Saint Cloth Myth" },
+  { value: "SAINT_SEIYA", label: "Saint Seiya" },
+];
+
+type FormData = { description: string; year: string; type: "" | AnniversaryType };
 type FormErrors = Partial<Record<keyof FormData, string>>;
 
-const emptyForm: FormData = { description: "", year: "" };
+const emptyForm: FormData = { description: "", year: "", type: "" };
 
 export default function AnniversaryFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
+  const location = useLocation();
   const navigate = useNavigate();
+  const stateAnniversary = (location.state as { anniversary?: Anniversary } | null)?.anniversary;
 
   const [form, setForm] = useState<FormData>(emptyForm);
   const [loading, setLoading] = useState(false);
@@ -35,6 +55,7 @@ export default function AnniversaryFormPage() {
   const serverFieldMap: Record<string, keyof FormData> = {
     description: "description",
     year: "year",
+    type: "type",
   };
 
   useEffect(() => {
@@ -42,14 +63,18 @@ export default function AnniversaryFormPage() {
     setLoadingForm(true);
     getAnniversaryById(Number(id))
       .then((data) =>
-        setForm({ description: data.description, year: String(data.year) }),
+        setForm({
+          description: data.description,
+          year: String(data.year),
+          type: data.type ?? stateAnniversary?.type ?? "",
+        }),
       )
       .catch((err) => {
         console.error(err);
         setServerError("Failed to load anniversary. Please try again.");
       })
       .finally(() => setLoadingForm(false));
-  }, [id, isEdit]);
+  }, [id, isEdit, stateAnniversary?.type]);
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
@@ -64,10 +89,16 @@ export default function AnniversaryFormPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: undefined }));
+    setServerError(null);
+  };
+
+  const handleTypeChange = (value: string) => {
+    setForm((prev) => ({ ...prev, type: value as FormData["type"] }));
+    setErrors((prev) => ({ ...prev, type: undefined }));
     setServerError(null);
   };
 
@@ -75,10 +106,18 @@ export default function AnniversaryFormPage() {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    const payload = { description: form.description.trim(), year: Number(form.year) };
+    const payload: SaveAnniversaryPayload = {
+      description: form.description.trim(),
+      year: form.year.trim(),
+      ...(form.type ? { type: form.type } : {}),
+    };
     try {
       if (isEdit) {
-        await updateAnniversary(Number(id), payload);
+        const updatePayload: UpdateAnniversaryPayload = {
+          id: Number(id),
+          ...payload,
+        };
+        await updateAnniversary(Number(id), updatePayload);
       } else {
         await createAnniversary(payload);
       }
@@ -165,6 +204,24 @@ export default function AnniversaryFormPage() {
               error={Boolean(errors.year)}
               helperText={errors.year}
             />
+            <FormControl fullWidth error={Boolean(errors.type)}>
+              <InputLabel id="anniversary-type-label">Type</InputLabel>
+              <Select
+                labelId="anniversary-type-label"
+                label="Type"
+                name="type"
+                value={form.type}
+                onChange={(e) => handleTypeChange(e.target.value)}
+              >
+                <MenuItem value="">None</MenuItem>
+                {ANNIVERSARY_TYPE_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{errors.type ?? "Optional"}</FormHelperText>
+            </FormControl>
             <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
               <Button variant="outlined" onClick={() => navigate("/anniversaries")}>
                 Cancel

@@ -704,7 +704,7 @@ export default function FigurineFormPage() {
             value={form.notes}
             onChange={(e) => setField("notes", e.target.value)}
             fullWidth multiline rows={3}
-            slotProps={{ htmlInput: { maxLength: 500 } }}
+            slotProps={{ htmlInput: { maxLength: 1500 } }}
           />
 
           {/* ── Image URLs ── */}

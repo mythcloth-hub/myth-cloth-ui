@@ -1,5 +1,28 @@
 import { createTheme, type Theme } from "@mui/material";
+import type { CSSObject } from "@mui/system";
 import type {} from "@mui/x-data-grid/themeAugmentation";
+
+declare module "@mui/material/styles" {
+  interface Theme {
+    custom: {
+      magazineNotes: {
+        label: CSSObject;
+        container: CSSObject;
+        body: CSSObject;
+      };
+    };
+  }
+
+  interface ThemeOptions {
+    custom?: {
+      magazineNotes?: {
+        label?: CSSObject;
+        container?: CSSObject;
+        body?: CSSObject;
+      };
+    };
+  }
+}
 
 export type ThemeId =
   | "cosmicGlass"
@@ -41,6 +64,80 @@ function dataGridOverrides(columnBg: string, accent: string) {
   };
 }
 
+function magazineNotesStyles(mode: "light" | "dark", accent: string) {
+  if (mode === "light") {
+    return {
+      label: {
+        color: "text.secondary",
+        fontSize: "0.65rem",
+        letterSpacing: "0.14em",
+      } satisfies CSSObject,
+      container: {
+        mt: 0.8,
+        mb: 2,
+        px: "12px",
+        py: "11px",
+        borderRadius: "12px",
+        border: `1px solid ${accent}33`,
+        background: "linear-gradient(180deg, rgba(253,248,235,0.92) 0%, rgba(250,242,226,0.72) 100%)",
+      } satisfies CSSObject,
+      body: {
+        color: "rgba(35, 30, 25, 0.92)",
+        fontFamily: '"Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif',
+        fontSize: "1.05rem",
+        lineHeight: 1.86,
+        letterSpacing: "0.01em",
+        maxWidth: "100%",
+        textWrap: "pretty",
+        "&::first-letter": {
+          float: "left",
+          fontSize: "3.05em",
+          lineHeight: 0.82,
+          paddingRight: "0.09em",
+          marginTop: "0.04em",
+          fontWeight: 700,
+          color: accent,
+        },
+      } satisfies CSSObject,
+    };
+  }
+
+  return {
+    label: {
+      color: "text.secondary",
+      fontSize: "0.65rem",
+      letterSpacing: "0.14em",
+    } satisfies CSSObject,
+    container: {
+      mt: 0.8,
+      mb: 2,
+      px: "12px",
+      py: "11px",
+      borderRadius: "12px",
+      border: `1px solid ${accent}38`,
+      background: "linear-gradient(180deg, rgba(250,245,230,0.08) 0%, rgba(250,245,230,0.03) 100%)",
+    } satisfies CSSObject,
+    body: {
+      color: "rgba(250, 244, 226, 0.9)",
+      fontFamily: '"Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif',
+      fontSize: "1.05rem",
+      lineHeight: 1.9,
+      letterSpacing: "0.01em",
+      maxWidth: "100%",
+      textWrap: "pretty",
+      "&::first-letter": {
+        float: "left",
+        fontSize: "3.05em",
+        lineHeight: 0.82,
+        paddingRight: "0.09em",
+        marginTop: "0.04em",
+        fontWeight: 700,
+        color: accent,
+      },
+    } satisfies CSSObject,
+  };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. COSMIC GLASS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -60,6 +157,9 @@ export const cosmicGlassTheme: Theme = createTheme({
     h6: { fontWeight: 600, color: "#d4af37" },
   },
   shape: { borderRadius: 12 },
+  custom: {
+    magazineNotes: magazineNotesStyles("dark", "#d4af37"),
+  },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -181,6 +281,9 @@ export const darkCosmosTheme: Theme = createTheme({
     subtitle2: { fontFamily: `'Segoe UI', system-ui, sans-serif` },
   },
   shape: { borderRadius: 8 },
+  custom: {
+    magazineNotes: magazineNotesStyles("dark", "#c8b8e8"),
+  },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -303,6 +406,9 @@ export const ancientBronzeTheme: Theme = createTheme({
     h6: { fontWeight: 600, color: "#c9a84c" },
   },
   shape: { borderRadius: 6 },
+  custom: {
+    magazineNotes: magazineNotesStyles("dark", "#c9a84c"),
+  },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -406,6 +512,9 @@ export const mangaInkTheme: Theme = createTheme({
     h6: { fontWeight: 800, color: "#f0f0f0", letterSpacing: "0.5px" },
   },
   shape: { borderRadius: 4 },
+  custom: {
+    magazineNotes: magazineNotesStyles("dark", "#e03030"),
+  },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -511,6 +620,9 @@ export const minimalLightTheme: Theme = createTheme({
     h6: { fontWeight: 600, color: "#1a1a2e" },
   },
   shape: { borderRadius: 8 },
+  custom: {
+    magazineNotes: magazineNotesStyles("light", "#b8860b"),
+  },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
