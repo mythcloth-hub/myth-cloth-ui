@@ -253,7 +253,7 @@ export default function ChartsPage() {
         <>
           <SectionCard
             title="Collection Stats"
-            subtitle="Statistics loaded from /api/v1/stats."
+            subtitle="Collection overview and key breakdowns."
           >
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
