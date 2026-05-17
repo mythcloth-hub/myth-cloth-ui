@@ -191,6 +191,98 @@ function StatusStack({ data }: { data: StatusDatum[] }) {
   );
 }
 
+function getTopInsight(data: CountDatum[], noun: string) {
+  if (data.length === 0) return `No ${noun} data available yet.`;
+  const top = data[0];
+  return `${top.label} leads with ${top.value} figurines in this category.`;
+}
+
+function StoryLayout({ dashboard }: { dashboard: DashboardData }) {
+  const released = dashboard.statusData.find((item) => item.key === "RELEASED")?.value ?? 0;
+  const releaseRate = dashboard.totalFigurines > 0
+    ? Math.round((released / dashboard.totalFigurines) * 100)
+    : 0;
+
+  return (
+    <Stack spacing={2}>
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          border: "1px solid rgba(255,255,255,0.08)",
+          background:
+            "linear-gradient(120deg, rgba(212,175,55,0.22) 0%, rgba(79,195,247,0.12) 55%, rgba(129,199,132,0.14) 100%)",
+        }}
+      >
+        <Typography variant="overline" sx={{ letterSpacing: 1.2, color: "text.secondary" }}>
+          Collection Story
+        </Typography>
+        <Typography variant="h4" sx={{ fontSize: { xs: "1.6rem", md: "2.1rem" }, fontWeight: 800, mb: 1 }}>
+          The current Myth Cloth catalog in one narrative flow
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 820, mb: 2.5 }}>
+          The collection has {dashboard.totalFigurines} figurines total, and {releaseRate}% are already released.
+          The sections below highlight where the catalog is concentrated and how status evolves.
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <MetricCard label="Total Figurines" value={String(dashboard.totalFigurines)} accent="#d4af37" />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <MetricCard label="Released" value={String(released)} accent="#81c784" />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <MetricCard label="Release Rate" value={`${releaseRate}%`} accent="#4fc3f7" />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <MetricCard label="Release Status Types" value={String(dashboard.statusData.length)} accent="#ffb74d" />
+          </Grid>
+        </Grid>
+      </Paper>
+
+      <SectionCard
+        title="1. Catalog Concentration"
+        subtitle={getTopInsight(dashboard.lineupData, "lineup")}
+      >
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, xl: 6 }}>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+              Top Lineups
+            </Typography>
+            <HorizontalBars data={dashboard.lineupData.slice(0, 10)} />
+          </Grid>
+          <Grid size={{ xs: 12, xl: 6 }}>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+              Top Series
+            </Typography>
+            <HorizontalBars data={dashboard.seriesData.slice(0, 10)} />
+          </Grid>
+        </Grid>
+      </SectionCard>
+
+      <SectionCard
+        title="2. Release Journey"
+        subtitle={getTopInsight(dashboard.statusData, "release status")}
+      >
+        <StatusStack data={dashboard.statusData} />
+      </SectionCard>
+
+      <SectionCard
+        title="3. Character Group Emphasis"
+        subtitle={getTopInsight(dashboard.groupData, "group")}
+      >
+        <HorizontalBars data={dashboard.groupData.slice(0, 12)} />
+      </SectionCard>
+
+      <SectionCard
+        title="4. Anniversary Presence"
+        subtitle={getTopInsight(dashboard.anniversaryData, "anniversary")}
+      >
+        <HorizontalBars data={dashboard.anniversaryData.slice(0, 12)} />
+      </SectionCard>
+    </Stack>
+  );
+}
+
 export default function ChartsPage() {
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -230,7 +322,7 @@ export default function ChartsPage() {
   return (
     <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.6rem", md: "2.2rem" }, fontWeight: 700 }}>
+        <Typography variant="h4" sx={{ fontSize: { xs: "1.6rem", md: "2.2rem" }, fontWeight: 700, mb: 1.5 }}>
           Statistics
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 1, maxWidth: 760 }}>
@@ -250,67 +342,7 @@ export default function ChartsPage() {
           <CircularProgress />
         </Box>
       ) : (
-        <>
-          <SectionCard
-            title="Collection Stats"
-            subtitle="Collection overview and key breakdowns."
-          >
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-                <MetricCard label="Total Figurines" value={String(dashboard.totalFigurines)} accent="#d4af37" />
-              </Grid>
-            </Grid>
-          </SectionCard>
-
-          <Grid container spacing={2} sx={{ mt: 0.5 }}>
-            <Grid size={{ xs: 12, lg: 6 }}>
-              <SectionCard
-                title="Lineup Distribution"
-                subtitle="Count of figurines by lineup."
-              >
-                <HorizontalBars data={dashboard.lineupData} />
-              </SectionCard>
-            </Grid>
-            <Grid size={{ xs: 12, lg: 6 }}>
-              <SectionCard
-                title="Series Distribution"
-                subtitle="Count of figurines by series."
-              >
-                <HorizontalBars data={dashboard.seriesData} />
-              </SectionCard>
-            </Grid>
-          </Grid>
-
-          <Grid container spacing={2} sx={{ mt: 0.5 }}>
-            <Grid size={{ xs: 12, lg: 6 }}>
-              <SectionCard
-                title="Group Distribution"
-                subtitle="Count of figurines by group."
-              >
-                <HorizontalBars data={dashboard.groupData} />
-              </SectionCard>
-            </Grid>
-            <Grid size={{ xs: 12, lg: 6 }}>
-              <SectionCard
-                title="Anniversary Distribution"
-                subtitle="Count of figurines by anniversary."
-              >
-                <HorizontalBars data={dashboard.anniversaryData} />
-              </SectionCard>
-            </Grid>
-          </Grid>
-
-          <Grid container spacing={2} sx={{ mt: 0.5 }}>
-            <Grid size={{ xs: 12 }}>
-              <SectionCard
-                title="Release Status Mix"
-                subtitle="Distribution of announced, released, prototype, unreleased, and rumored figurines."
-              >
-                <StatusStack data={dashboard.statusData} />
-              </SectionCard>
-            </Grid>
-          </Grid>
-        </>
+        <StoryLayout dashboard={dashboard} />
       )}
     </Box>
   );
