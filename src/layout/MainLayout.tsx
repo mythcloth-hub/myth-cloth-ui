@@ -23,6 +23,7 @@ import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
 import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
+import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
 
@@ -44,6 +45,7 @@ const NAV_SECTIONS: NavSection[] = [
     heading: "",
     items: [
       { label: "Collection",    path: "/figurines",      icon: <CollectionsOutlinedIcon /> },
+      { label: "Charts",        path: "/charts",         icon: <InsightsOutlinedIcon /> },
       { label: "Distributors",  path: "/distributors",   icon: <LocalShippingOutlinedIcon /> },
       { label: "Anniversaries", path: "/anniversaries",  icon: <CakeOutlinedIcon /> },
     ],
