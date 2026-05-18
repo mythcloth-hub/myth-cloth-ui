@@ -20,27 +20,33 @@ import {
 } from "../api/releaseStatsApi";
 
 function getLineupColor(lineup: string) {
-  const palette = ["#4fc3f7", "#81c784", "#ffb74d", "#ba68c8", "#64b5f6", "#f06292", "#4db6ac", "#ffd54f"];
+  const palette = ["#D4AF37", "#4AA3D8", "#E7A6C7", "#7B61C8", "#C97A3D", "#7FA36B", "#B8C6D9", "#6E7681"];
   const hash = lineup.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return palette[hash % palette.length];
 }
 
 function buildChartLineupColors(lineups: string[]) {
-  const priorityColors: Record<string, string> = {
-    "Myth Cloth": "#f6c344",
-    "Myth Cloth EX": "#4fc3f7",
+  const themedColors: Record<string, string> = {
+    "Myth Cloth": "#D4AF37",
+    "Myth Cloth EX": "#4AA3D8",
+    "Saintia Sho": "#E7A6C7",
+    Omega: "#7B61C8",
+    Appendix: "#C97A3D",
+    Revival: "#7FA36B",
+    "Legend of Sanctuary": "#B8C6D9",
+    Other: "#6E7681",
   };
-  const secondaryLineups = lineups.filter((lineup) => !(lineup in priorityColors));
+  const secondaryLineups = lineups.filter((lineup) => !(lineup in themedColors));
 
   return Object.fromEntries(
     lineups.map((lineup) => {
-      if (priorityColors[lineup]) {
-        return [lineup, priorityColors[lineup]];
+      if (themedColors[lineup]) {
+        return [lineup, themedColors[lineup]];
       }
 
       const secondaryIndex = secondaryLineups.indexOf(lineup);
       const hue = Math.round((secondaryIndex * 360) / Math.max(secondaryLineups.length, 1));
-      return [lineup, `hsl(${hue} 38% 52%)`];
+      return [lineup, `hsl(${hue} 28% 56%)`];
     }),
   );
 }
