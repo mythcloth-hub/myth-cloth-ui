@@ -2,13 +2,24 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Box,
+  Button,
+  Card,
+  CardMedia,
+  Chip,
   CircularProgress,
   Grid,
   Paper,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 
+import {
+  getReleaseYearDetail,
+  getReleaseYearsSummary,
+  type ReleaseYearMonthDetail,
+  type ReleaseYearSummary,
+} from "../api/releaseStatsApi";
 import { getStats, type StatsResponse } from "../api/statsApi";
 
 const RELEASE_STATUS_META: Record<string, { label: string; color: string }> = {
@@ -197,7 +208,228 @@ function getTopInsight(data: CountDatum[], noun: string) {
   return `${top.label} leads with ${top.value} figurines in this category.`;
 }
 
-function StoryLayout({ dashboard }: { dashboard: DashboardData }) {
+function getLineupColor(lineup: string) {
+  const palette = ["#4fc3f7", "#81c784", "#ffb74d", "#ba68c8", "#64b5f6", "#f06292", "#4db6ac", "#ffd54f"];
+  const hash = lineup.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return palette[hash % palette.length];
+}
+
+function ReleaseYearsSummaryView({
+  years,
+  onSelectYear,
+}: {
+  years: ReleaseYearSummary[];
+  onSelectYear: (year: number) => void;
+}) {
+  if (years.length === 0) {
+    return (
+      <Box sx={{ minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Typography variant="body2" color="text.secondary">
+          No release timeline data available.
+        </Typography>
+      </Box>
+    );
+  }
+
+  const sortedYears = [...years].sort((a, b) => b.year - a.year);
+  const maxCount = Math.max(
+    ...sortedYears.map((item) => item.lineUp.reduce((sum, line) => sum + line.count, 0)),
+    1,
+  );
+
+  return (
+    <Grid container spacing={1.5}>
+      {sortedYears.map((yearItem) => {
+        const total = yearItem.lineUp.reduce((sum, line) => sum + line.count, 0);
+        const topLineup = [...yearItem.lineUp].sort((a, b) => b.count - a.count)[0];
+        return (
+          <Grid key={yearItem.year} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
+            <Paper
+              onClick={() => onSelectYear(yearItem.year)}
+              sx={{
+                p: 2,
+                height: "100%",
+                cursor: "pointer",
+                border: "1px solid rgba(255,255,255,0.06)",
+                bgcolor: "rgba(255,255,255,0.02)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+                transition: "border-color 0.2s, background 0.2s",
+                "&:hover": {
+                  borderColor: topLineup ? getLineupColor(topLineup.line) : "rgba(255,255,255,0.18)",
+                  bgcolor: "rgba(255,255,255,0.05)",
+                },
+              }}
+            >
+              <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1 }}>
+                {yearItem.year}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {total} releases
+              </Typography>
+
+              <Box sx={{ height: 6, borderRadius: 999, overflow: "hidden", bgcolor: "rgba(255,255,255,0.08)", mt: "auto" }}>
+                <Box sx={{ display: "flex", width: `${(total / maxCount) * 100}%`, height: "100%" }}>
+                  {yearItem.lineUp
+                    .slice()
+                    .sort((a, b) => b.count - a.count)
+                    .map((line) => (
+                      <Tooltip key={`${yearItem.year}-${line.line}`} title={`${line.line}: ${line.count}`}>
+                        <Box
+                          sx={{
+                            width: `${total === 0 ? 0 : (line.count / total) * 100}%`,
+                            bgcolor: getLineupColor(line.line),
+                          }}
+                        />
+                      </Tooltip>
+                    ))}
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+        );
+      })}
+    </Grid>
+  );
+}
+
+function FigurineImageCard({ figurine, lineupColor }: { figurine: { id: number; name: string; url?: string }; lineupColor: string }) {
+  return (
+    <Card
+      sx={{
+        width: 130,
+        flexShrink: 0,
+        bgcolor: "rgba(255,255,255,0.03)",
+        border: `1px solid ${lineupColor}44`,
+        borderRadius: 2,
+        overflow: "hidden",
+      }}
+    >
+      {figurine.url ? (
+        <CardMedia
+          component="img"
+          image={figurine.url}
+          alt={figurine.name}
+          sx={{ height: 150, objectFit: "cover", objectPosition: "top" }}
+        />
+      ) : (
+        <Box
+          sx={{
+            height: 150,
+            bgcolor: "rgba(255,255,255,0.06)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Typography variant="caption" color="text.secondary">
+            No image
+          </Typography>
+        </Box>
+      )}
+      <Box sx={{ p: 1 }}>
+        <Typography variant="caption" sx={{ display: "block", lineHeight: 1.3, fontWeight: 600 }}>
+          {figurine.name}
+        </Typography>
+      </Box>
+    </Card>
+  );
+}
+
+function ReleaseYearDetailView({ months }: { months: ReleaseYearMonthDetail[] }) {
+  if (months.length === 0) {
+    return (
+      <Box sx={{ minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Typography variant="body2" color="text.secondary">
+          No monthly releases found for this year.
+        </Typography>
+      </Box>
+    );
+  }
+
+  const sortedMonths = [...months].sort((a, b) => a.month - b.month);
+
+  return (
+    <Stack spacing={0}>
+      {sortedMonths.map((monthItem, monthIndex) => (
+        <Box
+          key={`${monthItem.month}-${monthItem.name}`}
+          sx={{ display: "flex", gap: 2 }}
+        >
+          {/* Timeline spine */}
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: 40, flexShrink: 0 }}>
+            <Box
+              sx={{
+                width: 12,
+                height: 12,
+                borderRadius: "50%",
+                bgcolor: "primary.main",
+                mt: 2.5,
+                flexShrink: 0,
+                zIndex: 1,
+              }}
+            />
+            {monthIndex < sortedMonths.length - 1 && (
+              <Box sx={{ width: 2, flex: 1, bgcolor: "rgba(255,255,255,0.08)", mt: 0.5 }} />
+            )}
+          </Box>
+
+          {/* Month content */}
+          <Box sx={{ flex: 1, pb: 3 }}>
+            <Typography variant="overline" sx={{ color: "text.secondary", letterSpacing: 1 }}>
+              {monthItem.name}
+            </Typography>
+            {monthItem.lineUp.map((lineup) => (
+              <Box key={`${monthItem.month}-${lineup.line}`} sx={{ mt: 1 }}>
+                <Chip
+                  size="small"
+                  label={lineup.line}
+                  sx={{
+                    mb: 1,
+                    bgcolor: `${getLineupColor(lineup.line)}22`,
+                    color: getLineupColor(lineup.line),
+                    fontWeight: 700,
+                    border: `1px solid ${getLineupColor(lineup.line)}44`,
+                  }}
+                />
+                <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+                  {lineup.figurines.map((figurine) => (
+                    <FigurineImageCard
+                      key={figurine.id}
+                      figurine={figurine}
+                      lineupColor={getLineupColor(lineup.line)}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      ))}
+    </Stack>
+  );
+}
+
+function StoryLayout({
+  dashboard,
+  releaseSummary,
+  releaseDetail,
+  releaseLoading,
+  releaseError,
+  selectedYear,
+  onSelectYear,
+  onBackToSummary,
+}: {
+  dashboard: DashboardData;
+  releaseSummary: ReleaseYearSummary[];
+  releaseDetail: ReleaseYearMonthDetail[];
+  releaseLoading: boolean;
+  releaseError: string | null;
+  selectedYear: number | null;
+  onSelectYear: (year: number) => void;
+  onBackToSummary: () => void;
+}) {
   const released = dashboard.statusData.find((item) => item.key === "RELEASED")?.value ?? 0;
   const releaseRate = dashboard.totalFigurines > 0
     ? Math.round((released / dashboard.totalFigurines) * 100)
@@ -279,6 +511,42 @@ function StoryLayout({ dashboard }: { dashboard: DashboardData }) {
       >
         <HorizontalBars data={dashboard.anniversaryData.slice(0, 12)} />
       </SectionCard>
+
+      <SectionCard
+        title="5. Release Timeline"
+        subtitle={
+          selectedYear
+            ? `Monthly release details for ${selectedYear}.`
+            : "Yearly release summary by lineup. Click a year to drill down."
+        }
+      >
+        {releaseError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {releaseError}
+          </Alert>
+        )}
+
+        {selectedYear && (
+          <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              {selectedYear} detail
+            </Typography>
+            <Button variant="outlined" size="small" onClick={onBackToSummary}>
+              Back to yearly summary
+            </Button>
+          </Box>
+        )}
+
+        {releaseLoading ? (
+          <Box sx={{ minHeight: 180, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <CircularProgress size={28} />
+          </Box>
+        ) : selectedYear ? (
+          <ReleaseYearDetailView months={releaseDetail} />
+        ) : (
+          <ReleaseYearsSummaryView years={releaseSummary} onSelectYear={onSelectYear} />
+        )}
+      </SectionCard>
     </Stack>
   );
 }
@@ -287,6 +555,11 @@ export default function ChartsPage() {
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [releaseSummary, setReleaseSummary] = useState<ReleaseYearSummary[]>([]);
+  const [releaseDetail, setReleaseDetail] = useState<ReleaseYearMonthDetail[]>([]);
+  const [releaseLoading, setReleaseLoading] = useState(false);
+  const [releaseError, setReleaseError] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -296,11 +569,15 @@ export default function ChartsPage() {
       setErrorMessage(null);
 
       try {
-        const response = await getStats();
+        const [statsResponse, releaseSummaryResponse] = await Promise.all([
+          getStats(),
+          getReleaseYearsSummary(),
+        ]);
 
         if (!active) return;
 
-        setStats(response);
+        setStats(statsResponse);
+        setReleaseSummary(releaseSummaryResponse);
       } catch (error) {
         console.error(error);
         if (!active) return;
@@ -316,6 +593,29 @@ export default function ChartsPage() {
       active = false;
     };
   }, []);
+
+  const handleSelectYear = async (year: number) => {
+    setSelectedYear(year);
+    setReleaseLoading(true);
+    setReleaseError(null);
+
+    try {
+      const detail = await getReleaseYearDetail(year);
+      setReleaseDetail(detail);
+    } catch (error) {
+      console.error(error);
+      setReleaseError("Failed to load year details. Please try again.");
+      setReleaseDetail([]);
+    } finally {
+      setReleaseLoading(false);
+    }
+  };
+
+  const handleBackToSummary = () => {
+    setSelectedYear(null);
+    setReleaseDetail([]);
+    setReleaseError(null);
+  };
 
   const dashboard = useMemo(() => (stats ? buildDashboardData(stats) : null), [stats]);
 
@@ -342,7 +642,16 @@ export default function ChartsPage() {
           <CircularProgress />
         </Box>
       ) : (
-        <StoryLayout dashboard={dashboard} />
+        <StoryLayout
+          dashboard={dashboard}
+          releaseSummary={releaseSummary}
+          releaseDetail={releaseDetail}
+          releaseLoading={releaseLoading}
+          releaseError={releaseError}
+          selectedYear={selectedYear}
+          onSelectYear={handleSelectYear}
+          onBackToSummary={handleBackToSummary}
+        />
       )}
     </Box>
   );
