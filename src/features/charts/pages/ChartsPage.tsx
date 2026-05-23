@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Box,
+  Chip,
   CircularProgress,
   Grid,
   Paper,
@@ -78,7 +79,8 @@ function SectionCard({
       sx={{
         p: { xs: 2, md: 3 },
         height: "100%",
-        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: 4,
+        border: "1px solid rgba(255,255,255,0.08)",
         background: "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)",
         backdropFilter: "blur(10px)",
       }}
@@ -99,9 +101,9 @@ function MetricCard({ label, value, accent }: { label: string; value: string; ac
     <Paper
       sx={{
         p: 2,
-        borderRadius: 3,
-        border: "1px solid rgba(255,255,255,0.06)",
-        background: `linear-gradient(135deg, ${accent}22 0%, rgba(255,255,255,0.02) 75%)`,
+        borderRadius: 4,
+        border: "1px solid rgba(255,255,255,0.08)",
+        background: `linear-gradient(140deg, ${accent}24 0%, rgba(255,255,255,0.03) 70%)`,
       }}
     >
       <Typography variant="body2" color="text.secondary">
@@ -198,47 +200,8 @@ function getTopInsight(data: CountDatum[], noun: string) {
 }
 
 function StoryLayout({ dashboard }: { dashboard: DashboardData }) {
-  const released = dashboard.statusData.find((item) => item.key === "RELEASED")?.value ?? 0;
-  const releaseRate = dashboard.totalFigurines > 0
-    ? Math.round((released / dashboard.totalFigurines) * 100)
-    : 0;
-
   return (
     <Stack spacing={2}>
-      <Paper
-        sx={{
-          p: { xs: 2.5, md: 3 },
-          border: "1px solid rgba(255,255,255,0.08)",
-          background:
-            "linear-gradient(120deg, rgba(212,175,55,0.22) 0%, rgba(79,195,247,0.12) 55%, rgba(129,199,132,0.14) 100%)",
-        }}
-      >
-        <Typography variant="overline" sx={{ letterSpacing: 1.2, color: "text.secondary" }}>
-          Collection Story
-        </Typography>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.6rem", md: "2.1rem" }, fontWeight: 800, mb: 1 }}>
-          The current Myth Cloth catalog in one narrative flow
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 820, mb: 2.5 }}>
-          The collection has {dashboard.totalFigurines} figurines total, and {releaseRate}% are already released.
-          The sections below highlight where the catalog is concentrated and how status evolves.
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <MetricCard label="Total Figurines" value={String(dashboard.totalFigurines)} accent="#d4af37" />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <MetricCard label="Released" value={String(released)} accent="#81c784" />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <MetricCard label="Release Rate" value={`${releaseRate}%`} accent="#4fc3f7" />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <MetricCard label="Release Status Types" value={String(dashboard.statusData.length)} accent="#ffb74d" />
-          </Grid>
-        </Grid>
-      </Paper>
-
       <SectionCard
         title="1. Catalog Concentration"
         subtitle={getTopInsight(dashboard.lineupData, "lineup")}
@@ -318,18 +281,51 @@ export default function ChartsPage() {
   }, []);
 
   const dashboard = useMemo(() => (stats ? buildDashboardData(stats) : null), [stats]);
+  const released = dashboard?.statusData.find((item) => item.key === "RELEASED")?.value ?? 0;
+  const releaseRate = dashboard && dashboard.totalFigurines > 0
+    ? Math.round((released / dashboard.totalFigurines) * 100)
+    : 0;
 
   return (
-    <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.6rem", md: "2.2rem" }, fontWeight: 700, mb: 1.5 }}>
-          Statistics
+    <Box
+      sx={{
+        p: { xs: 1.5, sm: 2, md: 3 },
+        minHeight: "100%",
+        background:
+          "radial-gradient(circle at top left, rgba(212,175,55,0.1), transparent 24%), radial-gradient(circle at 85% 8%, rgba(79,195,247,0.1), transparent 20%)",
+      }}
+    >
+      <Paper
+        sx={{
+          mb: 3,
+          p: { xs: 2, md: 3 },
+          borderRadius: 4,
+          border: "1px solid rgba(255,255,255,0.08)",
+          background:
+            "radial-gradient(circle at top left, rgba(212,175,55,0.14), transparent 26%), radial-gradient(circle at right, rgba(79,195,247,0.14), transparent 24%), linear-gradient(135deg, rgba(10,14,22,0.98) 0%, rgba(15,20,31,0.98) 100%)",
+          boxShadow: "0 24px 70px rgba(0,0,0,0.25)",
+        }}
+      >
+        <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 2.2 }}>
+          COLLECTION ANALYTICS
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mt: 1, maxWidth: 760 }}>
-          Live summary from the backend statistics endpoint for total figurines, release status, and catalog
-          breakdowns.
+        <Typography variant="h3" sx={{ fontSize: { xs: "2rem", md: "2.7rem" }, fontWeight: 900, lineHeight: 1.02 }}>
+          Statistics overview
         </Typography>
-      </Box>
+        <Typography variant="body1" sx={{ mt: 1, maxWidth: 780, color: "rgba(255,255,255,0.72)" }}>
+          Get a quick overview of your collection, including total figurines, release status, and how your catalog
+          is distributed across categories.
+        </Typography>
+
+        {dashboard && (
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap" sx={{ mt: 2.25 }}>
+            <Chip label={`${dashboard.totalFigurines} total figurines`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
+            <Chip label={`${dashboard.totalFigurines - released} pending`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
+            <Chip label={`${releaseRate}% release rate`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
+            <Chip label={`${released} released`} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
+          </Stack>
+        )}
+      </Paper>
 
       {errorMessage && (
         <Alert severity="error" sx={{ mb: 3 }}>

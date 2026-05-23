@@ -693,14 +693,14 @@ export default function ReleasesPage() {
         />
         <Stack spacing={2} sx={{ position: "relative" }}>
           <Box>
-            <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 2.4 }}>
-              CHRONICLE OF RELEASES
+            <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 2.2 }}>
+              COLLECTION ANALYTICS
             </Typography>
-            <Typography variant="h3" sx={{ fontSize: { xs: "2rem", md: "2.8rem" }, fontWeight: 900, lineHeight: 1.02 }}>
-              A zodiac-inspired view of your Myth Cloth history
+            <Typography variant="h3" sx={{ fontSize: { xs: "2rem", md: "2.7rem" }, fontWeight: 900, lineHeight: 1.02 }}>
+              Release timeline by year
             </Typography>
             <Typography variant="body1" sx={{ mt: 1, maxWidth: 760, color: "rgba(255,255,255,0.72)" }}>
-              Explore the collection like a timeline of sagas: each year is stacked by lineup, and each month unfolds into a gallery of releases.
+              Explore your release history by lineup and drill down from yearly trends into month-by-month figurine drops.
             </Typography>
           </Box>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
@@ -718,7 +718,21 @@ export default function ReleasesPage() {
       )}
 
       {/* Bar chart — always visible */}
-      <Paper sx={{ p: 0, mb: 3, borderRadius: 4, bgcolor: "transparent", boxShadow: "none" }}>
+      <Paper
+        sx={{
+          p: { xs: 1.5, md: 2 },
+          mb: 3,
+          borderRadius: 4,
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))",
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+          Yearly release snapshot
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Select a year to inspect lineup composition and monthly release details.
+        </Typography>
         {loading ? (
           <Box sx={{ minHeight: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <CircularProgress />

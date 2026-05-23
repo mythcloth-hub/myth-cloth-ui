@@ -368,9 +368,6 @@ function YearExtremeCard({
           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
             {figurine?.name ?? "No figurine data"}
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.4 }}>
-            {figurine?.id ? `ID ${figurine.id}` : "ID not available"}
-          </Typography>
           <Chip
             size="small"
             label={formatCurrency(price)}
@@ -491,15 +488,23 @@ export default function PricingPage() {
         }}
       >
         <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 2.2 }}>
-          PRICE ANALYSIS
+          COLLECTION ANALYTICS
         </Typography>
         <Typography variant="h3" sx={{ fontSize: { xs: "2rem", md: "2.7rem" }, fontWeight: 900, lineHeight: 1.02 }}>
-          Release pricing by year
+          Pricing analysis by year
         </Typography>
         <Typography variant="body1" sx={{ mt: 1, maxWidth: 780, color: "rgba(255,255,255,0.72)" }}>
-          This section tracks yearly release prices with average, highest, lowest, and release volume metrics.
-          It is prepared to include additional pricing indicators as new endpoints are added.
+          Track average, highest, and lowest release prices over time, plus yearly release volume and price extremes.
         </Typography>
+
+        {summary && (
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap" sx={{ mt: 2.25 }}>
+            <Chip label={`${summary.firstYear} - ${summary.lastYear}`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
+            <Chip label={`${formatCount(summary.totalReleases)} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
+            <Chip label={`${formatCurrency(summary.weightedAverage)} weighted avg`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
+            <Chip label={`${formatCurrency(summary.highestPrice)} peak price`} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
+          </Stack>
+        )}
 
         {summary && (
           <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mt: 2.5 }}>
@@ -581,9 +586,6 @@ export default function PricingPage() {
                     borderRadius: 3,
                     border: "1px solid rgba(255,255,255,0.08)",
                     bgcolor: "rgba(255,255,255,0.02)",
-                    position: { xs: "static", lg: "sticky" },
-                    top: { lg: 20 },
-                    alignSelf: "start",
                   }}
                 >
                   <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
@@ -635,6 +637,9 @@ export default function PricingPage() {
                     borderRadius: 3,
                     border: "1px solid rgba(255,255,255,0.08)",
                     bgcolor: "rgba(255,255,255,0.02)",
+                    position: { xs: "static", lg: "sticky" },
+                    top: { lg: 20 },
+                    alignSelf: "start",
                   }}
                 >
                   <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
