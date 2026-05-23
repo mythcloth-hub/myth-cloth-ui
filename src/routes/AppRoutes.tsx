@@ -8,6 +8,7 @@ import AnniversaryListPage from "../features/anniversaries/pages/AnniversaryList
 import AnniversaryFormPage from "../features/anniversaries/pages/AnniversaryFormPage";
 import ChartsPage from "../features/charts/pages/ChartsPage";
 import ReleasesPage from "../features/charts/pages/ReleasesPage";
+import PricingPage from "../features/charts/pages/PricingPage";
 import FigurineCollectionPage from "../features/figurines/pages/FigurineCollectionPage";
 import FigurineDetailPage from "../features/figurines/pages/FigurineDetailPage";
 import FigurineFormPage from "../features/figurines/pages/FigurineFormPage";
@@ -24,6 +25,7 @@ export default function AppRoutes() {
           <Route path="/figurines/:id/edit" element={<FigurineFormPage />} />
           <Route path="/charts" element={<ChartsPage />} />
           <Route path="/releases" element={<ReleasesPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/distributors" element={<DistributorListPage />} />
           <Route path="/distributors/new" element={<DistributorFormPage />} />
           <Route path="/distributors/edit/:id" element={<DistributorFormPage />} />
