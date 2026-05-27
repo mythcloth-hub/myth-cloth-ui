@@ -96,26 +96,6 @@ function SectionCard({
   );
 }
 
-function MetricCard({ label, value, accent }: { label: string; value: string; accent: string }) {
-  return (
-    <Paper
-      sx={{
-        p: 2,
-        borderRadius: 4,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: `linear-gradient(140deg, ${accent}24 0%, rgba(255,255,255,0.03) 70%)`,
-      }}
-    >
-      <Typography variant="body2" color="text.secondary">
-        {label}
-      </Typography>
-      <Typography variant="h4" sx={{ fontWeight: 700, mt: 0.75 }}>
-        {value}
-      </Typography>
-    </Paper>
-  );
-}
-
 function HorizontalBars({ data }: { data: CountDatum[] }) {
   if (data.length === 0) {
     return (

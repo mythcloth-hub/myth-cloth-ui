@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   AppBar,
+  Avatar,
   Box,
+  Button,
   Divider,
   Drawer,
   IconButton,
@@ -15,6 +17,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import MenuIcon from "@mui/icons-material/Menu";
 import CollectionsOutlinedIcon from "@mui/icons-material/CollectionsOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
@@ -26,6 +29,8 @@ import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import { useGoogleAuth } from "../auth/GoogleAuthContext";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
 
@@ -69,6 +74,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { themeId, setThemeId } = useAppTheme();
+  const { user, isAuthenticated, loginWithGoogle, logout } = useGoogleAuth();
+
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  const handleGoogleSuccess = (response: CredentialResponse) => {
+    loginWithGoogle(response);
+  };
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -249,12 +261,75 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           })}
         </Box>
       </Box>
+
+      {/* Google auth */}
+      <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+        <Typography
+          variant="overline"
+          sx={{
+            display: "block",
+            px: 1,
+            pb: 1,
+            color: "text.secondary",
+            fontSize: "0.65rem",
+            letterSpacing: "0.1em",
+          }}
+        >
+          Account
+        </Typography>
+
+        {isAuthenticated && user ? (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+              px: 1,
+              py: 1,
+              borderRadius: 1.5,
+              backgroundColor: "rgba(255,255,255,0.04)",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Avatar src={user.picture} alt={user.name} sx={{ width: 30, height: 30 }}>
+                {user.name.charAt(0)}
+              </Avatar>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="caption" sx={{ color: "text.primary", fontWeight: 600 }} noWrap>
+                  {user.name}
+                </Typography>
+                <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }} noWrap>
+                  {user.email}
+                </Typography>
+              </Box>
+            </Box>
+            <Button
+              variant="outlined"
+              size="small"
+              color="primary"
+              startIcon={<LogoutOutlinedIcon />}
+              onClick={logout}
+            >
+              Logout
+            </Button>
+          </Box>
+        ) : googleClientId ? (
+          <Box sx={{ px: 1, "& > div": { width: "100%" } }}>
+            <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => {}} text="signin_with" />
+          </Box>
+        ) : (
+          <Typography variant="caption" sx={{ px: 1, color: "error.main", display: "block" }}>
+            Google client ID is missing.
+          </Typography>
+        )}
+      </Box>
     </Box>
   );
 }
 
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, isAuthenticated } = useGoogleAuth();
 
   const drawerSx = {
     width: DRAWER_WIDTH,
@@ -284,9 +359,14 @@ export default function MainLayout() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 700 }}>
+          <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 700, flexGrow: 1 }}>
             MythCloth
           </Typography>
+          {isAuthenticated && user ? (
+            <Avatar src={user.picture || undefined} alt={user.name} sx={{ width: 30, height: 30 }}>
+              {user.name.charAt(0)}
+            </Avatar>
+          ) : null}
         </Toolbar>
       </AppBar>
 
