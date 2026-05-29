@@ -18,6 +18,8 @@ import {
   Typography,
 } from "@mui/material";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import FacebookRoundedIcon from "@mui/icons-material/FacebookRounded";
+import GoogleIcon from "@mui/icons-material/Google";
 import MenuIcon from "@mui/icons-material/Menu";
 import CollectionsOutlinedIcon from "@mui/icons-material/CollectionsOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
@@ -30,7 +32,7 @@ import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-import { useGoogleAuth } from "../auth/GoogleAuthContext";
+import { useAuth } from "../auth/AuthContext";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
 
@@ -74,12 +76,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { themeId, setThemeId } = useAppTheme();
-  const { user, isAuthenticated, loginWithGoogle, logout } = useGoogleAuth();
+  const { user, isAuthenticated, facebookEnabled, loginWithGoogle, loginWithFacebook, logout } = useAuth();
 
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   const handleGoogleSuccess = (response: CredentialResponse) => {
-    loginWithGoogle(response);
+    void loginWithGoogle(response);
+  };
+
+  const handleFacebookLogin = () => {
+    void loginWithFacebook().catch((error) => {
+      console.error("[AUTH] Facebook sign-in failed", error);
+    });
   };
 
   const isActive = (path: string) => location.pathname.startsWith(path);
@@ -313,13 +321,111 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               Logout
             </Button>
           </Box>
-        ) : googleClientId ? (
-          <Box sx={{ px: 1, "& > div": { width: "100%" } }}>
-            <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => {}} text="signin_with" />
+        ) : googleClientId || facebookEnabled ? (
+          <Box
+            sx={{
+              px: 1,
+              py: 1.25,
+              borderRadius: 2,
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.25 }}>
+              <Box>
+                <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 700 }}>
+                  Choose a sign-in method
+                </Typography>
+                <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 0.25 }}>
+                  Connect with either provider below.
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                {googleClientId ? (
+                  <Box
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      display: "grid",
+                      placeItems: "center",
+                      bgcolor: "rgba(234,67,53,0.12)",
+                      border: "1px solid rgba(234,67,53,0.28)",
+                    }}
+                  >
+                    <GoogleIcon sx={{ color: "#ea4335", fontSize: 17 }} />
+                  </Box>
+                ) : null}
+                {facebookEnabled ? (
+                  <Box
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      display: "grid",
+                      placeItems: "center",
+                      bgcolor: "rgba(24,119,242,0.12)",
+                      border: "1px solid rgba(24,119,242,0.28)",
+                    }}
+                  >
+                    <FacebookRoundedIcon sx={{ color: "#1877f2", fontSize: 17 }} />
+                  </Box>
+                ) : null}
+              </Box>
+            </Box>
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {googleClientId ? (
+                <Box
+                  sx={{
+                    p: 1,
+                    borderRadius: 1.5,
+                    backgroundColor: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.9 }}>
+                    <GoogleIcon sx={{ color: "#ea4335", fontSize: 18 }} />
+                    <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
+                      Continue with Google
+                    </Typography>
+                  </Box>
+                  <Box sx={{ "& > div": { width: "100%" } }}>
+                    <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => {}} text="continue_with" />
+                  </Box>
+                </Box>
+              ) : null}
+
+              {facebookEnabled ? (
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<FacebookRoundedIcon />}
+                  onClick={handleFacebookLogin}
+                  sx={{
+                    justifyContent: "flex-start",
+                    px: 1.25,
+                    py: 1,
+                    borderRadius: 1.5,
+                    borderColor: "rgba(24,119,242,0.38)",
+                    color: "#dce7ff",
+                    background: "linear-gradient(180deg, rgba(24,119,242,0.18) 0%, rgba(24,119,242,0.1) 100%)",
+                    "&:hover": {
+                      borderColor: "#1877f2",
+                      background: "linear-gradient(180deg, rgba(24,119,242,0.26) 0%, rgba(24,119,242,0.14) 100%)",
+                    },
+                  }}
+                >
+                  Continue with Facebook
+                </Button>
+              ) : null}
+            </Box>
           </Box>
         ) : (
           <Typography variant="caption" sx={{ px: 1, color: "error.main", display: "block" }}>
-            Google client ID is missing.
+            Auth provider configuration is missing.
           </Typography>
         )}
       </Box>
@@ -329,7 +435,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, isAuthenticated } = useGoogleAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const drawerSx = {
     width: DRAWER_WIDTH,

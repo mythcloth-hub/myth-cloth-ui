@@ -1,9 +1,9 @@
 
 import axios from "axios";
-import { getGoogleAccessToken } from "../auth/GoogleAuthContext";
+import { getStoredAuthProvider, getStoredAuthToken } from "../auth/authStorage";
 
 const httpClient = axios.create({
-  baseURL: "http://localhost:8080/api/v1",
+  baseURL: "http://localhost:9090/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
@@ -11,9 +11,15 @@ const httpClient = axios.create({
 
 // Log all outgoing requests
 httpClient.interceptors.request.use((config) => {
-  const token = getGoogleAccessToken();
+  const token = getStoredAuthToken();
+  const provider = getStoredAuthProvider();
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  if (provider) {
+    config.headers["X-Auth-Provider"] = provider;
   }
 
   console.log("[API REQUEST]", config.method?.toUpperCase(), config.url, config.params, config.data);
