@@ -1,3 +1,6 @@
+import { useAuth } from "../auth/AuthContext";
+import Button from "@mui/material/Button";
+import FacebookIcon from "@mui/icons-material/Facebook";
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -66,6 +69,7 @@ const NAV_SECTIONS: NavSection[] = [
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+    const { isAuthenticated, loginWithFacebook, facebookEnabled } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { themeId, setThemeId } = useAppTheme();
@@ -249,6 +253,54 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           })}
         </Box>
       </Box>
+
+      {/* Auth section: Facebook (and Google in future) */}
+      {!isAuthenticated && (
+        <Box sx={{ px: 2, pb: 3, pt: 2, borderTop: "1px solid rgba(24,119,242,0.08)", mt: 2 }}>
+          <Typography
+            variant="overline"
+            sx={{
+              display: "block",
+              px: 1,
+              pb: 1,
+              color: "#1877f2",
+              fontSize: "0.75rem",
+              letterSpacing: "0.1em",
+              fontWeight: 700,
+            }}
+          >
+            Sign in
+          </Typography>
+          {facebookEnabled && (
+            <Button
+              onClick={loginWithFacebook}
+              startIcon={<FacebookIcon sx={{ color: '#1877f2', fontSize: 24 }} />}
+              variant="outlined"
+              sx={{
+                width: "100%",
+                py: 1.1,
+                fontWeight: 600,
+                fontSize: "1rem",
+                color: '#1877f2',
+                borderColor: '#1877f2',
+                borderWidth: 2,
+                textTransform: "none",
+                borderRadius: 2,
+                background: '#fff',
+                '&:hover': {
+                  background: '#f0f4fa',
+                  borderColor: '#1565c0',
+                  color: '#1565c0',
+                  boxShadow: "0 2px 8px 0 rgba(24,119,242,0.10)",
+                },
+              }}
+            >
+              Facebook Login
+            </Button>
+          )}
+          {/* Future: Add Google login button here */}
+        </Box>
+      )}
     </Box>
   );
 }
