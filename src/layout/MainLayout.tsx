@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAuth } from "../auth/AuthContext";
 import Button from "@mui/material/Button";
 import FacebookIcon from "@mui/icons-material/Facebook";
@@ -29,8 +30,10 @@ import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
+import { alpha, useTheme } from "@mui/material/styles";
 
 const DRAWER_WIDTH = 230;
 
@@ -68,11 +71,52 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
+function useFacebookSDK() {
+  useEffect(() => {
+    if (document.getElementById('facebook-jssdk')) return;
+    const script = document.createElement('script');
+    script.id = 'facebook-jssdk';
+    script.src = 'https://connect.facebook.net/en_US/sdk.js';
+    script.async = true;
+    script.onload = () => {
+      window.FB && window.FB.init({
+        appId: import.meta.env.VITE_FACEBOOK_APP_ID,
+        cookie: true,
+        xfbml: true,
+        version: 'v19.0',
+      });
+    };
+    document.body.appendChild(script);
+  }, []);
+}
+
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-    const { isAuthenticated, loginWithFacebook, facebookEnabled } = useAuth();
+  const { isAuthenticated, session, loginWithFacebook, facebookEnabled, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { themeId, setThemeId } = useAppTheme();
+  const theme = useTheme();
+
+  const authCardSx = {
+    px: 1.25,
+    py: 1.1,
+    borderRadius: 2,
+    border: `1px solid ${alpha(theme.palette.text.primary, 0.12)}`,
+    background: `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.55)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+  };
+
+  const authButtonBaseSx = {
+    width: "100%",
+    py: 1,
+    fontWeight: 700,
+    fontSize: "0.9rem",
+    letterSpacing: "0.01em",
+    textTransform: "none",
+    borderRadius: 1.5,
+    borderWidth: 1.5,
+    justifyContent: "flex-start",
+    transition: "all 0.18s ease",
+  };
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -255,57 +299,102 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </Box>
 
       {/* Auth section: Facebook (and Google in future) */}
-      {!isAuthenticated && (
-        <Box sx={{ px: 2, pb: 3, pt: 2, borderTop: "1px solid rgba(24,119,242,0.08)", mt: 2 }}>
-          <Typography
-            variant="overline"
-            sx={{
-              display: "block",
-              px: 1,
-              pb: 1,
-              color: "#1877f2",
-              fontSize: "0.75rem",
-              letterSpacing: "0.1em",
-              fontWeight: 700,
-            }}
-          >
-            Sign in
-          </Typography>
-          {facebookEnabled && (
+      <Box sx={{ px: 2, pb: 3, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.7)}`, mt: 2 }}>
+        <Typography
+          variant="overline"
+          sx={{
+            display: "block",
+            px: 1,
+            pb: 1,
+            color: "text.secondary",
+            fontSize: "0.75rem",
+            letterSpacing: "0.1em",
+            fontWeight: 700,
+          }}
+        >
+          Account
+        </Typography>
+
+        {isAuthenticated ? (
+          <Box sx={authCardSx}>
+            <Typography
+              sx={{
+                fontWeight: 700,
+                color: theme.palette.success.main,
+                fontSize: "0.84rem",
+                letterSpacing: "0.03em",
+              }}
+            >
+              Signed in
+            </Typography>
+            {session?.displayName && (
+              <Typography sx={{ color: "text.primary", fontSize: "0.9rem", mt: 0.25, fontWeight: 600 }}>
+                {session.displayName}
+              </Typography>
+            )}
+            {session?.email && (
+              <Typography
+                sx={{
+                  color: "text.secondary",
+                  fontSize: "0.77rem",
+                  mb: 1.1,
+                  maxWidth: "100%",
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                }}
+              >
+                {session.email}
+              </Typography>
+            )}
             <Button
-              onClick={loginWithFacebook}
-              startIcon={<FacebookIcon sx={{ color: '#1877f2', fontSize: 24 }} />}
+              onClick={logout}
+              startIcon={<LogoutOutlinedIcon />}
               variant="outlined"
               sx={{
-                width: "100%",
-                py: 1.1,
-                fontWeight: 600,
-                fontSize: "1rem",
-                color: '#1877f2',
-                borderColor: '#1877f2',
-                borderWidth: 2,
-                textTransform: "none",
-                borderRadius: 2,
-                background: '#fff',
-                '&:hover': {
-                  background: '#f0f4fa',
-                  borderColor: '#1565c0',
-                  color: '#1565c0',
-                  boxShadow: "0 2px 8px 0 rgba(24,119,242,0.10)",
+                ...authButtonBaseSx,
+                color: theme.palette.error.main,
+                borderColor: alpha(theme.palette.error.main, 0.55),
+                backgroundColor: alpha(theme.palette.error.main, 0.08),
+                "&:hover": {
+                  borderColor: alpha(theme.palette.error.main, 0.9),
+                  backgroundColor: alpha(theme.palette.error.main, 0.16),
                 },
               }}
             >
-              Facebook Login
+              Log out
             </Button>
-          )}
-          {/* Future: Add Google login button here */}
-        </Box>
-      )}
+          </Box>
+        ) : (
+          <Box sx={authCardSx}>
+            {facebookEnabled && (
+              <Button
+                onClick={loginWithFacebook}
+                startIcon={<FacebookIcon sx={{ fontSize: 20, color: "inherit" }} />}
+                variant="outlined"
+                sx={{
+                  ...authButtonBaseSx,
+                  color: theme.palette.primary.main,
+                  borderColor: alpha(theme.palette.primary.main, 0.5),
+                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                  "&:hover": {
+                    borderColor: alpha(theme.palette.primary.main, 0.95),
+                    backgroundColor: alpha(theme.palette.primary.main, 0.16),
+                  },
+                }}
+              >
+                Continue with Facebook
+              </Button>
+            )}
+            {/* Future: Add Google login button here */}
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }
 
 export default function MainLayout() {
+  useFacebookSDK();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const drawerSx = {
