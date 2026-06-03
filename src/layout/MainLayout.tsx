@@ -2,9 +2,11 @@ import { useEffect } from "react";
 import { useAuth } from "../auth/AuthContext";
 import Button from "@mui/material/Button";
 import FacebookIcon from "@mui/icons-material/Facebook";
+import GoogleIcon from "@mui/icons-material/Google";
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
+  Avatar,
   AppBar,
   Box,
   Divider,
@@ -73,6 +75,9 @@ const NAV_SECTIONS: NavSection[] = [
 
 function useFacebookSDK() {
   useEffect(() => {
+    const appId = import.meta.env.VITE_FACEBOOK_APP_ID;
+    if (!appId) return;
+
     if (document.getElementById('facebook-jssdk')) return;
     const script = document.createElement('script');
     script.id = 'facebook-jssdk';
@@ -80,7 +85,7 @@ function useFacebookSDK() {
     script.async = true;
     script.onload = () => {
       window.FB && window.FB.init({
-        appId: import.meta.env.VITE_FACEBOOK_APP_ID,
+        appId,
         cookie: true,
         xfbml: true,
         version: 'v19.0',
@@ -90,8 +95,21 @@ function useFacebookSDK() {
   }, []);
 }
 
+function useGoogleSDK() {
+  useEffect(() => {
+    if (document.getElementById("google-identity-service")) return;
+
+    const script = document.createElement("script");
+    script.id = "google-identity-service";
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+  }, []);
+}
+
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { isAuthenticated, session, loginWithFacebook, facebookEnabled, logout } = useAuth();
+  const { isAuthenticated, session, loginWithFacebook, loginWithGoogle, facebookEnabled, googleEnabled, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { themeId, setThemeId } = useAppTheme();
@@ -327,16 +345,26 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             >
               Signed in
             </Typography>
-            {session?.displayName && (
-              <Typography sx={{ color: "text.primary", fontSize: "0.9rem", mt: 0.25, fontWeight: 600 }}>
-                {session.displayName}
-              </Typography>
-            )}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+              {session?.profilePictureUrl && (
+                <Avatar
+                  src={session.profilePictureUrl}
+                  alt={session.displayName || "Profile picture"}
+                  sx={{ width: 34, height: 34, flexShrink: 0 }}
+                />
+              )}
+              {session?.displayName && (
+                <Typography sx={{ color: "text.primary", fontSize: "0.9rem", fontWeight: 600 }}>
+                  {session.displayName}
+                </Typography>
+              )}
+            </Box>
             {session?.email && (
               <Typography
                 sx={{
                   color: "text.secondary",
                   fontSize: "0.77rem",
+                  mt: 0.5,
                   mb: 1.1,
                   maxWidth: "100%",
                   overflowWrap: "anywhere",
@@ -366,6 +394,33 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </Box>
         ) : (
           <Box sx={authCardSx}>
+            {(!facebookEnabled || !googleEnabled) && (
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  px: 0.9,
+                  py: 0.35,
+                  mb: 0.9,
+                  borderRadius: 99,
+                  border: `1px solid ${alpha(theme.palette.warning.main, 0.45)}`,
+                  backgroundColor: alpha(theme.palette.warning.main, 0.14),
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: "0.68rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.04em",
+                    color: theme.palette.warning.main,
+                    textTransform: "uppercase",
+                    lineHeight: 1,
+                  }}
+                >
+                  Setup required
+                </Typography>
+              </Box>
+            )}
             {facebookEnabled && (
               <Button
                 onClick={loginWithFacebook}
@@ -385,7 +440,50 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 Continue with Facebook
               </Button>
             )}
-            {/* Future: Add Google login button here */}
+            {!facebookEnabled && (
+              <Typography
+                sx={{
+                  color: "text.secondary",
+                  fontSize: "0.76rem",
+                  px: 0.5,
+                  mb: googleEnabled ? 0.8 : 0,
+                }}
+              >
+                Facebook login unavailable: missing VITE_FACEBOOK_APP_ID.
+              </Typography>
+            )}
+            {googleEnabled && (
+              <Button
+                onClick={loginWithGoogle}
+                startIcon={<GoogleIcon sx={{ fontSize: 20, color: "inherit" }} />}
+                variant="outlined"
+                sx={{
+                  ...authButtonBaseSx,
+                  mt: 1,
+                  color: theme.palette.text.primary,
+                  borderColor: alpha(theme.palette.text.primary, 0.35),
+                  backgroundColor: alpha(theme.palette.text.primary, 0.06),
+                  "&:hover": {
+                    borderColor: alpha(theme.palette.text.primary, 0.7),
+                    backgroundColor: alpha(theme.palette.text.primary, 0.12),
+                  },
+                }}
+              >
+                Continue with Google
+              </Button>
+            )}
+            {!googleEnabled && (
+              <Typography
+                sx={{
+                  color: "text.secondary",
+                  fontSize: "0.76rem",
+                  px: 0.5,
+                  mt: facebookEnabled ? 0.8 : 0,
+                }}
+              >
+                Google login unavailable: missing VITE_GOOGLE_CLIENT_ID.
+              </Typography>
+            )}
           </Box>
         )}
       </Box>
@@ -395,6 +493,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export default function MainLayout() {
   useFacebookSDK();
+  useGoogleSDK();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const drawerSx = {

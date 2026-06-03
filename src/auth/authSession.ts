@@ -2,6 +2,7 @@ export type AuthSession = {
   collectorId: number;
   displayName: string;
   email: string;
+  profilePictureUrl?: string;
   accessToken: string;
   tokenType: string;
   expiresInSeconds: number;
@@ -12,6 +13,8 @@ export type AuthApiResponse = {
   collectorId: number;
   displayName: string;
   email: string;
+  profilePictureUrl?: string;
+  picture?: string;
   accessToken: string;
   tokenType: string;
   expiresInSeconds: number;
@@ -29,6 +32,7 @@ function notifyAuthSessionChanged() {
 export function buildAuthSession(payload: AuthApiResponse): AuthSession {
   return {
     ...payload,
+    profilePictureUrl: payload.profilePictureUrl ?? payload.picture,
     tokenType: payload.tokenType || "Bearer",
     expiresAtMs: Date.now() + payload.expiresInSeconds * 1000,
   };

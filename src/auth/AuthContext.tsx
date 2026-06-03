@@ -1,4 +1,4 @@
-import { validateFacebookToken } from "./facebookApi";
+import { validateFacebookToken, validateGoogleToken } from "./facebookApi";
 import {
   AUTH_SESSION_CHANGED_EVENT,
   AUTH_SESSION_STORAGE_KEY,
@@ -20,6 +20,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   session: AuthSession | null;
   facebookEnabled: boolean;
+  googleEnabled: boolean;
   loginWithFacebook: () => void;
   loginWithGoogle: () => void;
   logout: () => void;
@@ -29,6 +30,7 @@ export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   session: null,
   facebookEnabled: true,
+  googleEnabled: true,
   loginWithFacebook: () => { },
   loginWithGoogle: () => { },
   logout: () => { },
@@ -38,9 +40,30 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
+type GoogleIdTokenPayload = {
+  picture?: string;
+};
+
+function parseGooglePictureFromIdToken(idToken: string): string | undefined {
+  try {
+    const parts = idToken.split(".");
+    if (parts.length < 2) return undefined;
+
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const decoded = atob(padded);
+    const payload = JSON.parse(decoded) as GoogleIdTokenPayload;
+    return payload.picture;
+  } catch {
+    return undefined;
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(() => getValidAuthSession());
   const [notice, setNotice] = useState<AuthNotice | null>(null);
+  const facebookAppId = import.meta.env.VITE_FACEBOOK_APP_ID as string | undefined;
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
   useEffect(() => {
     const syncSession = () => {
@@ -64,6 +87,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Facebook login handler
   const loginWithFacebook = useCallback(() => {
+    if (!facebookAppId) {
+      setNotice({ message: "Facebook login is not configured (missing VITE_FACEBOOK_APP_ID).", severity: "error" });
+      return;
+    }
+
     if (!window.FB) {
       setNotice({ message: "Facebook SDK not loaded yet.", severity: "error" });
       return;
@@ -90,12 +118,76 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       { scope: "public_profile,email" }
     );
-  }, []);
+  }, [facebookAppId]);
 
-  // Placeholder for Google login
+  type GoogleCredentialResponse = {
+    credential?: string;
+  };
+
+  type GooglePromptMomentNotification = {
+    isNotDisplayed?: () => boolean;
+    isSkippedMoment?: () => boolean;
+    getNotDisplayedReason?: () => string;
+    getSkippedReason?: () => string;
+  };
+
   const loginWithGoogle = useCallback(() => {
-    alert("Google login not implemented yet.");
-  }, []);
+    if (!googleClientId) {
+      setNotice({ message: "Google login is not configured (missing VITE_GOOGLE_CLIENT_ID).", severity: "error" });
+      return;
+    }
+
+    if (!window.google?.accounts?.id) {
+      setNotice({ message: "Google SDK not loaded yet.", severity: "error" });
+      return;
+    }
+
+    window.google.accounts.id.initialize({
+      client_id: googleClientId,
+      use_fedcm_for_prompt: false,
+      callback: async (response: GoogleCredentialResponse) => {
+        const idToken = response?.credential;
+        if (!idToken) {
+          setNotice({ message: "Google login did not return a token.", severity: "error" });
+          return;
+        }
+
+        try {
+          const authResponse = await validateGoogleToken(idToken);
+          const pictureFromToken = parseGooglePictureFromIdToken(idToken);
+          const nextSession = buildAuthSession({
+            ...authResponse,
+            picture: authResponse.picture ?? pictureFromToken,
+          });
+          saveAuthSession(nextSession);
+          setSession(nextSession);
+          setNotice({ message: `Welcome, ${nextSession.displayName}!`, severity: "success" });
+        } catch (err) {
+          setNotice({ message: "Google login failed. Please try again.", severity: "error" });
+        }
+      },
+    });
+
+    window.google.accounts.id.prompt((notification: GooglePromptMomentNotification) => {
+      const wasNotDisplayed = notification?.isNotDisplayed?.() ?? false;
+      const wasSkipped = notification?.isSkippedMoment?.() ?? false;
+
+      if (!wasNotDisplayed && !wasSkipped) return;
+
+      const reason =
+        notification?.getNotDisplayedReason?.() ||
+        notification?.getSkippedReason?.() ||
+        "unknown";
+
+      setNotice({
+        severity: "info",
+        message:
+          reason === "opt_out_or_no_session" || reason === "suppressed_by_user"
+            ? "Google sign-in is blocked in this browser. Enable third-party sign-in/FedCM in site settings and try again."
+            : `Google sign-in prompt was not shown (${reason}). Check browser sign-in/privacy settings and try again.`,
+      });
+    });
+  }, [googleClientId]);
 
   const logout = useCallback(() => {
     clearAuthSession();
@@ -111,12 +203,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       isAuthenticated: Boolean(session),
       session,
-      facebookEnabled: true,
+      facebookEnabled: Boolean(facebookAppId),
+      googleEnabled: Boolean(googleClientId),
       loginWithFacebook,
       loginWithGoogle,
       logout,
     }),
-    [session, loginWithFacebook, loginWithGoogle, logout]
+    [session, facebookAppId, googleClientId, loginWithFacebook, loginWithGoogle, logout]
   );
 
   return (
