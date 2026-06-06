@@ -146,6 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       client_id: googleClientId,
       use_fedcm_for_prompt: false,
       callback: async (response: GoogleCredentialResponse) => {
+        // Google returns the ID Token inside 'response.credential'
         const idToken = response?.credential;
         if (!idToken) {
           setNotice({ message: "Google login did not return a token.", severity: "error" });
