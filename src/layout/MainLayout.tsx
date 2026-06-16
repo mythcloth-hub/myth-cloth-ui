@@ -34,6 +34,7 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
@@ -78,6 +79,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Roles", path: "/security/roles", icon: <AdminPanelSettingsOutlinedIcon /> },
       { label: "Permissions", path: "/security/permissions", icon: <LockOutlinedIcon /> },
+      { label: "Role Permissions", path: "/security/role-permissions", icon: <LinkOutlinedIcon /> },
     ],
   },
 ];
