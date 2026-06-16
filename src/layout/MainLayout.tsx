@@ -32,6 +32,7 @@ import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
+import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
@@ -69,6 +70,12 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Groups",        path: "/catalogs/groups",        icon: <GroupsOutlinedIcon /> },
       { label: "Lineups",       path: "/catalogs/lineups",       icon: <ViewListOutlinedIcon /> },
       { label: "Series",        path: "/catalogs/series",        icon: <AutoStoriesOutlinedIcon /> },
+    ],
+  },
+  {
+    heading: "Security",
+    items: [
+      { label: "Roles", path: "/security/roles", icon: <AdminPanelSettingsOutlinedIcon /> },
     ],
   },
 ];
