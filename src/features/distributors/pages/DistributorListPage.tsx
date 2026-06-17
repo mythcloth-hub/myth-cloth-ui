@@ -12,6 +12,7 @@ import { getAllDistributors, deleteDistributor } from "../api/distributorApi";
 import type { Distributor } from "../types/distributor";
 import type { GridColDef } from "@mui/x-data-grid";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 function CustomNoRowsOverlay() {
   return (
@@ -41,7 +42,7 @@ export default function DistributorListPage() {
       setDistributors(data);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to load distributors. Please check your connection and try again.");
+      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "distributors" }));
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ export default function DistributorListPage() {
       setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to delete distributor. Please try again.");
+      setErrorMessage(getApiErrorMessage(err, { action: "delete", resource: "distributor" }));
     } finally {
       setDeleting(false);
       setPendingDeleteId(null);

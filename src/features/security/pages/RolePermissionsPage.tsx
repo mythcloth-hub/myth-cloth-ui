@@ -21,6 +21,7 @@ import { getAllPermissions } from "../api/permissionApi";
 import { getPermissionsByRoleId, syncRolePermissions } from "../api/rolePermissionApi";
 import type { Role } from "../types/role";
 import type { Permission } from "../types/permission";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 function CustomNoRowsOverlay() {
   return (
@@ -57,7 +58,7 @@ export default function RolePermissionsPage() {
         setAllPermissions(permissionsData);
       } catch (err) {
         console.error(err);
-        setErrorMessage("Failed to load roles and permissions. Please try again.");
+        setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "roles and permissions" }));
       } finally {
         setLoadingLookups(false);
       }
@@ -80,7 +81,7 @@ export default function RolePermissionsPage() {
         setSelectedPermissionIds(data.map((permission) => permission.id));
       } catch (err) {
         console.error(err);
-        setErrorMessage("Failed to load role permissions. Please try again.");
+        setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "role permissions" }));
       } finally {
         setLoadingAssigned(false);
       }
@@ -123,7 +124,7 @@ export default function RolePermissionsPage() {
       setSuccessMessage("Role permissions synchronized successfully.");
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to synchronize role permissions. Please try again.");
+      setErrorMessage(getApiErrorMessage(err, { action: "update", resource: "role permissions" }));
     } finally {
       setSubmitting(false);
     }

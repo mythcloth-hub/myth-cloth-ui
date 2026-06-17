@@ -13,6 +13,7 @@ import {
 import axios from "axios";
 
 import { getPermissionById, createPermission, updatePermission } from "../api/permissionApi";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 export default function PermissionFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -35,7 +36,7 @@ export default function PermissionFormPage() {
       })
       .catch((err) => {
         console.error(err);
-        setServerError("Failed to load permission. Please try again.");
+        setServerError(getApiErrorMessage(err, { action: "load", resource: "permission" }));
       })
       .finally(() => setLoadingForm(false));
   }, [id, isEdit]);
@@ -67,13 +68,13 @@ export default function PermissionFormPage() {
           const body = err.response.data as Record<string, unknown>;
           setServerError(
             (body.detail as string) ??
-              `Failed to ${isEdit ? "update" : "create"} permission`,
+              getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "permission" }),
           );
         } else {
-          setServerError("Unable to connect to the server. Please check your connection and try again.");
+          setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "permission" }));
         }
       } else {
-        setServerError(`Failed to ${isEdit ? "update" : "create"} permission`);
+        setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "permission" }));
       }
     } finally {
       setLoading(false);

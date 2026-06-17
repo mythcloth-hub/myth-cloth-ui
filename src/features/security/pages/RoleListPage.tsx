@@ -22,6 +22,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 
 import { getAllRoles, deleteRole } from "../api/roleApi";
 import type { Role } from "../types/role";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 function CustomNoRowsOverlay() {
   return (
@@ -49,7 +50,7 @@ export default function RoleListPage() {
       setRoles(data);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to load roles. Please check your connection and try again.");
+      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "roles" }));
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,7 @@ export default function RoleListPage() {
       setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to delete role. Please try again.");
+      setErrorMessage(getApiErrorMessage(err, { action: "delete", resource: "role" }));
     } finally {
       setDeleting(false);
       setPendingDeleteId(null);

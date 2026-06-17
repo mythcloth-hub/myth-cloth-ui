@@ -1,4 +1,5 @@
 import { validateFacebookToken, validateGoogleToken } from "./facebookApi";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   AUTH_SESSION_CHANGED_EVENT,
   AUTH_SESSION_STORAGE_KEY,
@@ -109,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setSession(nextSession);
               setNotice({ message: `Welcome, ${nextSession.displayName}!`, severity: "success" });
             } catch (err) {
-              setNotice({ message: "Login failed. Please try again.", severity: "error" });
+              setNotice({ message: getApiErrorMessage(err, { action: "create", resource: "login session" }), severity: "error" });
             }
           })();
         } else {
@@ -164,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(nextSession);
           setNotice({ message: `Welcome, ${nextSession.displayName}!`, severity: "success" });
         } catch (err) {
-          setNotice({ message: "Google login failed. Please try again.", severity: "error" });
+          setNotice({ message: getApiErrorMessage(err, { action: "create", resource: "login session" }), severity: "error" });
         }
       },
     });

@@ -25,6 +25,7 @@ import {
   type UpdateAnniversaryPayload,
 } from "../api/anniversaryApi";
 import type { Anniversary, AnniversaryType } from "../types/anniversary";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 const ANNIVERSARY_TYPE_OPTIONS: { value: AnniversaryType; label: string }[] = [
   { value: "TAMASHII_NATIONS_WORLD_TOUR", label: "Tamashii Nations World Tour" },
@@ -71,7 +72,7 @@ export default function AnniversaryFormPage() {
       )
       .catch((err) => {
         console.error(err);
-        setServerError("Failed to load anniversary. Please try again.");
+        setServerError(getApiErrorMessage(err, { action: "load", resource: "anniversary" }));
       })
       .finally(() => setLoadingForm(false));
   }, [id, isEdit, stateAnniversary?.type]);
@@ -139,14 +140,14 @@ export default function AnniversaryFormPage() {
           } else {
             setServerError(
               (body.detail as string) ??
-                `Failed to ${isEdit ? "update" : "create"} anniversary`,
+                getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "anniversary" }),
             );
           }
         } else {
-          setServerError("Unable to connect to the server. Please check your connection and try again.");
+          setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "anniversary" }));
         }
       } else {
-        setServerError(`Failed to ${isEdit ? "update" : "create"} anniversary`);
+        setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "anniversary" }));
       }
     } finally {
       setLoading(false);

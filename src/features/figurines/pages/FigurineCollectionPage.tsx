@@ -37,6 +37,7 @@ import { getAllAnniversaries } from "../../anniversaries/api/anniversaryApi";
 import type { Anniversary } from "../../anniversaries/types/anniversary";
 import AnniversaryIcon from "./AnniversaryIcon";
 import { Tooltip } from "@mui/material";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 const PAGE_SIZE = 24;
 
@@ -512,7 +513,7 @@ export default function FigurineCollectionPage() {
       })
       .catch((err) => {
         console.error(err);
-        setErrorMessage("Failed to load figurines. Please check your connection and try again.");
+        setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurines" }));
       })
       .finally(() => setLoading(false));
   }, [page, query, lineup, series, group, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable]);

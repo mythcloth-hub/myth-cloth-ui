@@ -15,6 +15,7 @@ import axios from "axios";
 import { catalogApiMap } from "../api/catalogApi";
 import { CATALOG_META } from "../types/catalog";
 import type { CatalogType } from "../types/catalog";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 export default function CatalogFormPage() {
   const { catalogType, id } = useParams<{ catalogType: string; id: string }>();
@@ -40,7 +41,7 @@ export default function CatalogFormPage() {
       .then((data) => setDescription(data.description))
       .catch((err) => {
         console.error(err);
-        setServerError("Failed to load entry. Please try again.");
+        setServerError(getApiErrorMessage(err, { action: "load", resource: singular }));
       })
       .finally(() => setLoadingForm(false));
   }, [id, isEdit, catalogType]);
@@ -76,13 +77,13 @@ export default function CatalogFormPage() {
           const body = err.response.data as Record<string, unknown>;
           setServerError(
             (body.detail as string) ??
-              `Failed to ${isEdit ? "update" : "create"} ${singular.toLowerCase()}`,
+              getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: singular }),
           );
         } else {
-          setServerError("Unable to connect to the server. Please check your connection and try again.");
+          setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: singular }));
         }
       } else {
-        setServerError(`Failed to ${isEdit ? "update" : "create"} ${singular.toLowerCase()}`);
+        setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: singular }));
       }
     } finally {
       setLoading(false);

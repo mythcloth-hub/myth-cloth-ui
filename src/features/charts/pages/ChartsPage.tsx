@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 
 import { getStats, type StatsResponse } from "../api/statsApi";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 const RELEASE_STATUS_META: Record<string, { label: string; color: string }> = {
   ANNOUNCED: { label: "Announced", color: "#4fc3f7" },
@@ -247,7 +248,7 @@ export default function ChartsPage() {
       } catch (error) {
         console.error(error);
         if (!active) return;
-        setErrorMessage("Failed to load statistics. Please try again.");
+        setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "statistics" }));
       } finally {
         if (active) setLoading(false);
       }

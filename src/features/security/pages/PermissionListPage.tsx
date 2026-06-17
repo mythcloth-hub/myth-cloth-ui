@@ -22,6 +22,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 
 import { getAllPermissions, deletePermission } from "../api/permissionApi";
 import type { Permission } from "../types/permission";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 function CustomNoRowsOverlay() {
   return (
@@ -49,7 +50,7 @@ export default function PermissionListPage() {
       setPermissions(data);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to load permissions. Please check your connection and try again.");
+      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "permissions" }));
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,7 @@ export default function PermissionListPage() {
       setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to delete permission. Please try again.");
+      setErrorMessage(getApiErrorMessage(err, { action: "delete", resource: "permission" }));
     } finally {
       setDeleting(false);
       setPendingDeleteId(null);

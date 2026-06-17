@@ -27,6 +27,7 @@ import { getFigurineById } from "../api/figurineApi";
 import type { Figurine, ReleaseStatus } from "../types/figurine";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 import AnniversaryIcon from "./AnniversaryIcon";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: string; borderColor: string }> = {
   RELEASED:  { label: "Released",  color: "#4caf50", borderColor: "rgba(76,175,80,0.30)"   },
@@ -86,7 +87,7 @@ export default function FigurineDetailPage() {
       })
       .catch((err) => {
         console.error(err);
-        setErrorMessage("Failed to load figurine details.");
+        setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurine details" }));
       })
       .finally(() => setLoading(false));
   }, [id]);

@@ -13,6 +13,7 @@ import {
 import axios from "axios";
 
 import { getRoleById, createRole, updateRole } from "../api/roleApi";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 export default function RoleFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -35,7 +36,7 @@ export default function RoleFormPage() {
       })
       .catch((err) => {
         console.error(err);
-        setServerError("Failed to load role. Please try again.");
+        setServerError(getApiErrorMessage(err, { action: "load", resource: "role" }));
       })
       .finally(() => setLoadingForm(false));
   }, [id, isEdit]);
@@ -67,13 +68,13 @@ export default function RoleFormPage() {
           const body = err.response.data as Record<string, unknown>;
           setServerError(
             (body.detail as string) ??
-              `Failed to ${isEdit ? "update" : "create"} role`,
+              getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "role" }),
           );
         } else {
-          setServerError("Unable to connect to the server. Please check your connection and try again.");
+          setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "role" }));
         }
       } else {
-        setServerError(`Failed to ${isEdit ? "update" : "create"} role`);
+        setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "role" }));
       }
     } finally {
       setLoading(false);
