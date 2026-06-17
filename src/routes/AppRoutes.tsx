@@ -12,6 +12,11 @@ import PricingPage from "../features/charts/pages/PricingPage";
 import FigurineCollectionPage from "../features/figurines/pages/FigurineCollectionPage";
 import FigurineDetailPage from "../features/figurines/pages/FigurineDetailPage";
 import FigurineFormPage from "../features/figurines/pages/FigurineFormPage";
+import RoleListPage from "../features/security/pages/RoleListPage";
+import RoleFormPage from "../features/security/pages/RoleFormPage";
+import PermissionListPage from "../features/security/pages/PermissionListPage";
+import PermissionFormPage from "../features/security/pages/PermissionFormPage";
+import RolePermissionsPage from "../features/security/pages/RolePermissionsPage";
 
 export default function AppRoutes() {
   return (
@@ -35,6 +40,13 @@ export default function AppRoutes() {
           <Route path="/catalogs/:catalogType" element={<CatalogListPage />} />
           <Route path="/catalogs/:catalogType/new" element={<CatalogFormPage />} />
           <Route path="/catalogs/:catalogType/edit/:id" element={<CatalogFormPage />} />
+          <Route path="/security/roles" element={<RoleListPage />} />
+          <Route path="/security/roles/new" element={<RoleFormPage />} />
+          <Route path="/security/roles/edit/:id" element={<RoleFormPage />} />
+          <Route path="/security/permissions" element={<PermissionListPage />} />
+          <Route path="/security/permissions/new" element={<PermissionFormPage />} />
+          <Route path="/security/permissions/edit/:id" element={<PermissionFormPage />} />
+          <Route path="/security/role-permissions" element={<RolePermissionsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

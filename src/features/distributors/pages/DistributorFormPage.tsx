@@ -19,6 +19,7 @@ import axios from "axios";
 
 import { createDistributor, getDistributorById, updateDistributor } from "../api/distributorApi";
 import type { Distributor } from "../types/distributor";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 type FormData = Omit<Distributor, "id">;
 
@@ -79,7 +80,7 @@ export default function DistributorFormPage() {
       })
       .catch((err) => {
         console.error(err);
-        setServerError("Failed to load distributor. Please try again.");
+        setServerError(getApiErrorMessage(err, { action: "load", resource: "distributor" }));
       })
       .finally(() => setLoadingForm(false));
   }, [id, isEdit]);
@@ -133,13 +134,16 @@ export default function DistributorFormPage() {
             }
             setErrors((prev) => ({ ...prev, ...fieldErrors }));
           } else {
-            setServerError((body.detail as string) ?? `Failed to ${isEdit ? "update" : "create"} distributor`);
+            setServerError(
+              (body.detail as string) ??
+                getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "distributor" }),
+            );
           }
         } else {
-          setServerError("Unable to connect to the server. Please check your connection and try again.");
+          setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "distributor" }));
         }
       } else {
-        setServerError(`Failed to ${isEdit ? "update" : "create"} distributor`);
+        setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "distributor" }));
       }
     } finally {
       setLoading(false);

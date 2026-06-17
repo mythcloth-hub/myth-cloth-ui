@@ -12,19 +12,13 @@ import {
 } from "@mui/material";
 import axios from "axios";
 
-import { catalogApiMap } from "../api/catalogApi";
-import { CATALOG_META } from "../types/catalog";
-import type { CatalogType } from "../types/catalog";
+import { getPermissionById, createPermission, updatePermission } from "../api/permissionApi";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
-export default function CatalogFormPage() {
-  const { catalogType, id } = useParams<{ catalogType: string; id: string }>();
+export default function PermissionFormPage() {
+  const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
-
-  const api = catalogApiMap[catalogType as CatalogType];
-  const meta = CATALOG_META[catalogType as CatalogType];
-  const { singular } = meta ?? { singular: "Entry" };
 
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,17 +28,18 @@ export default function CatalogFormPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isEdit || !api) return;
+    if (!isEdit) return;
     setLoadingForm(true);
-    api
-      .getById(Number(id))
-      .then((data) => setDescription(data.description))
+    getPermissionById(Number(id))
+      .then((data) => {
+        setDescription(data.description);
+      })
       .catch((err) => {
         console.error(err);
-        setServerError(getApiErrorMessage(err, { action: "load", resource: singular }));
+        setServerError(getApiErrorMessage(err, { action: "load", resource: "permission" }));
       })
       .finally(() => setLoadingForm(false));
-  }, [id, isEdit, catalogType]);
+  }, [id, isEdit]);
 
   const validate = (): boolean => {
     if (!description.trim()) {
@@ -57,19 +52,15 @@ export default function CatalogFormPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate() || !api) return;
+    if (!validate()) return;
     setLoading(true);
     try {
       if (isEdit) {
-        await api.update(Number(id), description.trim());
+        await updatePermission(Number(id), { description: description.trim() });
       } else {
-        await api.create(description.trim());
+        await createPermission({ description: description.trim() });
       }
-      setSuccessMessage(
-        isEdit
-          ? `${singular} updated successfully.`
-          : `${singular} created successfully.`,
-      );
+      setSuccessMessage(isEdit ? "Permission updated successfully." : "Permission created successfully.");
     } catch (err) {
       console.error(err);
       if (axios.isAxiosError(err)) {
@@ -77,13 +68,13 @@ export default function CatalogFormPage() {
           const body = err.response.data as Record<string, unknown>;
           setServerError(
             (body.detail as string) ??
-              getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: singular }),
+              getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "permission" }),
           );
         } else {
-          setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: singular }));
+          setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "permission" }));
         }
       } else {
-        setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: singular }));
+        setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "permission" }));
       }
     } finally {
       setLoading(false);
@@ -97,7 +88,7 @@ export default function CatalogFormPage() {
         sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}
         gutterBottom
       >
-        {isEdit ? `Edit ${singular}` : `New ${singular}`}
+        {isEdit ? "Edit Permission" : "New Permission"}
       </Typography>
 
       {loadingForm ? (
@@ -134,7 +125,7 @@ export default function CatalogFormPage() {
               helperText={descriptionError}
             />
             <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
-              <Button variant="outlined" onClick={() => navigate(`/catalogs/${catalogType}`)}>
+              <Button variant="outlined" onClick={() => navigate("/security/permissions")}>
                 Cancel
               </Button>
               <Button
@@ -152,7 +143,10 @@ export default function CatalogFormPage() {
       <Snackbar
         open={Boolean(successMessage)}
         autoHideDuration={1500}
-        onClose={() => { setSuccessMessage(null); navigate(`/catalogs/${catalogType}`); }}
+        onClose={() => {
+          setSuccessMessage(null);
+          navigate("/security/permissions");
+        }}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert severity="success">{successMessage}</Alert>

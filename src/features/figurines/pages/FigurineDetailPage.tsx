@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../../auth/AuthContext";
 import {
   Alert,
   Box,
@@ -27,6 +28,7 @@ import { getFigurineById } from "../api/figurineApi";
 import type { Figurine, ReleaseStatus } from "../types/figurine";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 import AnniversaryIcon from "./AnniversaryIcon";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: string; borderColor: string }> = {
   RELEASED:  { label: "Released",  color: "#4caf50", borderColor: "rgba(76,175,80,0.30)"   },
@@ -61,6 +63,7 @@ function BoolRow({ label, value }: { label: string; value: boolean }) {
 export default function FigurineDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
 
   const [figurine, setFigurine] = useState<Figurine | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,7 +89,7 @@ export default function FigurineDetailPage() {
       })
       .catch((err) => {
         console.error(err);
-        setErrorMessage("Failed to load figurine details.");
+        setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurine details" }));
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -178,14 +181,16 @@ export default function FigurineDetailPage() {
             </Tooltip>
           </Box>
         )}
-        <Button
-          variant="outlined"
-          startIcon={<EditOutlinedIcon />}
-          onClick={() => navigate(`/figurines/${id}/edit`)}
-          sx={{ flexShrink: 0 }}
-        >
-          Edit
-        </Button>
+        {hasPermission("figurines:update") && (
+          <Button
+            variant="outlined"
+            startIcon={<EditOutlinedIcon />}
+            onClick={() => navigate(`/figurines/${id}/edit`)}
+            sx={{ flexShrink: 0 }}
+          >
+            Edit
+          </Button>
+        )}
       </Box>
 
       <Grid container spacing={{ xs: 2, md: 4 }}>

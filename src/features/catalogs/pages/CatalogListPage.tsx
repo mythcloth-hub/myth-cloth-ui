@@ -23,6 +23,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { catalogApiMap } from "../api/catalogApi";
 import { CATALOG_META } from "../types/catalog";
 import type { Catalog, CatalogType } from "../types/catalog";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 export default function CatalogListPage() {
   const { catalogType } = useParams<{ catalogType: string }>();
@@ -47,7 +48,7 @@ export default function CatalogListPage() {
       setItems(data);
     } catch (err) {
       console.error(err);
-      setErrorMessage(`Failed to load ${plural.toLowerCase()}. Please check your connection and try again.`);
+      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: plural }));
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,7 @@ export default function CatalogListPage() {
       setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to delete entry. Please try again.");
+      setErrorMessage(getApiErrorMessage(err, { action: "delete", resource: singular }));
     } finally {
       setDeleting(false);
       setPendingDeleteId(null);

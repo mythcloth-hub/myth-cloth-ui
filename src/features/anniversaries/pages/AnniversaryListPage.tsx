@@ -22,6 +22,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 
 import { getAllAnniversaries, deleteAnniversary } from "../api/anniversaryApi";
 import type { Anniversary } from "../types/anniversary";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 const anniversaryTypeLabels: Record<NonNullable<Anniversary["type"]>, string> = {
   TAMASHII_NATIONS_WORLD_TOUR: "Tamashii Nations World Tour",
@@ -60,7 +61,7 @@ export default function AnniversaryListPage() {
       setItems(data);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to load anniversaries. Please check your connection and try again.");
+      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "anniversaries" }));
     } finally {
       setLoading(false);
     }
@@ -89,7 +90,7 @@ export default function AnniversaryListPage() {
       setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Failed to delete anniversary. Please try again.");
+      setErrorMessage(getApiErrorMessage(err, { action: "delete", resource: "anniversary" }));
     } finally {
       setDeleting(false);
       setPendingDeleteId(null);

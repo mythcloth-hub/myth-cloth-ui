@@ -18,6 +18,7 @@ import {
   type ReleaseYearMonthDetail,
   type ReleaseYearSummary,
 } from "../api/releaseStatsApi";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 function getLineupColor(lineup: string) {
   const palette = ["#D4AF37", "#4AA3D8", "#E7A6C7", "#7B61C8", "#C97A3D", "#7FA36B", "#B8C6D9", "#6E7681"];
@@ -618,7 +619,7 @@ export default function ReleasesPage() {
       } catch (error) {
         console.error(error);
         if (!active) return;
-        setErrorMessage("Failed to load release summary. Please try again.");
+        setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "release summary" }));
       } finally {
         if (active) setLoading(false);
       }
@@ -649,7 +650,7 @@ export default function ReleasesPage() {
       setDetail(data);
     } catch (error) {
       console.error(error);
-      setDetailError("Failed to load year details. Please try again.");
+      setDetailError(getApiErrorMessage(error, { action: "load", resource: "year details" }));
     } finally {
       setDetailLoading(false);
       setTimeout(() => {

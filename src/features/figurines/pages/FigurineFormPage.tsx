@@ -58,6 +58,7 @@ import type {
   FigurineEventType,
   FigurineEventRegion,
 } from "../types/figurine";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 // Event form helpers
 const EVENT_TYPES: { value: FigurineEventType; label: string }[] = [
   { value: "ANNOUNCEMENT", label: "Announcement" },
@@ -315,7 +316,7 @@ export default function FigurineFormPage() {
       }
       closeEventDialog();
     } catch (err) {
-      setEventFormError("Failed to save event.");
+      setEventFormError(getApiErrorMessage(err, { action: editingEvent ? "update" : "create", resource: "event" }));
       console.error(err);
     } finally {
       setLoadingEvents(false);
@@ -329,7 +330,7 @@ export default function FigurineFormPage() {
       await deleteFigurineEvent(Number(id), eventId);
       setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
     } catch (err) {
-      setEventFormError("Failed to delete event.");
+      setEventFormError(getApiErrorMessage(err, { action: "delete", resource: "event" }));
       console.error(err);
     } finally {
       setDeletingEventId(null);
@@ -413,7 +414,7 @@ export default function FigurineFormPage() {
       })
       .catch((err) => {
         console.error(err);
-        setServerError("Failed to load data.");
+        setServerError(getApiErrorMessage(err, { action: "load", resource: "figurine data" }));
       })
       .finally(() => setLoadingForm(false));
   }, [id, isEdit]);
@@ -513,8 +514,8 @@ export default function FigurineFormPage() {
     try {
       await deleteFigurine(Number(id));
       navigate("/figurines", { replace: true, state: { deleted: true } });
-    } catch {
-      setServerError("Failed to delete figurine.");
+    } catch (err) {
+      setServerError(getApiErrorMessage(err, { action: "delete", resource: "figurine" }));
       setDeleteDialogOpen(false);
     } finally {
       setDeleting(false);
@@ -574,9 +575,12 @@ export default function FigurineFormPage() {
       console.error(err);
       if (axios.isAxiosError(err) && err.response?.data) {
         const body = err.response.data as Record<string, unknown>;
-        setServerError((body.detail as string) ?? `Failed to ${isEdit ? "update" : "create"} figurine.`);
+        setServerError(
+          (body.detail as string) ??
+            getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "figurine" }),
+        );
       } else {
-        setServerError(`Failed to ${isEdit ? "update" : "create"} figurine.`);
+        setServerError(getApiErrorMessage(err, { action: isEdit ? "update" : "create", resource: "figurine" }));
       }
     } finally {
       setSaving(false);

@@ -13,6 +13,7 @@ import {
   getReleaseYearPriceStats,
   type ReleaseYearPriceStats,
 } from "../api/priceStatsApi";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 type PriceSummary = {
   totalReleases: number;
@@ -442,7 +443,7 @@ export default function PricingPage() {
       } catch (error) {
         console.error(error);
         if (!active) return;
-        setErrorMessage("Failed to load pricing analysis. Please try again.");
+        setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "pricing analysis" }));
       } finally {
         if (active) setLoading(false);
       }

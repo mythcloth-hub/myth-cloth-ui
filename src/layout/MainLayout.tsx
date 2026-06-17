@@ -32,6 +32,9 @@ import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
+import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
@@ -69,6 +72,14 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Groups",        path: "/catalogs/groups",        icon: <GroupsOutlinedIcon /> },
       { label: "Lineups",       path: "/catalogs/lineups",       icon: <ViewListOutlinedIcon /> },
       { label: "Series",        path: "/catalogs/series",        icon: <AutoStoriesOutlinedIcon /> },
+    ],
+  },
+  {
+    heading: "Security",
+    items: [
+      { label: "Roles", path: "/security/roles", icon: <AdminPanelSettingsOutlinedIcon /> },
+      { label: "Permissions", path: "/security/permissions", icon: <LockOutlinedIcon /> },
+      { label: "Role Permissions", path: "/security/role-permissions", icon: <LinkOutlinedIcon /> },
     ],
   },
 ];
@@ -109,7 +120,7 @@ function useGoogleSDK() {
 }
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { isAuthenticated, session, loginWithFacebook, loginWithGoogle, facebookEnabled, googleEnabled, logout } = useAuth();
+  const { isAuthenticated, session, hasPermission, loginWithFacebook, loginWithGoogle, facebookEnabled, googleEnabled, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { themeId, setThemeId } = useAppTheme();
@@ -138,6 +149,51 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
+  const visibleSections = NAV_SECTIONS
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        if (item.path === "/charts") {
+          return hasPermission("stats:read");
+        }
+        if (item.path === "/releases") {
+          return hasPermission("stats:read");
+        }
+        if (item.path === "/pricing") {
+          return hasPermission("stats:read");
+        }
+        if (item.path === "/anniversaries") {
+          return hasPermission("anniversaries:read");
+        }
+        if (item.path === "/distributors") {
+          return hasPermission("distributors:read");
+        }
+        if (item.path === "/catalogs/distributions") {
+          return hasPermission("catalogs:read");
+        }
+        if (item.path === "/catalogs/groups") {
+          return hasPermission("catalogs:read");
+        }
+        if (item.path === "/catalogs/lineups") {
+          return hasPermission("catalogs:read");
+        }
+        if (item.path === "/catalogs/series") {
+          return hasPermission("catalogs:read");
+        }
+        if (item.path === "/security/roles") {
+          return hasPermission("roles:read");
+        }
+        if (item.path === "/security/permissions") {
+          return hasPermission("permissions:read");
+        }
+        if (item.path === "/security/role-permissions") {
+          return hasPermission("roles:read");
+        }
+        return true;
+      }),
+    }))
+    .filter((section) => section.items.length > 0);
+
   const handleClick = (path: string) => {
     if (path === "/figurines") {
       // Remove page param from sessionStorage so Collection always goes to page 1
@@ -153,6 +209,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     } else {
       navigate(path);
     }
+    onNavigate?.();
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
     onNavigate?.();
   };
 
@@ -173,7 +235,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* Nav sections */}
       <Box sx={{ flex: 1, overflowY: "auto", pt: 1 }}>
-        {NAV_SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <Box key={section.heading || "main"}>
             {section.heading && (
               <Typography
@@ -375,7 +437,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               </Typography>
             )}
             <Button
-              onClick={logout}
+              onClick={handleLogout}
               startIcon={<LogoutOutlinedIcon />}
               variant="outlined"
               sx={{

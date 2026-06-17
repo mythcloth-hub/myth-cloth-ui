@@ -1,4 +1,5 @@
 import { validateFacebookToken, validateGoogleToken } from "./facebookApi";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   AUTH_SESSION_CHANGED_EVENT,
   AUTH_SESSION_STORAGE_KEY,
@@ -21,6 +22,7 @@ type AuthContextType = {
   session: AuthSession | null;
   facebookEnabled: boolean;
   googleEnabled: boolean;
+  hasPermission: (permission: string) => boolean;
   loginWithFacebook: () => void;
   loginWithGoogle: () => void;
   logout: () => void;
@@ -31,6 +33,7 @@ export const AuthContext = createContext<AuthContextType>({
   session: null,
   facebookEnabled: true,
   googleEnabled: true,
+  hasPermission: () => false,
   loginWithFacebook: () => { },
   loginWithGoogle: () => { },
   logout: () => { },
@@ -109,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setSession(nextSession);
               setNotice({ message: `Welcome, ${nextSession.displayName}!`, severity: "success" });
             } catch (err) {
-              setNotice({ message: "Login failed. Please try again.", severity: "error" });
+              setNotice({ message: getApiErrorMessage(err, { action: "create", resource: "login session" }), severity: "error" });
             }
           })();
         } else {
@@ -164,7 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(nextSession);
           setNotice({ message: `Welcome, ${nextSession.displayName}!`, severity: "success" });
         } catch (err) {
-          setNotice({ message: "Google login failed. Please try again.", severity: "error" });
+          setNotice({ message: getApiErrorMessage(err, { action: "create", resource: "login session" }), severity: "error" });
         }
       },
     });
@@ -200,17 +203,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const hasPermission = useCallback(
+    (permission: string) => session?.permissions.includes(permission) ?? false,
+    [session],
+  );
+
   const value = useMemo(
     () => ({
       isAuthenticated: Boolean(session),
       session,
       facebookEnabled: Boolean(facebookAppId),
       googleEnabled: Boolean(googleClientId),
+      hasPermission,
       loginWithFacebook,
       loginWithGoogle,
       logout,
     }),
-    [session, facebookAppId, googleClientId, loginWithFacebook, loginWithGoogle, logout]
+    [session, facebookAppId, googleClientId, hasPermission, loginWithFacebook, loginWithGoogle, logout]
   );
 
   return (
