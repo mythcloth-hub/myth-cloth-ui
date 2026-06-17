@@ -120,7 +120,7 @@ function useGoogleSDK() {
 }
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { isAuthenticated, session, loginWithFacebook, loginWithGoogle, facebookEnabled, googleEnabled, logout } = useAuth();
+  const { isAuthenticated, session, hasPermission, loginWithFacebook, loginWithGoogle, facebookEnabled, googleEnabled, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { themeId, setThemeId } = useAppTheme();
@@ -148,6 +148,51 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   const isActive = (path: string) => location.pathname.startsWith(path);
+
+  const visibleSections = NAV_SECTIONS
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        if (item.path === "/charts") {
+          return hasPermission("stats:read");
+        }
+        if (item.path === "/releases") {
+          return hasPermission("stats:read");
+        }
+        if (item.path === "/pricing") {
+          return hasPermission("stats:read");
+        }
+        if (item.path === "/anniversaries") {
+          return hasPermission("anniversaries:read");
+        }
+        if (item.path === "/distributors") {
+          return hasPermission("distributors:read");
+        }
+        if (item.path === "/catalogs/distributions") {
+          return hasPermission("catalogs:read");
+        }
+        if (item.path === "/catalogs/groups") {
+          return hasPermission("catalogs:read");
+        }
+        if (item.path === "/catalogs/lineups") {
+          return hasPermission("catalogs:read");
+        }
+        if (item.path === "/catalogs/series") {
+          return hasPermission("catalogs:read");
+        }
+        if (item.path === "/security/roles") {
+          return hasPermission("roles:read");
+        }
+        if (item.path === "/security/permissions") {
+          return hasPermission("permissions:read");
+        }
+        if (item.path === "/security/role-permissions") {
+          return hasPermission("roles:read");
+        }
+        return true;
+      }),
+    }))
+    .filter((section) => section.items.length > 0);
 
   const handleClick = (path: string) => {
     if (path === "/figurines") {
@@ -184,7 +229,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* Nav sections */}
       <Box sx={{ flex: 1, overflowY: "auto", pt: 1 }}>
-        {NAV_SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <Box key={section.heading || "main"}>
             {section.heading && (
               <Typography
