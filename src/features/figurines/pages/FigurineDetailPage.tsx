@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../../auth/AuthContext";
 import {
   Alert,
   Box,
@@ -62,6 +63,7 @@ function BoolRow({ label, value }: { label: string; value: boolean }) {
 export default function FigurineDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
 
   const [figurine, setFigurine] = useState<Figurine | null>(null);
   const [loading, setLoading] = useState(true);
@@ -179,14 +181,16 @@ export default function FigurineDetailPage() {
             </Tooltip>
           </Box>
         )}
-        <Button
-          variant="outlined"
-          startIcon={<EditOutlinedIcon />}
-          onClick={() => navigate(`/figurines/${id}/edit`)}
-          sx={{ flexShrink: 0 }}
-        >
-          Edit
-        </Button>
+        {hasPermission("figurines:update") && (
+          <Button
+            variant="outlined"
+            startIcon={<EditOutlinedIcon />}
+            onClick={() => navigate(`/figurines/${id}/edit`)}
+            sx={{ flexShrink: 0 }}
+          >
+            Edit
+          </Button>
+        )}
       </Box>
 
       <Grid container spacing={{ xs: 2, md: 4 }}>

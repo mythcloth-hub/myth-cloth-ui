@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useAuth } from "../../../auth/AuthContext";
 import {
   Badge,
   Box,
@@ -411,6 +412,7 @@ function CardSkeleton() {
 export default function FigurineCollectionPage() {
   const navigate = useNavigate();
   const location  = useLocation();
+  const { hasPermission } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Persist current search params so the sidebar can restore them
@@ -628,9 +630,11 @@ export default function FigurineCollectionPage() {
           <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" }, flexShrink: 0 }}>
             Myth Cloth Collection
           </Typography>
-          <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
-            + New Figurine
-          </Button>
+          {hasPermission("figurines:write") && (
+            <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
+              + New Figurine
+            </Button>
+          )}
         </Box>
 
         {/* Search bar + filter toggle */}

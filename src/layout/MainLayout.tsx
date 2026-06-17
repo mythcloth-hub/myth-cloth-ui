@@ -212,6 +212,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     onNavigate?.();
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+    onNavigate?.();
+  };
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Brand */}
@@ -431,7 +437,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               </Typography>
             )}
             <Button
-              onClick={logout}
+              onClick={handleLogout}
               startIcon={<LogoutOutlinedIcon />}
               variant="outlined"
               sx={{
