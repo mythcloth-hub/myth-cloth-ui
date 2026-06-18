@@ -24,9 +24,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { Checkbox } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import TuneIcon from "@mui/icons-material/Tune";
+import ChecklistIcon from "@mui/icons-material/Checklist";
+import CloseIcon from "@mui/icons-material/Close";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
 import { getFigurines } from "../api/figurineApi";
@@ -39,6 +42,9 @@ import type { Anniversary } from "../../anniversaries/types/anniversary";
 import AnniversaryIcon from "./AnniversaryIcon";
 import { Tooltip } from "@mui/material";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import { useBulkSelection } from "../../../hooks/useBulkSelection";
+import AddToCollectionModal from "../../collections/components/AddToCollectionModal";
+import BulkAddToCollectionModal from "../../collections/components/BulkAddToCollectionModal";
 
 const PAGE_SIZE = 24;
 
@@ -114,7 +120,19 @@ function getStatusDateLabel(figurine: Figurine): string | null {
   return null;
 }
 
-function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () => void }) {
+function FigurineCard({
+  figurine,
+  onClick,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelect,
+}: {
+  figurine: Figurine;
+  onClick: () => void;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: number) => void;
+}) {
   const imageUrl = figurine.officialImageUrls?.[0] ?? null;
   const badges = getBadges(figurine);
   const statusCfg = figurine.releaseStatus ? RELEASE_STATUS_CONFIG[figurine.releaseStatus] : null;
@@ -305,6 +323,35 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
           </Box>
         )}
 
+        {/* Selection checkbox – top-left corner */}
+        {selectionMode && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 8,
+              left: 8,
+              zIndex: 5,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelect?.(figurine.id);
+            }}
+          >
+            <Checkbox
+              checked={isSelected}
+              sx={{
+                color: isSelected ? "#d4af37" : "rgba(212,175,55,0.5)",
+                backgroundColor: "rgba(0,0,0,0.4)",
+                borderRadius: "4px",
+                padding: "4px",
+                "&:hover": {
+                  backgroundColor: "rgba(0,0,0,0.6)",
+                },
+              }}
+            />
+          </Box>
+        )}
+
         {/* Lineup badge – bottom-left inside image */}
         <Box sx={{ position: "absolute", bottom: 8, left: 8, right: 8 }}>
           <Typography
@@ -462,6 +509,9 @@ export default function FigurineCollectionPage() {
     (location.state as { deleted?: boolean } | null)?.deleted ? "Figurine deleted successfully." : null
   );
   const [filtersOpen,    setFiltersOpen]    = useState(false);
+  const [selectionMode,  setSelectionMode]  = useState(false);
+  const [bulkAddModalOpen, setBulkAddModalOpen] = useState(false);
+  const bulkSelection = useBulkSelection(figurines);
 
   const activeFilterCount = [lineup, series, group, anniversary, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
 
@@ -519,6 +569,28 @@ export default function FigurineCollectionPage() {
       })
       .finally(() => setLoading(false));
   }, [page, query, lineup, series, group, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!selectionMode) return;
+
+      // Escape: Clear selection
+      if (e.key === "Escape") {
+        e.preventDefault();
+        bulkSelection.clearAll();
+      }
+
+      // Ctrl+A or Cmd+A: Select all
+      if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+        e.preventDefault();
+        bulkSelection.selectAll();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [selectionMode, bulkSelection]);
 
 
 
@@ -630,11 +702,32 @@ export default function FigurineCollectionPage() {
           <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" }, flexShrink: 0 }}>
             Myth Cloth Collection
           </Typography>
-          {hasPermission("figurines:write") && (
-            <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
-              + New Figurine
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0 }}>
+            <Button
+              variant={selectionMode ? "contained" : "outlined"}
+              startIcon={<ChecklistIcon />}
+              onClick={() => {
+                setSelectionMode(!selectionMode);
+                if (selectionMode) {
+                  bulkSelection.clearAll();
+                }
+              }}
+              sx={{
+                ...(selectionMode && {
+                  background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
+                  color: "#000",
+                  fontWeight: 600,
+                }),
+              }}
+            >
+              {selectionMode ? "Selection Mode" : "Select Multiple"}
             </Button>
-          )}
+            {hasPermission("figurines:write") && (
+              <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
+                + New Figurine
+              </Button>
+            )}
+          </Box>
         </Box>
 
         {/* Search bar + filter toggle */}
@@ -900,13 +993,20 @@ export default function FigurineCollectionPage() {
                     <Grid key={fig.id} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
                       <FigurineCard
                         figurine={fig}
+                        selectionMode={selectionMode}
+                        isSelected={bulkSelection.isSelected(fig.id)}
+                        onToggleSelect={bulkSelection.toggleSelect}
                         onClick={() => {
-                          sessionStorage.setItem(
-                            "figurineNavList",
-                            JSON.stringify(displayItems.map((f) => f.id))
-                          );
-                          // Preserve current search params (including page) in the detail URL
-                          navigate(`/figurines/${fig.id}?${searchParams.toString()}`);
+                          if (selectionMode) {
+                            bulkSelection.toggleSelect(fig.id);
+                          } else {
+                            sessionStorage.setItem(
+                              "figurineNavList",
+                              JSON.stringify(displayItems.map((f) => f.id))
+                            );
+                            // Preserve current search params (including page) in the detail URL
+                            navigate(`/figurines/${fig.id}?${searchParams.toString()}`);
+                          }
                         }}
                       />
                     </Grid>
@@ -982,6 +1082,95 @@ export default function FigurineCollectionPage() {
           {errorMessage}
         </Alert>
       </Snackbar>
+
+      {/* Floating action bar for bulk selection */}
+      {selectionMode && bulkSelection.selectedCount > 0 && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: "linear-gradient(135deg, rgba(6,8,24,0.98) 0%, rgba(20,15,40,0.98) 100%)",
+            backdropFilter: "blur(20px)",
+            borderTop: "2px solid rgba(212,175,55,0.2)",
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            flexWrap: "wrap",
+            zIndex: 1200,
+            boxShadow: "0 -4px 20px rgba(0,0,0,0.3)",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "#d4af37" }}>
+              ✓ {bulkSelection.selectedCount} figurine{bulkSelection.selectedCount !== 1 ? "s" : ""} selected
+            </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={bulkSelection.selectAll}
+              sx={{ fontSize: "0.75rem" }}
+            >
+              Select All {displayItems.length}
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={bulkSelection.clearAll}
+              color="inherit"
+              sx={{ fontSize: "0.75rem" }}
+            >
+              Clear
+            </Button>
+          </Box>
+
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <Button
+              variant="contained"
+              startIcon={<ChecklistIcon />}
+              onClick={() => setBulkAddModalOpen(true)}
+              sx={{
+                background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
+                color: "#000",
+                fontWeight: 600,
+                "&:hover": {
+                  background: "linear-gradient(135deg, #81d4fa 0%, #4fc3f7 100%)",
+                },
+              }}
+            >
+              Add to Collection
+            </Button>
+            <IconButton
+              onClick={() => {
+                setSelectionMode(false);
+                bulkSelection.clearAll();
+              }}
+              sx={{
+                color: "text.secondary",
+                "&:hover": { color: "text.primary" },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      )}
+
+      {/* Bulk add to collection modal - adds all selected figurines */}
+      <BulkAddToCollectionModal
+        open={bulkAddModalOpen}
+        onClose={() => setBulkAddModalOpen(false)}
+        figurineIds={Array.from(bulkSelection.selectedIds)}
+        selectedCount={bulkSelection.selectedCount}
+        onSuccess={() => {
+          setBulkAddModalOpen(false);
+          bulkSelection.clearAll();
+          setSelectionMode(false);
+        }}
+      />
     </Box>
   );
 }
