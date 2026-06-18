@@ -525,6 +525,20 @@ export default function FigurineCollectionPage() {
   const [selectedCollectionId, setSelectedCollectionId] = useState("");
   const bulkSelection = useBulkSelection(figurines);
 
+  const loadCollections = async () => {
+    try {
+      const data = await getCollections();
+      setCollections(data);
+
+      // Clear selected collection if it no longer exists after refresh.
+      if (selectedCollectionId && !data.some((collection) => String(collection.id) === selectedCollectionId)) {
+        setSelectedCollectionId("");
+      }
+    } catch (err) {
+      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "collections" }));
+    }
+  };
+
   const activeFilterCount = [lineup, series, group, anniversary, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
 
   // Fetch dropdown options once on mount
@@ -536,11 +550,7 @@ export default function FigurineCollectionPage() {
   }, []);
 
   useEffect(() => {
-    getCollections()
-      .then(setCollections)
-      .catch((err) => {
-        setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "collections" }));
-      });
+    loadCollections();
   }, []);
 
   // Debounced search effect for search bar (only if >= 3 chars)
@@ -1228,6 +1238,7 @@ export default function FigurineCollectionPage() {
         figurineIds={Array.from(bulkSelection.selectedIds)}
         selectedCount={bulkSelection.selectedCount}
         onSuccess={() => {
+          loadCollections();
           setBulkAddModalOpen(false);
           bulkSelection.clearAll();
           setSelectionMode(false);
