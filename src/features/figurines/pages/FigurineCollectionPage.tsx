@@ -43,7 +43,6 @@ import AnniversaryIcon from "./AnniversaryIcon";
 import { Tooltip } from "@mui/material";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { useBulkSelection } from "../../../hooks/useBulkSelection";
-import AddToCollectionModal from "../../collections/components/AddToCollectionModal";
 import BulkAddToCollectionModal from "../../collections/components/BulkAddToCollectionModal";
 import { getCollections } from "../../collections/api/collectionApi";
 import type { Collection } from "../../collections/types/collection";
@@ -743,6 +742,22 @@ export default function FigurineCollectionPage() {
             Myth Cloth Collection
           </Typography>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0 }}>
+            <FormControl size="small" sx={{ minWidth: 190, flexShrink: 0 }}>
+              <InputLabel>Collection View</InputLabel>
+              <Select
+                label="Collection View"
+                value={selectedCollectionId}
+                onChange={(e) => setSelectedCollectionId(e.target.value)}
+              >
+                <MenuItem value=""><em>All Figurines</em></MenuItem>
+                {collections.map((collection) => (
+                  <MenuItem key={collection.id} value={String(collection.id)}>
+                    {collection.name}
+                  </MenuItem>
+                ))}
+              </Select>
+          </FormControl>
+            
             <Button
               variant={selectionMode ? "contained" : "outlined"}
               startIcon={<ChecklistIcon />}
@@ -805,21 +820,6 @@ export default function FigurineCollectionPage() {
               Filters
             </Button>
           </Badge>
-          <FormControl size="small" sx={{ minWidth: 190, flexShrink: 0 }}>
-            <InputLabel>Collection View</InputLabel>
-            <Select
-              label="Collection View"
-              value={selectedCollectionId}
-              onChange={(e) => setSelectedCollectionId(e.target.value)}
-            >
-              <MenuItem value=""><em>All Figurines</em></MenuItem>
-              {collections.map((collection) => (
-                <MenuItem key={collection.id} value={String(collection.id)}>
-                  {collection.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
           {activeFilterCount > 0 && (
             <Button
               size="small"
@@ -967,7 +967,7 @@ export default function FigurineCollectionPage() {
         )}
 
         {selectedCollection && (
-          <Box sx={{ mt: activeFilterCount > 0 ? 1 : 0, display: "flex", gap: 1, flexWrap: "wrap" }}>
+          <Box sx={{ mt: activeFilterCount > 0 ? 1 : 0, mb: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
             <Chip
               size="small"
               color="primary"
