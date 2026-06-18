@@ -45,6 +45,8 @@ import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { useBulkSelection } from "../../../hooks/useBulkSelection";
 import AddToCollectionModal from "../../collections/components/AddToCollectionModal";
 import BulkAddToCollectionModal from "../../collections/components/BulkAddToCollectionModal";
+import { getCollections } from "../../collections/api/collectionApi";
+import type { Collection } from "../../collections/types/collection";
 
 const PAGE_SIZE = 24;
 
@@ -126,12 +128,14 @@ function FigurineCard({
   selectionMode = false,
   isSelected = false,
   onToggleSelect,
+  dimmed = false,
 }: {
   figurine: Figurine;
   onClick: () => void;
   selectionMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (id: number) => void;
+  dimmed?: boolean;
 }) {
   const imageUrl = figurine.officialImageUrls?.[0] ?? null;
   const badges = getBadges(figurine);
@@ -167,11 +171,17 @@ function FigurineCard({
         cursor: "pointer",
         transition: "transform 0.2s, box-shadow 0.2s",
         borderTop: statusCfg ? `2px solid ${statusCfg.borderColor}` : undefined,
+        ...(dimmed && {
+          opacity: 0.45,
+          filter: "grayscale(0.9)",
+        }),
         "&:hover": {
-          transform: "translateY(-3px)",
-          boxShadow: statusCfg
-            ? `0 12px 40px ${statusCfg.hoverGlow}`
-            : "0 12px 40px rgba(212, 175, 55, 0.25)",
+          transform: dimmed ? "none" : "translateY(-3px)",
+          boxShadow: dimmed
+            ? "none"
+            : statusCfg
+              ? `0 12px 40px ${statusCfg.hoverGlow}`
+              : "0 12px 40px rgba(212, 175, 55, 0.25)",
         },
       }}
     >
@@ -511,6 +521,8 @@ export default function FigurineCollectionPage() {
   const [filtersOpen,    setFiltersOpen]    = useState(false);
   const [selectionMode,  setSelectionMode]  = useState(false);
   const [bulkAddModalOpen, setBulkAddModalOpen] = useState(false);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [selectedCollectionId, setSelectedCollectionId] = useState("");
   const bulkSelection = useBulkSelection(figurines);
 
   const activeFilterCount = [lineup, series, group, anniversary, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
@@ -521,6 +533,14 @@ export default function FigurineCollectionPage() {
     seriesApi.getAll().then(setSeriesOptions).catch(console.error);
     groupsApi.getAll().then(setGroupOptions).catch(console.error);
     getAllAnniversaries().then(setAnniversaryOptions).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    getCollections()
+      .then(setCollections)
+      .catch((err) => {
+        setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "collections" }));
+      });
   }, []);
 
   // Debounced search effect for search bar (only if >= 3 chars)
@@ -599,9 +619,19 @@ export default function FigurineCollectionPage() {
 
   // Unified display values
   const displayLoading = loading;
-  const displayItems   = figurines;
-  const displayTotal   = totalElements;
-  const displayPages   = totalPages;
+  const selectedCollection = useMemo(
+    () => collections.find((collection) => String(collection.id) === selectedCollectionId) ?? null,
+    [collections, selectedCollectionId]
+  );
+
+  const selectedCollectionFigurineIds = useMemo(
+    () => new Set(selectedCollection?.figurineIds ?? []),
+    [selectedCollection]
+  );
+
+  const displayItems = figurines;
+  const displayTotal = totalElements;
+  const displayPages = totalPages;
 
   const groupedByStatus = useMemo(() => {
     const grouped: Record<ReleaseStatus, Figurine[]> = {
@@ -765,6 +795,21 @@ export default function FigurineCollectionPage() {
               Filters
             </Button>
           </Badge>
+          <FormControl size="small" sx={{ minWidth: 190, flexShrink: 0 }}>
+            <InputLabel>Collection View</InputLabel>
+            <Select
+              label="Collection View"
+              value={selectedCollectionId}
+              onChange={(e) => setSelectedCollectionId(e.target.value)}
+            >
+              <MenuItem value=""><em>All Figurines</em></MenuItem>
+              {collections.map((collection) => (
+                <MenuItem key={collection.id} value={String(collection.id)}>
+                  {collection.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           {activeFilterCount > 0 && (
             <Button
               size="small"
@@ -911,6 +956,22 @@ export default function FigurineCollectionPage() {
           </Box>
         )}
 
+        {selectedCollection && (
+          <Box sx={{ mt: activeFilterCount > 0 ? 1 : 0, display: "flex", gap: 1, flexWrap: "wrap" }}>
+            <Chip
+              size="small"
+              color="primary"
+              label={`Viewing: ${selectedCollection.name}`}
+              onDelete={() => setSelectedCollectionId("")}
+            />
+            <Chip
+              size="small"
+              variant="outlined"
+              label={`${selectedCollection.totalFigurines} owned in this collection`}
+            />
+          </Box>
+        )}
+
         {/* Status + compact pagination row – always visible in the sticky bar */}
         {!displayLoading && (
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mt: activeFilterCount > 0 ? 1 : 0 }}>
@@ -993,6 +1054,7 @@ export default function FigurineCollectionPage() {
                     <Grid key={fig.id} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
                       <FigurineCard
                         figurine={fig}
+                        dimmed={Boolean(selectedCollection) && !selectedCollectionFigurineIds.has(fig.id)}
                         selectionMode={selectionMode}
                         isSelected={bulkSelection.isSelected(fig.id)}
                         onToggleSelect={bulkSelection.toggleSelect}
