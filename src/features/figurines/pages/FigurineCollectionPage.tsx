@@ -11,6 +11,7 @@ import {
   Chip,
   Collapse,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   InputAdornment,
@@ -19,6 +20,7 @@ import {
   Pagination,
   Select,
   Skeleton,
+  Switch,
   Snackbar,
   Alert,
   TextField,
@@ -468,7 +470,7 @@ function CardSkeleton() {
 export default function FigurineCollectionPage() {
   const navigate = useNavigate();
   const location  = useLocation();
-  const { hasPermission } = useAuth();
+  const { hasPermission, isAuthenticated } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Persist current search params so the sidebar can restore them
@@ -522,6 +524,7 @@ export default function FigurineCollectionPage() {
   const [bulkAddModalOpen, setBulkAddModalOpen] = useState(false);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollectionId, setSelectedCollectionId] = useState("");
+  const [showOwnedOnly, setShowOwnedOnly] = useState(false);
   const bulkSelection = useBulkSelection(figurines);
 
   const loadCollections = async () => {
@@ -585,6 +588,9 @@ export default function FigurineCollectionPage() {
     if (manga) params.manga = manga;
     if (multiPack) params.set = multiPack;
     if (articulable) params.articulable = articulable;
+    if (showOwnedOnly && selectedCollectionId && isAuthenticated) {
+      params.collectionId = selectedCollectionId;
+    }
 
     getFigurines(page - 1, PAGE_SIZE, params)
       .then((data) => {
@@ -597,7 +603,7 @@ export default function FigurineCollectionPage() {
         setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurines" }));
       })
       .finally(() => setLoading(false));
-  }, [page, query, lineup, series, group, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable]);
+  }, [page, query, lineup, series, group, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, showOwnedOnly, selectedCollectionId, isAuthenticated]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -637,6 +643,12 @@ export default function FigurineCollectionPage() {
     () => new Set(selectedCollection?.figurineIds ?? []),
     [selectedCollection]
   );
+
+  useEffect(() => {
+    if (!selectedCollectionId) {
+      setShowOwnedOnly(false);
+    }
+  }, [selectedCollectionId]);
 
   const displayItems = figurines;
   const displayTotal = totalElements;
@@ -756,7 +768,20 @@ export default function FigurineCollectionPage() {
                   </MenuItem>
                 ))}
               </Select>
-          </FormControl>
+            </FormControl>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={showOwnedOnly}
+                  onChange={(e) => setShowOwnedOnly(e.target.checked)}
+                  disabled={!selectedCollection || !isAuthenticated}
+                />
+              }
+              label="Show owned only"
+              sx={{ ml: 0.5, mr: 0, color: "text.secondary" }}
+            />
             
             <Button
               variant={selectionMode ? "contained" : "outlined"}

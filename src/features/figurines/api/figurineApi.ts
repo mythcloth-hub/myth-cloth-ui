@@ -29,7 +29,7 @@ export const deleteFigurineEvent = async (figurineId: number, eventId: number): 
 export const getFigurines = async (
   page = 0,
   size = 12,
-  params?: { name?: string; lineUpId?: string; seriesId?: string; groupId?: string; anniversaryId?: string; releaseStatus?: string; metalBody?: boolean; oce?: boolean; revival?: boolean; plainCloth?: boolean; broken?: boolean; golden?: boolean; gold?: boolean; manga?: boolean; set?: boolean; articulable?: boolean }
+  params?: { name?: string; lineUpId?: string; seriesId?: string; groupId?: string; anniversaryId?: string; releaseStatus?: string; metalBody?: boolean; oce?: boolean; revival?: boolean; plainCloth?: boolean; broken?: boolean; golden?: boolean; gold?: boolean; manga?: boolean; set?: boolean; articulable?: boolean; collectionId?: string }
 ): Promise<PaginatedFigurines> => {
   const queryParams: Record<string, any> = { page, size };
   if (params?.name) queryParams.name = params.name;
@@ -48,6 +48,7 @@ export const getFigurines = async (
   if (params?.manga) queryParams.manga = params.manga;
   if (params?.set) queryParams.set = params.set;
   if (params?.articulable) queryParams.articulable = params.articulable;
+  if (params?.collectionId) queryParams.collectionId = params.collectionId;
 
   const res = await httpClient.get(BASE, { params: queryParams });
   return res.data;
