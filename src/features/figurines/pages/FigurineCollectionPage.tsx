@@ -11,6 +11,7 @@ import {
   Chip,
   Collapse,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   InputAdornment,
@@ -19,26 +20,34 @@ import {
   Pagination,
   Select,
   Skeleton,
+  Switch,
   Snackbar,
   Alert,
   TextField,
   Typography,
 } from "@mui/material";
+import { Checkbox } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import TuneIcon from "@mui/icons-material/Tune";
+import ChecklistIcon from "@mui/icons-material/Checklist";
+import CloseIcon from "@mui/icons-material/Close";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
-import { getFigurines } from "../api/figurineApi";
+import { getFigurines, getSelectableFigurineIds } from "../api/figurineApi";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 import { lineupsApi, seriesApi, groupsApi } from "../../catalogs/api/catalogApi";
 import type { Catalog } from "../../catalogs/types/catalog";
-import type { Figurine, ReleaseStatus } from "../types/figurine";
+import type { Figurine, FigurineFilters, ReleaseStatus } from "../types/figurine";
 import { getAllAnniversaries } from "../../anniversaries/api/anniversaryApi";
 import type { Anniversary } from "../../anniversaries/types/anniversary";
 import AnniversaryIcon from "./AnniversaryIcon";
 import { Tooltip } from "@mui/material";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import { useBulkSelection } from "../../../hooks/useBulkSelection";
+import BulkAddToCollectionModal from "../../collections/components/BulkAddToCollectionModal";
+import { getCollections } from "../../collections/api/collectionApi";
+import type { Collection } from "../../collections/types/collection";
 
 const PAGE_SIZE = 24;
 
@@ -114,7 +123,25 @@ function getStatusDateLabel(figurine: Figurine): string | null {
   return null;
 }
 
-function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () => void }) {
+const SELECTABLE_STATUSES: ReleaseStatus[] = ["ANNOUNCED", "RELEASED"];
+
+function FigurineCard({
+  figurine,
+  onClick,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelect,
+  dimmed = false,
+  selectable = true,
+}: {
+  figurine: Figurine;
+  onClick: () => void;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: number) => void;
+  dimmed?: boolean;
+  selectable?: boolean;
+}) {
   const imageUrl = figurine.officialImageUrls?.[0] ?? null;
   const badges = getBadges(figurine);
   const statusCfg = figurine.releaseStatus ? RELEASE_STATUS_CONFIG[figurine.releaseStatus] : null;
@@ -149,11 +176,22 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
         cursor: "pointer",
         transition: "transform 0.2s, box-shadow 0.2s",
         borderTop: statusCfg ? `2px solid ${statusCfg.borderColor}` : undefined,
+        ...(dimmed && {
+          opacity: 0.45,
+          filter: "grayscale(0.9)",
+        }),
+        ...(selectionMode && !selectable && {
+          opacity: 0.3,
+          filter: "grayscale(1)",
+          cursor: "default",
+        }),
         "&:hover": {
-          transform: "translateY(-3px)",
-          boxShadow: statusCfg
-            ? `0 12px 40px ${statusCfg.hoverGlow}`
-            : "0 12px 40px rgba(212, 175, 55, 0.25)",
+          transform: (dimmed || (selectionMode && !selectable)) ? "none" : "translateY(-3px)",
+          boxShadow: (dimmed || (selectionMode && !selectable))
+            ? "none"
+            : statusCfg
+              ? `0 12px 40px ${statusCfg.hoverGlow}`
+              : "0 12px 40px rgba(212, 175, 55, 0.25)",
         },
       }}
     >
@@ -305,6 +343,35 @@ function FigurineCard({ figurine, onClick }: { figurine: Figurine; onClick: () =
           </Box>
         )}
 
+        {/* Selection checkbox – top-left corner */}
+        {selectionMode && selectable && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 8,
+              left: 8,
+              zIndex: 5,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelect?.(figurine.id);
+            }}
+          >
+            <Checkbox
+              checked={isSelected}
+              sx={{
+                color: isSelected ? "#d4af37" : "rgba(212,175,55,0.5)",
+                backgroundColor: "rgba(0,0,0,0.4)",
+                borderRadius: "4px",
+                padding: "4px",
+                "&:hover": {
+                  backgroundColor: "rgba(0,0,0,0.6)",
+                },
+              }}
+            />
+          </Box>
+        )}
+
         {/* Lineup badge – bottom-left inside image */}
         <Box sx={{ position: "absolute", bottom: 8, left: 8, right: 8 }}>
           <Typography
@@ -412,7 +479,7 @@ function CardSkeleton() {
 export default function FigurineCollectionPage() {
   const navigate = useNavigate();
   const location  = useLocation();
-  const { hasPermission } = useAuth();
+  const { hasPermission, isAuthenticated } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Persist current search params so the sidebar can restore them
@@ -450,6 +517,7 @@ export default function FigurineCollectionPage() {
   const [loading,       setLoading]       = useState(true);
   const [totalPages,    setTotalPages]    = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [totalCollectableElements, setTotalCollectableElements] = useState(0);
 
   // Lineup, series & group options for the dropdowns
   const [lineupOptions, setLineupOptions] = useState<Catalog[]>([]);
@@ -462,34 +530,18 @@ export default function FigurineCollectionPage() {
     (location.state as { deleted?: boolean } | null)?.deleted ? "Figurine deleted successfully." : null
   );
   const [filtersOpen,    setFiltersOpen]    = useState(false);
+  const [selectionMode,  setSelectionMode]  = useState(false);
+  const [bulkAddModalOpen, setBulkAddModalOpen] = useState(false);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [selectedCollectionId, setSelectedCollectionId] = useState("");
+  const [showOwnedOnly, setShowOwnedOnly] = useState(false);
+  const [selectingAllPages, setSelectingAllPages] = useState(false);
+  const bulkSelection = useBulkSelection(figurines, {
+    preserveSelectionOnItemsChange: true,
+  });
 
-  const activeFilterCount = [lineup, series, group, anniversary, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
-
-  // Fetch dropdown options once on mount
-  useEffect(() => {
-    lineupsApi.getAll().then(setLineupOptions).catch(console.error);
-    seriesApi.getAll().then(setSeriesOptions).catch(console.error);
-    groupsApi.getAll().then(setGroupOptions).catch(console.error);
-    getAllAnniversaries().then(setAnniversaryOptions).catch(console.error);
-  }, []);
-
-  // Debounced search effect for search bar (only if >= 3 chars)
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if ((searchInput.length === 0 || searchInput.length >= 3) && searchInput !== query) {
-        setSearchParams(makeParams({ name: searchInput }));
-      }
-    }, 350);
-    return () => clearTimeout(handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput, query]);
-
-  // Always fetch paginated data from server with current filters/search
-  useEffect(() => {
-    setLoading(true);
-    setFigurines([]);
-    const params: Record<string, any> = {};
-
+  const buildFigurinesParams = (): FigurineFilters => {
+    const params: FigurineFilters = {};
     if (query) params.name = query;
     if (lineup) params.lineUpId = lineup;
     if (series) params.seriesId = series;
@@ -506,19 +558,111 @@ export default function FigurineCollectionPage() {
     if (manga) params.manga = manga;
     if (multiPack) params.set = multiPack;
     if (articulable) params.articulable = articulable;
+    if (showOwnedOnly && selectedCollectionId && isAuthenticated) {
+      params.collectionId = selectedCollectionId;
+    }
+
+    return params;
+  };
+
+  const handleSelectAllPages = async () => {
+    setSelectingAllPages(true);
+    try {
+      const selectableIds = await getSelectableFigurineIds(buildFigurinesParams());
+      bulkSelection.selectByIds(selectableIds);
+    } catch (err) {
+      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurines" }));
+    } finally {
+      setSelectingAllPages(false);
+    }
+  };
+
+  const loadCollections = async () => {
+    if (!isAuthenticated) {
+      setCollections([]);
+      setSelectedCollectionId("");
+      return;
+    }
+
+    try {
+      const data = await getCollections();
+      setCollections(data);
+
+      // Clear selected collection if it no longer exists after refresh.
+      if (selectedCollectionId && !data.some((collection) => String(collection.id) === selectedCollectionId)) {
+        setSelectedCollectionId("");
+      }
+    } catch (err) {
+      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "collections" }));
+    }
+  };
+
+  const activeFilterCount = [lineup, series, group, anniversary, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
+
+  // Fetch dropdown options once on mount
+  useEffect(() => {
+    lineupsApi.getAll().then(setLineupOptions).catch(console.error);
+    seriesApi.getAll().then(setSeriesOptions).catch(console.error);
+    groupsApi.getAll().then(setGroupOptions).catch(console.error);
+    getAllAnniversaries().then(setAnniversaryOptions).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    loadCollections();
+  }, [isAuthenticated]);
+
+  // Debounced search effect for search bar (only if >= 3 chars)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if ((searchInput.length === 0 || searchInput.length >= 3) && searchInput !== query) {
+        setSearchParams(makeParams({ name: searchInput }));
+      }
+    }, 350);
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput, query]);
+
+  // Always fetch paginated data from server with current filters/search
+  useEffect(() => {
+    setLoading(true);
+    setFigurines([]);
+    const params = buildFigurinesParams();
 
     getFigurines(page - 1, PAGE_SIZE, params)
       .then((data) => {
         setFigurines(data.content);
         setTotalPages(data.totalPages);
         setTotalElements(data.totalElements);
+        setTotalCollectableElements(data.totalCollectableElements);
       })
       .catch((err) => {
         console.error(err);
         setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurines" }));
       })
       .finally(() => setLoading(false));
-  }, [page, query, lineup, series, group, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable]);
+  }, [page, query, lineup, series, group, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, showOwnedOnly, selectedCollectionId, isAuthenticated]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!selectionMode) return;
+
+      // Escape: Clear selection
+      if (e.key === "Escape") {
+        e.preventDefault();
+        bulkSelection.clearAll();
+      }
+
+      // Ctrl+A or Cmd+A: Select all
+      if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+        e.preventDefault();
+        bulkSelection.selectAll();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [selectionMode, bulkSelection]);
 
 
 
@@ -527,9 +671,26 @@ export default function FigurineCollectionPage() {
 
   // Unified display values
   const displayLoading = loading;
-  const displayItems   = figurines;
-  const displayTotal   = totalElements;
-  const displayPages   = totalPages;
+  const selectedCollection = useMemo(
+    () => collections.find((collection) => String(collection.id) === selectedCollectionId) ?? null,
+    [collections, selectedCollectionId]
+  );
+
+  const selectedCollectionFigurineIds = useMemo(
+    () => new Set(selectedCollection?.figurineIds ?? []),
+    [selectedCollection]
+  );
+
+  useEffect(() => {
+    if (!selectedCollectionId) {
+      setShowOwnedOnly(false);
+    }
+  }, [selectedCollectionId]);
+
+  const displayItems = figurines;
+  const displayTotal = totalElements;
+  const displayPages = totalPages;
+  const selectableItemsOnPageCount = displayItems.filter((fig) => SELECTABLE_STATUSES.includes(fig.releaseStatus)).length;
 
   const groupedByStatus = useMemo(() => {
     const grouped: Record<ReleaseStatus, Figurine[]> = {
@@ -630,11 +791,66 @@ export default function FigurineCollectionPage() {
           <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" }, flexShrink: 0 }}>
             Myth Cloth Collection
           </Typography>
-          {hasPermission("figurines:write") && (
-            <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
-              + New Figurine
-            </Button>
-          )}
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0 }}>
+            {hasPermission("collections:read") && (
+              <FormControl size="small" sx={{ minWidth: 190, flexShrink: 0 }}>
+              <InputLabel>Collection View</InputLabel>
+              <Select
+                label="Collection View"
+                value={selectedCollectionId}
+                onChange={(e) => setSelectedCollectionId(e.target.value)}
+              >
+                <MenuItem value=""><em>All Figurines</em></MenuItem>
+                {collections.map((collection) => (
+                  <MenuItem key={collection.id} value={String(collection.id)}>
+                    {collection.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            )}
+            {hasPermission("collections:read") && (
+              <FormControlLabel
+                control={
+                  <Switch
+                    size="small"
+                    checked={showOwnedOnly}
+                    onChange={(e) => setShowOwnedOnly(e.target.checked)}
+                    disabled={!selectedCollection || !isAuthenticated}
+                  />
+                }
+                label="Show owned only"
+                sx={{ ml: 0.5, mr: 0, color: "text.secondary" }}
+              />
+            )}
+            
+            {isAuthenticated && (
+              <Button
+                variant={selectionMode ? "contained" : "outlined"}
+                startIcon={<ChecklistIcon />}
+                onClick={() => {
+                  setSelectionMode(!selectionMode);
+                  if (selectionMode) {
+                    bulkSelection.clearAll();
+                  }
+                }}
+                sx={{
+                  ...(selectionMode && {
+                    background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
+                    color: "#000",
+                    fontWeight: 600,
+                  }),
+                }}
+              >
+                {selectionMode ? "Selection Mode" : "Select Multiple"}
+              </Button>
+            )}
+            {hasPermission("figurines:write") && (
+              <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
+                + New Figurine
+              </Button>
+            )}
+          </Box>
         </Box>
 
         {/* Search bar + filter toggle */}
@@ -818,6 +1034,22 @@ export default function FigurineCollectionPage() {
           </Box>
         )}
 
+        {selectedCollection && (
+          <Box sx={{ mt: activeFilterCount > 0 ? 1 : 0, mb: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
+            <Chip
+              size="small"
+              color="primary"
+              label={`Viewing: ${selectedCollection.name}`}
+              onDelete={() => setSelectedCollectionId("")}
+            />
+            <Chip
+              size="small"
+              variant="outlined"
+              label={`${selectedCollection.totalFigurines} owned in this collection`}
+            />
+          </Box>
+        )}
+
         {/* Status + compact pagination row – always visible in the sticky bar */}
         {!displayLoading && (
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mt: activeFilterCount > 0 ? 1 : 0 }}>
@@ -900,13 +1132,24 @@ export default function FigurineCollectionPage() {
                     <Grid key={fig.id} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
                       <FigurineCard
                         figurine={fig}
+                        dimmed={Boolean(selectedCollection) && !selectedCollectionFigurineIds.has(fig.id)}
+                        selectionMode={selectionMode}
+                        isSelected={bulkSelection.isSelected(fig.id)}
+                        onToggleSelect={bulkSelection.toggleSelect}
+                        selectable={SELECTABLE_STATUSES.includes(fig.releaseStatus)}
                         onClick={() => {
-                          sessionStorage.setItem(
-                            "figurineNavList",
-                            JSON.stringify(displayItems.map((f) => f.id))
-                          );
-                          // Preserve current search params (including page) in the detail URL
-                          navigate(`/figurines/${fig.id}?${searchParams.toString()}`);
+                          if (selectionMode) {
+                            if (SELECTABLE_STATUSES.includes(fig.releaseStatus)) {
+                              bulkSelection.toggleSelect(fig.id);
+                            }
+                          } else {
+                            sessionStorage.setItem(
+                              "figurineNavList",
+                              JSON.stringify(displayItems.map((f) => f.id))
+                            );
+                            // Preserve current search params (including page) in the detail URL
+                            navigate(`/figurines/${fig.id}?${searchParams.toString()}`);
+                          }
                         }}
                       />
                     </Grid>
@@ -982,6 +1225,107 @@ export default function FigurineCollectionPage() {
           {errorMessage}
         </Alert>
       </Snackbar>
+
+      {/* Floating action bar for bulk selection */}
+      {selectionMode && bulkSelection.selectedCount > 0 && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: "linear-gradient(135deg, rgba(6,8,24,0.98) 0%, rgba(20,15,40,0.98) 100%)",
+            backdropFilter: "blur(20px)",
+            borderTop: "2px solid rgba(212,175,55,0.2)",
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            flexWrap: "wrap",
+            zIndex: 1200,
+            boxShadow: "0 -4px 20px rgba(0,0,0,0.3)",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "#d4af37" }}>
+              ✓ {bulkSelection.selectedCount} figurine{bulkSelection.selectedCount !== 1 ? "s" : ""} selected
+            </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={bulkSelection.selectAll}
+              sx={{ fontSize: "0.75rem" }}
+            >
+              This page ({selectableItemsOnPageCount})
+            </Button>
+            {totalCollectableElements > selectableItemsOnPageCount && (
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={handleSelectAllPages}
+                disabled={selectingAllPages}
+                sx={{ fontSize: "0.75rem", color: "#d4af37", borderColor: "rgba(212,175,55,0.5)" }}
+              >
+                {selectingAllPages ? "Loading…" : `All pages (${totalCollectableElements.toLocaleString()})`}
+              </Button>
+            )}
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={bulkSelection.clearAll}
+              color="inherit"
+              sx={{ fontSize: "0.75rem" }}
+            >
+              Clear
+            </Button>
+          </Box>
+
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <Button
+              variant="contained"
+              startIcon={<ChecklistIcon />}
+              onClick={() => setBulkAddModalOpen(true)}
+              sx={{
+                background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
+                color: "#000",
+                fontWeight: 600,
+                "&:hover": {
+                  background: "linear-gradient(135deg, #81d4fa 0%, #4fc3f7 100%)",
+                },
+              }}
+            >
+              Add to Collection
+            </Button>
+            <IconButton
+              onClick={() => {
+                setSelectionMode(false);
+                bulkSelection.clearAll();
+              }}
+              sx={{
+                color: "text.secondary",
+                "&:hover": { color: "text.primary" },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      )}
+
+      {/* Bulk add to collection modal - adds all selected figurines */}
+      <BulkAddToCollectionModal
+        open={bulkAddModalOpen}
+        onClose={() => setBulkAddModalOpen(false)}
+        figurineIds={Array.from(bulkSelection.selectedIds)}
+        selectedCount={bulkSelection.selectedCount}
+        onSuccess={() => {
+          loadCollections();
+          setBulkAddModalOpen(false);
+          bulkSelection.clearAll();
+          setSelectionMode(false);
+        }}
+      />
     </Box>
   );
 }

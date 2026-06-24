@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
@@ -29,6 +30,7 @@ import type { Figurine, ReleaseStatus } from "../types/figurine";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 import AnniversaryIcon from "./AnniversaryIcon";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AddToCollectionModal from "../../collections/components/AddToCollectionModal";
 
 const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: string; borderColor: string }> = {
   RELEASED:  { label: "Released",  color: "#4caf50", borderColor: "rgba(76,175,80,0.30)"   },
@@ -63,12 +65,14 @@ function BoolRow({ label, value }: { label: string; value: boolean }) {
 export default function FigurineDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { hasPermission } = useAuth();
+  const { hasPermission, isAuthenticated } = useAuth();
 
   const [figurine, setFigurine] = useState<Figurine | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
+  const [addSuccess, setAddSuccess] = useState(false);
 
   const navList: number[] = JSON.parse(sessionStorage.getItem("figurineNavList") ?? "[]");
   const currentIndex = navList.indexOf(Number(id));
@@ -189,6 +193,35 @@ export default function FigurineDetailPage() {
             sx={{ flexShrink: 0 }}
           >
             Edit
+          </Button>
+        )}
+        {isAuthenticated && (
+          <Button
+            variant="contained"
+            startIcon={<FavoriteBorderIcon />}
+            onClick={() => setAddToCollectionOpen(true)}
+            sx={{
+              flexShrink: 0,
+              background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
+              color: "#000",
+              fontWeight: 600,
+              "&:hover": {
+                background: "linear-gradient(135deg, #81d4fa 0%, #4fc3f7 100%)",
+                boxShadow: "0 8px 24px rgba(79,195,247,0.3)",
+              },
+              transition: "all 0.3s ease",
+              animation: "pulse 2s infinite",
+              "@keyframes pulse": {
+                "0%, 100%": {
+                  opacity: 1,
+                },
+                "50%": {
+                  opacity: 0.8,
+                },
+              },
+            }}
+          >
+            Add to Collection
           </Button>
         )}
       </Box>
@@ -708,6 +741,30 @@ export default function FigurineDetailPage() {
           {errorMessage}
         </Alert>
       </Snackbar>
+
+      <Snackbar
+        open={addSuccess}
+        autoHideDuration={3000}
+        onClose={() => setAddSuccess(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity="success" onClose={() => setAddSuccess(false)}>
+          ✨ Added to collection successfully!
+        </Alert>
+      </Snackbar>
+
+      {figurine && (
+        <AddToCollectionModal
+          open={addToCollectionOpen}
+          onClose={() => setAddToCollectionOpen(false)}
+          figurineId={figurine.id}
+          figurineName={figurine.displayableName}
+          onSuccess={() => {
+            setAddSuccess(true);
+            setAddToCollectionOpen(false);
+          }}
+        />
+      )}
     </Box>
   );
 }

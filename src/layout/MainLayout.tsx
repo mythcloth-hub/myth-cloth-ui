@@ -23,6 +23,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CollectionsOutlinedIcon from "@mui/icons-material/CollectionsOutlined";
+import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import CakeOutlinedIcon from "@mui/icons-material/CakeOutlined";
 import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
@@ -58,6 +59,7 @@ const NAV_SECTIONS: NavSection[] = [
     heading: "",
     items: [
       { label: "Collection",    path: "/figurines",      icon: <CollectionsOutlinedIcon /> },
+      { label: "My Collections", path: "/collections",   icon: <FavoriteBorderOutlinedIcon /> },
       { label: "Charts",        path: "/charts",         icon: <InsightsOutlinedIcon /> },
       { label: "Releases",      path: "/releases",       icon: <CalendarMonthOutlinedIcon /> },
       { label: "Pricing",       path: "/pricing",        icon: <PaidOutlinedIcon /> },
