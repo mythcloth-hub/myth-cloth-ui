@@ -34,11 +34,11 @@ import ChecklistIcon from "@mui/icons-material/Checklist";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
-import { getFigurines } from "../api/figurineApi";
+import { getFigurines, getSelectableFigurineIds } from "../api/figurineApi";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 import { lineupsApi, seriesApi, groupsApi } from "../../catalogs/api/catalogApi";
 import type { Catalog } from "../../catalogs/types/catalog";
-import type { Figurine, ReleaseStatus } from "../types/figurine";
+import type { Figurine, FigurineFilters, ReleaseStatus } from "../types/figurine";
 import { getAllAnniversaries } from "../../anniversaries/api/anniversaryApi";
 import type { Anniversary } from "../../anniversaries/types/anniversary";
 import AnniversaryIcon from "./AnniversaryIcon";
@@ -123,6 +123,8 @@ function getStatusDateLabel(figurine: Figurine): string | null {
   return null;
 }
 
+const SELECTABLE_STATUSES: ReleaseStatus[] = ["ANNOUNCED", "RELEASED"];
+
 function FigurineCard({
   figurine,
   onClick,
@@ -130,6 +132,7 @@ function FigurineCard({
   isSelected = false,
   onToggleSelect,
   dimmed = false,
+  selectable = true,
 }: {
   figurine: Figurine;
   onClick: () => void;
@@ -137,6 +140,7 @@ function FigurineCard({
   isSelected?: boolean;
   onToggleSelect?: (id: number) => void;
   dimmed?: boolean;
+  selectable?: boolean;
 }) {
   const imageUrl = figurine.officialImageUrls?.[0] ?? null;
   const badges = getBadges(figurine);
@@ -176,9 +180,14 @@ function FigurineCard({
           opacity: 0.45,
           filter: "grayscale(0.9)",
         }),
+        ...(selectionMode && !selectable && {
+          opacity: 0.3,
+          filter: "grayscale(1)",
+          cursor: "default",
+        }),
         "&:hover": {
-          transform: dimmed ? "none" : "translateY(-3px)",
-          boxShadow: dimmed
+          transform: (dimmed || (selectionMode && !selectable)) ? "none" : "translateY(-3px)",
+          boxShadow: (dimmed || (selectionMode && !selectable))
             ? "none"
             : statusCfg
               ? `0 12px 40px ${statusCfg.hoverGlow}`
@@ -335,7 +344,7 @@ function FigurineCard({
         )}
 
         {/* Selection checkbox – top-left corner */}
-        {selectionMode && (
+        {selectionMode && selectable && (
           <Box
             sx={{
               position: "absolute",
@@ -508,6 +517,7 @@ export default function FigurineCollectionPage() {
   const [loading,       setLoading]       = useState(true);
   const [totalPages,    setTotalPages]    = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [totalCollectableElements, setTotalCollectableElements] = useState(0);
 
   // Lineup, series & group options for the dropdowns
   const [lineupOptions, setLineupOptions] = useState<Catalog[]>([]);
@@ -525,9 +535,55 @@ export default function FigurineCollectionPage() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollectionId, setSelectedCollectionId] = useState("");
   const [showOwnedOnly, setShowOwnedOnly] = useState(false);
-  const bulkSelection = useBulkSelection(figurines);
+  const [selectingAllPages, setSelectingAllPages] = useState(false);
+  const bulkSelection = useBulkSelection(figurines, {
+    preserveSelectionOnItemsChange: true,
+  });
+
+  const buildFigurinesParams = (): FigurineFilters => {
+    const params: FigurineFilters = {};
+    if (query) params.name = query;
+    if (lineup) params.lineUpId = lineup;
+    if (series) params.seriesId = series;
+    if (group) params.groupId = group;
+    if (anniversary) params.anniversaryId = anniversary;
+    if (releaseStatus) params.releaseStatus = releaseStatus;
+    if (metalBody) params.metalBody = metalBody;
+    if (originalColor) params.oce = originalColor;
+    if (revival) params.revival = revival;
+    if (plainCloth) params.plainCloth = plainCloth;
+    if (battleDamaged) params.broken = battleDamaged;
+    if (goldenArmor) params.golden = goldenArmor;
+    if (gold24k) params.gold = gold24k;
+    if (manga) params.manga = manga;
+    if (multiPack) params.set = multiPack;
+    if (articulable) params.articulable = articulable;
+    if (showOwnedOnly && selectedCollectionId && isAuthenticated) {
+      params.collectionId = selectedCollectionId;
+    }
+
+    return params;
+  };
+
+  const handleSelectAllPages = async () => {
+    setSelectingAllPages(true);
+    try {
+      const selectableIds = await getSelectableFigurineIds(buildFigurinesParams());
+      bulkSelection.selectByIds(selectableIds);
+    } catch (err) {
+      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurines" }));
+    } finally {
+      setSelectingAllPages(false);
+    }
+  };
 
   const loadCollections = async () => {
+    if (!isAuthenticated) {
+      setCollections([]);
+      setSelectedCollectionId("");
+      return;
+    }
+
     try {
       const data = await getCollections();
       setCollections(data);
@@ -553,7 +609,7 @@ export default function FigurineCollectionPage() {
 
   useEffect(() => {
     loadCollections();
-  }, []);
+  }, [isAuthenticated]);
 
   // Debounced search effect for search bar (only if >= 3 chars)
   useEffect(() => {
@@ -570,33 +626,14 @@ export default function FigurineCollectionPage() {
   useEffect(() => {
     setLoading(true);
     setFigurines([]);
-    const params: Record<string, any> = {};
-
-    if (query) params.name = query;
-    if (lineup) params.lineUpId = lineup;
-    if (series) params.seriesId = series;
-    if (group) params.groupId = group;
-    if (anniversary) params.anniversaryId = anniversary;
-    if (releaseStatus) params.releaseStatus = releaseStatus;
-    if (metalBody) params.metalBody = metalBody;
-    if (originalColor) params.oce = originalColor;
-    if (revival) params.revival = revival;
-    if (plainCloth) params.plainCloth = plainCloth;
-    if (battleDamaged) params.broken = battleDamaged;
-    if (goldenArmor) params.golden = goldenArmor;
-    if (gold24k) params.gold = gold24k;
-    if (manga) params.manga = manga;
-    if (multiPack) params.set = multiPack;
-    if (articulable) params.articulable = articulable;
-    if (showOwnedOnly && selectedCollectionId && isAuthenticated) {
-      params.collectionId = selectedCollectionId;
-    }
+    const params = buildFigurinesParams();
 
     getFigurines(page - 1, PAGE_SIZE, params)
       .then((data) => {
         setFigurines(data.content);
         setTotalPages(data.totalPages);
         setTotalElements(data.totalElements);
+        setTotalCollectableElements(data.totalCollectableElements);
       })
       .catch((err) => {
         console.error(err);
@@ -653,6 +690,7 @@ export default function FigurineCollectionPage() {
   const displayItems = figurines;
   const displayTotal = totalElements;
   const displayPages = totalPages;
+  const selectableItemsOnPageCount = displayItems.filter((fig) => SELECTABLE_STATUSES.includes(fig.releaseStatus)).length;
 
   const groupedByStatus = useMemo(() => {
     const grouped: Record<ReleaseStatus, Figurine[]> = {
@@ -754,7 +792,8 @@ export default function FigurineCollectionPage() {
             Myth Cloth Collection
           </Typography>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0 }}>
-            <FormControl size="small" sx={{ minWidth: 190, flexShrink: 0 }}>
+            {hasPermission("collections:read") && (
+              <FormControl size="small" sx={{ minWidth: 190, flexShrink: 0 }}>
               <InputLabel>Collection View</InputLabel>
               <Select
                 label="Collection View"
@@ -769,39 +808,43 @@ export default function FigurineCollectionPage() {
                 ))}
               </Select>
             </FormControl>
-
-            <FormControlLabel
-              control={
-                <Switch
-                  size="small"
-                  checked={showOwnedOnly}
-                  onChange={(e) => setShowOwnedOnly(e.target.checked)}
-                  disabled={!selectedCollection || !isAuthenticated}
-                />
-              }
-              label="Show owned only"
-              sx={{ ml: 0.5, mr: 0, color: "text.secondary" }}
-            />
-            
-            <Button
-              variant={selectionMode ? "contained" : "outlined"}
-              startIcon={<ChecklistIcon />}
-              onClick={() => {
-                setSelectionMode(!selectionMode);
-                if (selectionMode) {
-                  bulkSelection.clearAll();
+            )}
+            {hasPermission("collections:read") && (
+              <FormControlLabel
+                control={
+                  <Switch
+                    size="small"
+                    checked={showOwnedOnly}
+                    onChange={(e) => setShowOwnedOnly(e.target.checked)}
+                    disabled={!selectedCollection || !isAuthenticated}
+                  />
                 }
-              }}
-              sx={{
-                ...(selectionMode && {
-                  background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
-                  color: "#000",
-                  fontWeight: 600,
-                }),
-              }}
-            >
-              {selectionMode ? "Selection Mode" : "Select Multiple"}
-            </Button>
+                label="Show owned only"
+                sx={{ ml: 0.5, mr: 0, color: "text.secondary" }}
+              />
+            )}
+            
+            {isAuthenticated && (
+              <Button
+                variant={selectionMode ? "contained" : "outlined"}
+                startIcon={<ChecklistIcon />}
+                onClick={() => {
+                  setSelectionMode(!selectionMode);
+                  if (selectionMode) {
+                    bulkSelection.clearAll();
+                  }
+                }}
+                sx={{
+                  ...(selectionMode && {
+                    background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
+                    color: "#000",
+                    fontWeight: 600,
+                  }),
+                }}
+              >
+                {selectionMode ? "Selection Mode" : "Select Multiple"}
+              </Button>
+            )}
             {hasPermission("figurines:write") && (
               <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
                 + New Figurine
@@ -1093,9 +1136,12 @@ export default function FigurineCollectionPage() {
                         selectionMode={selectionMode}
                         isSelected={bulkSelection.isSelected(fig.id)}
                         onToggleSelect={bulkSelection.toggleSelect}
+                        selectable={SELECTABLE_STATUSES.includes(fig.releaseStatus)}
                         onClick={() => {
                           if (selectionMode) {
-                            bulkSelection.toggleSelect(fig.id);
+                            if (SELECTABLE_STATUSES.includes(fig.releaseStatus)) {
+                              bulkSelection.toggleSelect(fig.id);
+                            }
                           } else {
                             sessionStorage.setItem(
                               "figurineNavList",
@@ -1201,7 +1247,7 @@ export default function FigurineCollectionPage() {
             boxShadow: "0 -4px 20px rgba(0,0,0,0.3)",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
             <Typography variant="body2" sx={{ fontWeight: 600, color: "#d4af37" }}>
               ✓ {bulkSelection.selectedCount} figurine{bulkSelection.selectedCount !== 1 ? "s" : ""} selected
             </Typography>
@@ -1211,8 +1257,19 @@ export default function FigurineCollectionPage() {
               onClick={bulkSelection.selectAll}
               sx={{ fontSize: "0.75rem" }}
             >
-              Select All {displayItems.length}
+              This page ({selectableItemsOnPageCount})
             </Button>
+            {totalCollectableElements > selectableItemsOnPageCount && (
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={handleSelectAllPages}
+                disabled={selectingAllPages}
+                sx={{ fontSize: "0.75rem", color: "#d4af37", borderColor: "rgba(212,175,55,0.5)" }}
+              >
+                {selectingAllPages ? "Loading…" : `All pages (${totalCollectableElements.toLocaleString()})`}
+              </Button>
+            )}
             <Button
               size="small"
               variant="outlined"

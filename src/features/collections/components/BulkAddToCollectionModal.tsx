@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Dialog,
   DialogTitle,
@@ -86,7 +87,8 @@ export default function BulkAddToCollectionModal({
   };
 
   const handleCreateAndAdd = async () => {
-    if (!newCollectionName.trim()) {
+    const collectionName = newCollectionName.trim();
+    if (!collectionName) {
       setError("Collection name is required");
       return;
     }
@@ -98,12 +100,12 @@ export default function BulkAddToCollectionModal({
         figurineIds,
         collectionMode: "CREATE",
         collection: {
-          name: newCollectionName.trim(),
+          name: collectionName,
           description: newCollectionDesc.trim() || undefined,
         },
       });
 
-      setSuccessMessage(`✨ Created "${newCollectionName.trim()}" and added ${selectedCount} figurines!`);
+      setSuccessMessage(`✨ Created "${collectionName}" and added ${selectedCount} figurines!`);
       setNewCollectionName("");
       setNewCollectionDesc("");
 
@@ -113,7 +115,11 @@ export default function BulkAddToCollectionModal({
         handleModalClose();
       }, 1500);
     } catch (err) {
-      setError(getApiErrorMessage(err, { action: "create", resource: "collection" }));
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setError(`Collection "${collectionName}" already exists. Please choose a different name.`);
+      } else {
+        setError(getApiErrorMessage(err, { action: "create", resource: "collection" }));
+      }
     } finally {
       setCreating(false);
     }

@@ -90,5 +90,33 @@ export type PaginatedFigurines = {
   page: number;
   size: number;
   totalElements: number;
+  totalCollectableElements: number;
   totalPages: number;
 };
+
+export type FigurineFilters = {
+  name?: string;
+  lineUpId?: string;
+  seriesId?: string;
+  groupId?: string;
+  anniversaryId?: string;
+  releaseStatus?: string;
+  metalBody?: boolean | string;
+  oce?: boolean | string;
+  revival?: boolean | string;
+  plainCloth?: boolean | string;
+  broken?: boolean | string;
+  golden?: boolean | string;
+  gold?: boolean | string;
+  manga?: boolean | string;
+  set?: boolean | string;
+  articulable?: boolean | string;
+  collectionId?: string;
+};
+
+export type SelectableFigurineIdsResponse =
+  | number[]
+  | {
+      ids?: number[];
+      figurineIds?: number[];
+    };

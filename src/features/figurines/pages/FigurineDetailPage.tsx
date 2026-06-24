@@ -65,7 +65,7 @@ function BoolRow({ label, value }: { label: string; value: boolean }) {
 export default function FigurineDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { hasPermission } = useAuth();
+  const { hasPermission, isAuthenticated } = useAuth();
 
   const [figurine, setFigurine] = useState<Figurine | null>(null);
   const [loading, setLoading] = useState(true);
@@ -195,33 +195,35 @@ export default function FigurineDetailPage() {
             Edit
           </Button>
         )}
-        <Button
-          variant="contained"
-          startIcon={<FavoriteBorderIcon />}
-          onClick={() => setAddToCollectionOpen(true)}
-          sx={{
-            flexShrink: 0,
-            background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
-            color: "#000",
-            fontWeight: 600,
-            "&:hover": {
-              background: "linear-gradient(135deg, #81d4fa 0%, #4fc3f7 100%)",
-              boxShadow: "0 8px 24px rgba(79,195,247,0.3)",
-            },
-            transition: "all 0.3s ease",
-            animation: "pulse 2s infinite",
-            "@keyframes pulse": {
-              "0%, 100%": {
-                opacity: 1,
+        {isAuthenticated && (
+          <Button
+            variant="contained"
+            startIcon={<FavoriteBorderIcon />}
+            onClick={() => setAddToCollectionOpen(true)}
+            sx={{
+              flexShrink: 0,
+              background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
+              color: "#000",
+              fontWeight: 600,
+              "&:hover": {
+                background: "linear-gradient(135deg, #81d4fa 0%, #4fc3f7 100%)",
+                boxShadow: "0 8px 24px rgba(79,195,247,0.3)",
               },
-              "50%": {
-                opacity: 0.8,
+              transition: "all 0.3s ease",
+              animation: "pulse 2s infinite",
+              "@keyframes pulse": {
+                "0%, 100%": {
+                  opacity: 1,
+                },
+                "50%": {
+                  opacity: 0.8,
+                },
               },
-            },
-          }}
-        >
-          Add to Collection
-        </Button>
+            }}
+          >
+            Add to Collection
+          </Button>
+        )}
       </Box>
 
       <Grid container spacing={{ xs: 2, md: 4 }}>

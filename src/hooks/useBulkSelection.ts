@@ -1,6 +1,13 @@
 import { useState, useCallback, useEffect } from "react";
 
-export function useBulkSelection<T extends { id: number }>(items: T[]) {
+type UseBulkSelectionOptions = {
+  preserveSelectionOnItemsChange?: boolean;
+};
+
+export function useBulkSelection<T extends { id: number }>(
+  items: T[],
+  options?: UseBulkSelectionOptions
+) {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const isSelected = useCallback(
@@ -30,13 +37,22 @@ export function useBulkSelection<T extends { id: number }>(items: T[]) {
     setSelectedIds(new Set());
   }, []);
 
+  const selectByIds = useCallback((ids: number[]) => {
+    setSelectedIds(new Set(ids));
+  }, []);
+
   const getSelectedItems = useCallback(
     () => items.filter((item) => selectedIds.has(item.id)),
     [items, selectedIds]
   );
 
-  // Reset selection when items change
+  // By default, prune selection to visible items when the source list changes.
+  // Some screens (like cross-page selection) can opt out.
   useEffect(() => {
+    if (options?.preserveSelectionOnItemsChange) {
+      return;
+    }
+
     // Keep only selected IDs that are still in the items list
     const validIds = new Set(
       Array.from(selectedIds).filter((id) =>
@@ -46,13 +62,14 @@ export function useBulkSelection<T extends { id: number }>(items: T[]) {
     if (validIds.size !== selectedIds.size) {
       setSelectedIds(validIds);
     }
-  }, [items, selectedIds]);
+  }, [items, selectedIds, options?.preserveSelectionOnItemsChange]);
 
   return {
     selectedIds,
     isSelected,
     toggleSelect,
     selectAll,
+    selectByIds,
     clearAll,
     getSelectedItems,
     selectedCount: selectedIds.size,

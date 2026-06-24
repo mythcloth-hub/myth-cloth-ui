@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Dialog,
   DialogTitle,
@@ -21,7 +22,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import { getCollections, createCollection, addFigurineToCollection } from "../api/collectionApi";
+import { getCollections, assignFigurinesToCollections } from "../api/collectionApi";
 import type { Collection } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
@@ -81,7 +82,8 @@ export default function AddToCollectionModal({
   };
 
   const handleCreateAndAdd = async () => {
-    if (!newCollectionName.trim()) {
+    const collectionName = newCollectionName.trim();
+    if (!collectionName) {
       setError("Collection name is required");
       return;
     }
@@ -89,28 +91,29 @@ export default function AddToCollectionModal({
     setCreating(true);
     setError(null);
     try {
-      const newCollection = await createCollection({
-        name: newCollectionName,
-        description: newCollectionDesc,
+      await assignFigurinesToCollections({
+        figurineIds: [figurineId],
+        collectionMode: "CREATE",
+        collection: {
+          name: collectionName,
+          description: newCollectionDesc.trim() || undefined,
+        },
       });
 
-      // Add figurine to the newly created collection
-      await addFigurineToCollection(newCollection.id, figurineId);
-
-      setSuccessMessage(`✨ Created "${newCollectionName}" and added "${figurineName}"!`);
+      setSuccessMessage(`✨ Created "${collectionName}" and added "${figurineName}"!`);
       setNewCollectionName("");
       setNewCollectionDesc("");
 
-      // Reload collections
-      await loadCollections();
-
-      // Close after brief delay to show success
       setTimeout(() => {
         onSuccess?.();
         onClose();
       }, 1500);
     } catch (err) {
-      setError(getApiErrorMessage(err, { action: "create", resource: "collection" }));
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setError(`Collection "${collectionName}" already exists. Please choose a different name.`);
+      } else {
+        setError(getApiErrorMessage(err, { action: "create", resource: "collection" }));
+      }
     } finally {
       setCreating(false);
     }
@@ -125,12 +128,11 @@ export default function AddToCollectionModal({
     setCreating(true);
     setError(null);
     try {
-      // Add figurine to all selected collections
-      await Promise.all(
-        Array.from(selectedCollections).map((collectionId) =>
-          addFigurineToCollection(collectionId, figurineId)
-        )
-      );
+      await assignFigurinesToCollections({
+        figurineIds: [figurineId],
+        collectionMode: "EXISTING",
+        collectionIds: Array.from(selectedCollections),
+      });
 
       const count = selectedCollections.size;
       setSuccessMessage(

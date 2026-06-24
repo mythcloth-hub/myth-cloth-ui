@@ -1,9 +1,44 @@
 import httpClient from "../../../api/httpClient";
-import type { Figurine, PaginatedFigurines } from "../types/figurine";
-
-import type { FigurineEvent, FigurineEventReq } from "../types/figurine";
+import type {
+  Figurine,
+  FigurineEvent,
+  FigurineEventReq,
+  PaginatedFigurines,
+  FigurineFilters,
+  SelectableFigurineIdsResponse,
+} from "../types/figurine";
 
 const BASE = "/figurines";
+
+const buildFigurineQueryParams = (
+  page?: number,
+  size?: number,
+  params?: FigurineFilters
+): Record<string, any> => {
+  const queryParams: Record<string, any> = {};
+
+  if (typeof page === "number") queryParams.page = page;
+  if (typeof size === "number") queryParams.size = size;
+  if (params?.name) queryParams.name = params.name;
+  if (params?.lineUpId) queryParams.lineUpId = params.lineUpId;
+  if (params?.seriesId) queryParams.seriesId = params.seriesId;
+  if (params?.groupId) queryParams.groupId = params.groupId;
+  if (params?.anniversaryId) queryParams.anniversaryId = params.anniversaryId;
+  if (params?.releaseStatus) queryParams.releaseStatus = params.releaseStatus;
+  if (params?.metalBody !== undefined) queryParams.metalBody = params.metalBody;
+  if (params?.oce !== undefined) queryParams.oce = params.oce;
+  if (params?.revival !== undefined) queryParams.revival = params.revival;
+  if (params?.plainCloth !== undefined) queryParams.plainCloth = params.plainCloth;
+  if (params?.broken !== undefined) queryParams.broken = params.broken;
+  if (params?.golden !== undefined) queryParams.golden = params.golden;
+  if (params?.gold !== undefined) queryParams.gold = params.gold;
+  if (params?.manga !== undefined) queryParams.manga = params.manga;
+  if (params?.set !== undefined) queryParams.set = params.set;
+  if (params?.articulable !== undefined) queryParams.articulable = params.articulable;
+  if (params?.collectionId) queryParams.collectionId = params.collectionId;
+
+  return queryParams;
+};
 
 // Figurine Events API
 export const getFigurineEvents = async (figurineId: number): Promise<FigurineEvent[]> => {
@@ -29,29 +64,33 @@ export const deleteFigurineEvent = async (figurineId: number, eventId: number): 
 export const getFigurines = async (
   page = 0,
   size = 12,
-  params?: { name?: string; lineUpId?: string; seriesId?: string; groupId?: string; anniversaryId?: string; releaseStatus?: string; metalBody?: boolean; oce?: boolean; revival?: boolean; plainCloth?: boolean; broken?: boolean; golden?: boolean; gold?: boolean; manga?: boolean; set?: boolean; articulable?: boolean; collectionId?: string }
+  params?: FigurineFilters
 ): Promise<PaginatedFigurines> => {
-  const queryParams: Record<string, any> = { page, size };
-  if (params?.name) queryParams.name = params.name;
-  if (params?.lineUpId) queryParams.lineUpId = params.lineUpId;
-  if (params?.seriesId) queryParams.seriesId = params.seriesId;
-  if (params?.groupId) queryParams.groupId = params.groupId;
-  if (params?.anniversaryId) queryParams.anniversaryId = params.anniversaryId;
-  if (params?.releaseStatus) queryParams.releaseStatus = params.releaseStatus;
-  if (params?.metalBody) queryParams.metalBody = params.metalBody;
-  if (params?.oce) queryParams.oce = params.oce;
-  if (params?.revival) queryParams.revival = params.revival;
-  if (params?.plainCloth) queryParams.plainCloth = params.plainCloth;
-  if (params?.broken) queryParams.broken = params.broken;
-  if (params?.golden) queryParams.golden = params.golden;
-  if (params?.gold) queryParams.gold = params.gold;
-  if (params?.manga) queryParams.manga = params.manga;
-  if (params?.set) queryParams.set = params.set;
-  if (params?.articulable) queryParams.articulable = params.articulable;
-  if (params?.collectionId) queryParams.collectionId = params.collectionId;
-
+  const queryParams = buildFigurineQueryParams(page, size, params);
   const res = await httpClient.get(BASE, { params: queryParams });
   return res.data;
+};
+
+export const getSelectableFigurineIds = async (params?: FigurineFilters): Promise<number[]> => {
+  const queryParams = buildFigurineQueryParams(undefined, undefined, params);
+  const res = await httpClient.get<SelectableFigurineIdsResponse>(`${BASE}/selectable-ids`, {
+    params: queryParams,
+  });
+
+  const data = res.data;
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (Array.isArray(data?.ids)) {
+    return data.ids;
+  }
+
+  if (Array.isArray(data?.figurineIds)) {
+    return data.figurineIds;
+  }
+
+  return [];
 };
 
 export const getFigurineById = async (id: number): Promise<Figurine> => {
