@@ -34,3 +34,15 @@ export interface AssignFigurinesRequest {
     description?: string;
   };
 }
+
+export interface CollectionFigurine {
+  id: number;
+  name: string;
+  displayableName: string;
+  releaseStatus: "ANNOUNCED" | "RELEASED" | "RUMORED" | "PROTOTYPE" | "UNRELEASED";
+  year?: number;
+  notes?: string;
+  officialImageUrls: string[];
+  isCollected: boolean;
+  ownedQuantity: number;
+}

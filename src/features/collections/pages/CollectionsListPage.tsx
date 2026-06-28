@@ -24,7 +24,7 @@ import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { getCollections } from "../api/collectionApi";
+import { deleteCollection, getCollections, updateCollection } from "../api/collectionApi";
 import type { Collection } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
@@ -40,6 +40,7 @@ export default function CollectionsListPage() {
   const [editDescription, setEditDescription] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingCollection, setDeletingCollection] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -83,13 +84,22 @@ export default function CollectionsListPage() {
   };
 
   const handleConfirmDelete = async () => {
-    if (selectedCollection) {
+    if (!selectedCollection) return;
+
+    setDeletingCollection(true);
+    setError(null);
+    try {
+      await deleteCollection(selectedCollection.id);
       setCollections((currentCollections) =>
         currentCollections.filter((collection) => collection.id !== selectedCollection.id)
       );
       setSuccessMessage(`Collection "${selectedCollection.name}" was removed.`);
       setDeleteDialogOpen(false);
       setSelectedCollection(null);
+    } catch (err) {
+      setError(getApiErrorMessage(err, { action: "delete", resource: "collection" }));
+    } finally {
+      setDeletingCollection(false);
     }
   };
 
@@ -105,13 +115,10 @@ export default function CollectionsListPage() {
     setSavingEdit(true);
     setError(null);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 700));
-
-      const updated = {
-        ...selectedCollection,
+      const updated = await updateCollection(selectedCollection.id, {
         name: nextName,
         description: editDescription.trim() || undefined,
-      };
+      });
 
       setCollections((currentCollections) =>
         currentCollections.map((collection) =>
@@ -246,7 +253,7 @@ export default function CollectionsListPage() {
       ) : (
         <Grid container spacing={3}>
           {collections.map((collection) => (
-            <Grid item xs={12} sm={6} md={4} key={collection.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={collection.id}>
               <Card
                 sx={{
                   height: "100%",
@@ -263,7 +270,7 @@ export default function CollectionsListPage() {
                     border: "1px solid rgba(212,175,55,0.3)",
                   },
                 }}
-                onClick={() => navigate(`/collections/${collection.id}`)}
+                onClick={() => navigate(`/collections/${collection.id}`, { state: { collection } })}
               >
                 {/* Collection cover gradient */}
                 <CardMedia
@@ -380,17 +387,17 @@ export default function CollectionsListPage() {
       </Menu>
 
       {/* Delete confirmation dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog open={deleteDialogOpen} onClose={() => !deletingCollection && setDeleteDialogOpen(false)}>
         <DialogTitle>Delete Collection?</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to remove "{selectedCollection?.name}" from your collections list? This action is simulated on the frontend for now.
+            Are you sure you want to delete "{selectedCollection?.name}"? This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
-            Delete
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deletingCollection}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deletingCollection}>
+            {deletingCollection ? "Deleting..." : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -430,7 +437,7 @@ export default function CollectionsListPage() {
             sx={{ mt: 0.5 }}
           />
           <TextField
-            label="Description"
+            label="Description (optional)"
             value={editDescription}
             onChange={(e) => setEditDescription(e.target.value)}
             fullWidth
