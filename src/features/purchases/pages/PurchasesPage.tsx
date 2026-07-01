@@ -594,7 +594,8 @@ export default function PurchasesPage() {
                   <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
                     {formatCurrencyAmount(purchase.totalAmount, purchase.currency)}
                   </Typography>
-                  <Box sx={{ mt: 0.7 }}>
+                  <br/>
+                  <Box sx={{ mt: 1.5 }}>
                     {renderShippingStatusTimeline(purchase.shippingStatus)}
                   </Box>
                   <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 2.5 }}>

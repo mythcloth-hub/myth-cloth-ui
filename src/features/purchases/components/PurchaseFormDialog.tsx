@@ -85,6 +85,14 @@ export default function PurchaseFormDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
+  const maxOrderDate = useMemo(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
+
   const isOrderDateInFuture = (value: string): boolean => {
     if (!value) return false;
 
@@ -372,6 +380,7 @@ export default function PurchaseFormDialog({
               size="small"
               type="date"
               InputLabelProps={{ shrink: true }}
+              inputProps={{ max: maxOrderDate }}
               value={draft.orderDate}
               onChange={(event) => handleFieldChange("orderDate", event.target.value)}
               error={showValidationErrors && Boolean(getFieldError("orderDate") || isOrderDateInFuture(draft.orderDate))}
