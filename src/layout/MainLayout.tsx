@@ -33,6 +33,7 @@ import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
@@ -60,6 +61,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Collection",    path: "/figurines",      icon: <CollectionsOutlinedIcon /> },
       { label: "My Collections", path: "/collections",   icon: <FavoriteBorderOutlinedIcon /> },
+      { label: "Purchases",     path: "/purchases",      icon: <ReceiptLongOutlinedIcon /> },
       { label: "Charts",        path: "/charts",         icon: <InsightsOutlinedIcon /> },
       { label: "Releases",      path: "/releases",       icon: <CalendarMonthOutlinedIcon /> },
       { label: "Pricing",       path: "/pricing",        icon: <PaidOutlinedIcon /> },
@@ -160,6 +162,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         }
         if (item.path === "/charts") {
           return hasPermission("stats:read");
+        }
+        if (item.path === "/purchases") {
+          return hasPermission("collections:read");
         }
         if (item.path === "/releases") {
           return hasPermission("stats:read");
