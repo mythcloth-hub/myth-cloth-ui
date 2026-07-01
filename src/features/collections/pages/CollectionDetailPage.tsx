@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Chip,
+  Collapse,
   CircularProgress,
   IconButton,
   LinearProgress,
@@ -96,6 +97,7 @@ export default function CollectionDetailPage() {
   const [figurineBackNames, setFigurineBackNames] = useState<Record<number, string>>({});
   const [figurineBackNameLoadingId, setFigurineBackNameLoadingId] = useState<number | null>(null);
   const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
+  const [showRecentPurchasesSummary, setShowRecentPurchasesSummary] = useState(false);
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
   const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
   const [purchaseInitialDraft, setPurchaseInitialDraft] = useState<PurchaseDraft | null>(null);
@@ -778,25 +780,29 @@ export default function CollectionDetailPage() {
               <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.4 }}>
                 <ReceiptLongOutlinedIcon fontSize="small" sx={{ color: "primary.main" }} />
                 <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                  Purchase History
+                  Most Recent Purchases
                 </Typography>
               </Stack>
               <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                Receipts and line items are tracked separately from current collection quantities.
+                Figurine purchases are tracked separately from the current collection quantities.
               </Typography>
             </Box>
             <Box>
               <Stack direction="row" spacing={0.8}>
                 <Button
-                  size="small"
+                  variant="text"
+                  onClick={() => setShowRecentPurchasesSummary((current) => !current)}
+                >
+                  {showRecentPurchasesSummary ? "Hide Summary" : "Show Summary"}
+                </Button>
+                <Button
                   variant="text"
                   onClick={() => navigate(`/purchases?collectionId=${collection.id}`)}
                 >
                   Open Purchases
                 </Button>
                 <Button
-                  size="small"
-                  variant="outlined"
+                  variant="contained"
                   startIcon={<AddIcon />}
                   onClick={handleOpenCreatePurchaseDialog}
                 >
@@ -806,76 +812,88 @@ export default function CollectionDetailPage() {
             </Box>
           </Stack>
 
-          <Stack spacing={1} sx={{ mt: 1.3 }}>
-            {purchases.length === 0 ? (
-              <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                No purchase records yet.
-              </Typography>
-            ) : (
-              <>
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                  <Box
-                    sx={{
-                      px: 1.1,
-                      py: 0.9,
-                      borderRadius: 1.2,
-                      bgcolor: alpha(theme.palette.background.default, 0.28),
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      minWidth: 140,
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                      Total purchases
-                    </Typography>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                      {purchases.length}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      px: 1.1,
-                      py: 0.9,
-                      borderRadius: 1.2,
-                      bgcolor: alpha(theme.palette.background.default, 0.28),
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      minWidth: 180,
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                      Latest order date
-                    </Typography>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                      {purchases[0]?.orderDate ?? "N/A"}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      px: 1.1,
-                      py: 0.9,
-                      borderRadius: 1.2,
-                      bgcolor: alpha(theme.palette.background.default, 0.28),
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      flex: 1,
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                      Recent purchases
-                    </Typography>
-                    <Stack spacing={0.3} sx={{ mt: 0.3 }}>
-                      {purchases.slice(0, 3).map((purchase) => (
-                        <Typography key={purchase.id} variant="caption" sx={{ color: "text.primary" }}>
-                          {purchase.orderDate} - {purchase.store} ({purchase.totalAmount} {purchase.currency})
-                        </Typography>
-                      ))}
-                    </Stack>
-                  </Box>
-                </Stack>
+          <Collapse in={showRecentPurchasesSummary}>
+            <Stack spacing={1} sx={{ mt: 1.3 }}>
+              {purchases.length === 0 ? (
                 <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  Open Purchases to view and edit the full history list.
+                  No purchase records yet.
                 </Typography>
-              </>
-            )}
-          </Stack>
+              ) : (
+                <>
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                    <Box
+                      sx={{
+                        px: 1.1,
+                        py: 0.9,
+                        borderRadius: 1.2,
+                        bgcolor: alpha(theme.palette.background.default, 0.34),
+                        minWidth: 140,
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
+                        Total purchases
+                      </Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                        {purchases.length}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        px: 1.1,
+                        py: 0.9,
+                        borderRadius: 1.2,
+                        bgcolor: alpha(theme.palette.background.default, 0.34),
+                        minWidth: 180,
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
+                        Latest order date
+                      </Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                        {purchases[0]?.orderDate ?? "N/A"}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        px: 1.1,
+                        py: 0.9,
+                        borderRadius: 1.2,
+                        bgcolor: alpha(theme.palette.background.default, 0.34),
+                        flex: 1,
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
+                        Recent purchases
+                      </Typography>
+                      <Stack spacing={0.55} sx={{ mt: 0.45 }}>
+                        {purchases.slice(0, 3).map((purchase) => (
+                          <Box
+                            key={purchase.id}
+                            sx={{
+                              px: 0.8,
+                              py: 0.55,
+                              borderRadius: 1,
+                              bgcolor: alpha(theme.palette.background.default, 0.46),
+                            }}
+                          >
+                            <Typography variant="caption" sx={{ display: "block", color: "text.primary", fontWeight: 700 }}>
+                              {purchase.store?.trim() ? purchase.store : "Store not specified"}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                              Date: {purchase.orderDate?.trim() ? purchase.orderDate : "No order date"} · {purchase.totalAmount} {purchase.currency}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Box>
+                  </Stack>
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    Access Purchases to review and manage your complete purchase history.
+                  </Typography>
+                </>
+              )}
+            </Stack>
+          </Collapse>
         </Card>
       </Box>
 

@@ -1,5 +1,5 @@
 export type PurchaseType = "PREORDER" | "RETAIL" | "SECOND_HAND" | "GIFT";
-export type ShippingStatus = "ORDERED" | "SHIPPED" | "DELIVERED";
+export type ShippingStatus = "ORDERED" | "SHIPPED" | "READY_TO_PICKUP" | "DELIVERED";
 
 export type PurchaseLineDraft = {
   figurineId: string;
@@ -40,6 +40,8 @@ export type PurchaseRecord = {
   shippingStatus: ShippingStatus;
   trackingNumber?: string;
   carrier?: string;
+  shippedDate?: string;
+  deliveredDate?: string;
   lines: PurchaseRecordLine[];
 };
 
