@@ -10,6 +10,7 @@ import {
   Grid,
   Typography,
   Alert,
+  Snackbar,
   IconButton,
   Menu,
   MenuItem,
@@ -17,12 +18,13 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { getCollections, deleteCollection } from "../api/collectionApi";
+import { deleteCollection, getCollections, updateCollection } from "../api/collectionApi";
 import type { Collection } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
@@ -33,7 +35,13 @@ export default function CollectionsListPage() {
   const [error, setError] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingCollection, setDeletingCollection] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     loadCollections();
@@ -63,7 +71,9 @@ export default function CollectionsListPage() {
 
   const handleEdit = () => {
     if (selectedCollection) {
-      navigate(`/collections/${selectedCollection.id}/edit`);
+      setEditName(selectedCollection.name);
+      setEditDescription(selectedCollection.description ?? "");
+      setEditDialogOpen(true);
     }
     handleMenuClose();
   };
@@ -74,16 +84,54 @@ export default function CollectionsListPage() {
   };
 
   const handleConfirmDelete = async () => {
-    if (selectedCollection) {
-      try {
-        await deleteCollection(selectedCollection.id);
-        setCollections(collections.filter((c) => c.id !== selectedCollection.id));
-        setDeleteDialogOpen(false);
-        setSelectedCollection(null);
-      } catch (err) {
-        setError(getApiErrorMessage(err, { action: "delete", resource: "collection" }));
-        setDeleteDialogOpen(false);
-      }
+    if (!selectedCollection) return;
+
+    setDeletingCollection(true);
+    setError(null);
+    try {
+      await deleteCollection(selectedCollection.id);
+      setCollections((currentCollections) =>
+        currentCollections.filter((collection) => collection.id !== selectedCollection.id)
+      );
+      setSuccessMessage(`Collection "${selectedCollection.name}" was removed.`);
+      setDeleteDialogOpen(false);
+      setSelectedCollection(null);
+    } catch (err) {
+      setError(getApiErrorMessage(err, { action: "delete", resource: "collection" }));
+    } finally {
+      setDeletingCollection(false);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedCollection) return;
+
+    const nextName = editName.trim();
+    if (!nextName) {
+      setError("Collection name is required.");
+      return;
+    }
+
+    setSavingEdit(true);
+    setError(null);
+    try {
+      const updated = await updateCollection(selectedCollection.id, {
+        name: nextName,
+        description: editDescription.trim() || undefined,
+      });
+
+      setCollections((currentCollections) =>
+        currentCollections.map((collection) =>
+          collection.id === updated.id ? updated : collection
+        )
+      );
+      setSelectedCollection(updated);
+      setEditDialogOpen(false);
+      setSuccessMessage(`Collection "${updated.name}" was updated.`);
+    } catch (err) {
+      setError(getApiErrorMessage(err, { action: "update", resource: "collection" }));
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -133,7 +181,7 @@ export default function CollectionsListPage() {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => navigate("/collections/new")}
+              onClick={() => navigate("/figurines")}
           sx={{
             background: "linear-gradient(135deg, #d4af37 0%, #e6c547 100%)",
             color: "#000",
@@ -156,6 +204,17 @@ export default function CollectionsListPage() {
         </Alert>
       )}
 
+      <Snackbar
+        open={Boolean(successMessage)}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="success" onClose={() => setSuccessMessage(null)}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
+
       {/* Empty state */}
       {collections.length === 0 ? (
         <Box
@@ -171,10 +230,14 @@ export default function CollectionsListPage() {
           <Typography variant="h6" sx={{ color: "text.secondary" }}>
             No collections yet
           </Typography>
+          <Typography variant="body2" sx={{ color: "text.secondary", textAlign: "center", maxWidth: 560 }}>
+            Collections are created automatically when you add a figurine to one.
+            Open any figurine and use Add to Collection to create your first collection.
+          </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => navigate("/collections/new")}
+            onClick={() => navigate("/figurines")}
             sx={{
               background: "linear-gradient(135deg, #d4af37 0%, #e6c547 100%)",
               color: "#000",
@@ -184,13 +247,13 @@ export default function CollectionsListPage() {
               },
             }}
           >
-            Create Your First Collection
+            Browse Figurines
           </Button>
         </Box>
       ) : (
         <Grid container spacing={3}>
           {collections.map((collection) => (
-            <Grid item xs={12} sm={6} md={4} key={collection.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={collection.id}>
               <Card
                 sx={{
                   height: "100%",
@@ -207,7 +270,7 @@ export default function CollectionsListPage() {
                     border: "1px solid rgba(212,175,55,0.3)",
                   },
                 }}
-                onClick={() => navigate(`/collections/${collection.id}`)}
+                onClick={() => navigate(`/collections/${collection.id}`, { state: { collection } })}
               >
                 {/* Collection cover gradient */}
                 <CardMedia
@@ -324,7 +387,7 @@ export default function CollectionsListPage() {
       </Menu>
 
       {/* Delete confirmation dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog open={deleteDialogOpen} onClose={() => !deletingCollection && setDeleteDialogOpen(false)}>
         <DialogTitle>Delete Collection?</DialogTitle>
         <DialogContent>
           <Typography>
@@ -332,9 +395,63 @@ export default function CollectionsListPage() {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
-            Delete
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deletingCollection}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deletingCollection}>
+            {deletingCollection ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit dialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            minHeight: 360,
+            borderRadius: 2,
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1.5 }}>Edit Collection</DialogTitle>
+        <DialogContent
+          sx={{
+            pt: 2.5,
+            pb: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2.5,
+            minHeight: 220,
+          }}
+        >
+          <TextField
+            label="Collection name"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            fullWidth
+            size="medium"
+            autoFocus
+            InputLabelProps={{ shrink: true }}
+            sx={{ mt: 0.5 }}
+          />
+          <TextField
+            label="Description (optional)"
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.target.value)}
+            fullWidth
+            size="medium"
+            multiline
+            minRows={4}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={() => setEditDialogOpen(false)} disabled={savingEdit}>
+            Cancel
+          </Button>
+          <Button onClick={handleSaveEdit} variant="contained" disabled={savingEdit}>
+            {savingEdit ? "Saving..." : "Save Changes"}
           </Button>
         </DialogActions>
       </Dialog>
