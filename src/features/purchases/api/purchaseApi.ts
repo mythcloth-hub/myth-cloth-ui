@@ -90,6 +90,8 @@ export function toPurchaseRecordFromSummaryResponse(
     shippingStatus: response.shippingStatus as PurchaseRecord["shippingStatus"],
     trackingNumber: response.trackingNumber ?? undefined,
     carrier: response.carrier ?? undefined,
+    shippedDate: response.shippedDate ?? undefined,
+    deliveredDate: response.deliveredDate ?? undefined,
     lines: response.lineItems.map((lineItem) => ({
       figurineId: lineItem.figurineId,
       figurineName: names[lineItem.figurineId] ?? `Figurine ${lineItem.figurineId}`,
@@ -101,14 +103,16 @@ export function toPurchaseRecordFromSummaryResponse(
 }
 
 export async function getPurchaseSummaryLineItems(): Promise<PurchaseSummaryLineItemsResponse[]> {
-  const response = await httpClient.get<PurchaseSummaryLineItemsResponse[]>(API_BASE);
+  const response = await httpClient.get<PurchaseSummaryLineItemsResponse[]>(
+    `${API_BASE}/summary-line-items`);
   return response.data;
 }
 
 export async function getPurchaseSummaryLineItemsById(
   purchaseId: number
 ): Promise<PurchaseSummaryLineItemsResponse> {
-  const response = await httpClient.get<PurchaseSummaryLineItemsResponse>(`${API_BASE}/${purchaseId}`);
+  const response = await httpClient.get<PurchaseSummaryLineItemsResponse>(
+    `${API_BASE}/summary-line-items/${purchaseId}`);
   return response.data;
 }
 
@@ -133,4 +137,8 @@ export async function updatePurchaseSummaryLineItems(
     payload
   );
   return response.data;
+}
+
+export async function deletePurchaseSummaryLineItems(purchaseId: number): Promise<void> {
+  await httpClient.delete(`${API_BASE}/summary-line-items/${purchaseId}`);
 }

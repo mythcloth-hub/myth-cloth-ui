@@ -436,6 +436,7 @@ export default function PurchaseFormDialog({
               >
                 <MenuItem value="ORDERED">Ordered</MenuItem>
                 <MenuItem value="SHIPPED">Shipped</MenuItem>
+                <MenuItem value="READY_TO_PICKUP">Ready to Pickup</MenuItem>
                 <MenuItem value="DELIVERED">Delivered</MenuItem>
               </Select>
               {showValidationErrors && (getFieldError("shippingStatus") || !draft.shippingStatus) && (

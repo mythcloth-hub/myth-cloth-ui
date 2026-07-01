@@ -6,6 +6,11 @@ import {
   Button,
   Card,
   Divider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControl,
   IconButton,
   InputLabel,
@@ -18,21 +23,61 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditIcon from "@mui/icons-material/EditOutlined";
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
+import type { SvgIconComponent } from "@mui/icons-material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { getCollections, getCollectionFigurines } from "../../collections/api/collectionApi";
 import type { Collection, CollectionFigurine } from "../../collections/types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import PurchaseFormDialog from "../components/PurchaseFormDialog";
 import {
+  deletePurchaseSummaryLineItems,
   createPurchaseSummaryLineItems,
   getPurchaseSummaryLineItems,
   getPurchaseSummaryLineItemsById,
   toPurchaseRecordFromSummaryResponse,
   updatePurchaseSummaryLineItems,
 } from "../api/purchaseApi";
-import type { PurchaseRecord, PurchaseRecordInput } from "../types/purchase";
+import type { PurchaseRecord, PurchaseRecordInput, ShippingStatus } from "../types/purchase";
+
+const SHIPPING_STATUS_STEPS: { value: ShippingStatus; label: string; Icon: SvgIconComponent }[] = [
+  { value: "ORDERED", label: "Ordered", Icon: ShoppingCartOutlinedIcon },
+  { value: "SHIPPED", label: "Shipped", Icon: LocalShippingOutlinedIcon },
+  { value: "READY_TO_PICKUP", label: "Ready to Pickup", Icon: StorefrontOutlinedIcon },
+  { value: "DELIVERED", label: "Delivered", Icon: TaskAltOutlinedIcon },
+];
+
+const SHIPPING_STATUS_INDEX: Record<ShippingStatus, number> = {
+  ORDERED: 0,
+  SHIPPED: 1,
+  READY_TO_PICKUP: 2,
+  DELIVERED: 3,
+};
+
+const formatCurrencyAmount = (amount: number, currency: string): string => {
+  if (!Number.isFinite(amount)) {
+    return `- ${currency}`;
+  }
+
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${currency}`;
+  }
+};
+
+const formatCount = (value: number): string => new Intl.NumberFormat().format(value);
 
 export default function PurchasesPage() {
   const theme = useTheme();
@@ -48,6 +93,8 @@ export default function PurchasesPage() {
   const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
+  const [deletePurchaseTarget, setDeletePurchaseTarget] = useState<PurchaseRecord | null>(null);
+  const [isDeletingPurchase, setIsDeletingPurchase] = useState(false);
 
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [loadingFigurines, setLoadingFigurines] = useState(false);
@@ -154,6 +201,25 @@ export default function PurchasesPage() {
     [collectionFigurines]
   );
 
+  const totalsByCurrency = useMemo(() => {
+    const grouped = purchases.reduce<Record<string, number>>((accumulator, purchase) => {
+      const currentTotal = accumulator[purchase.currency] ?? 0;
+      return {
+        ...accumulator,
+        [purchase.currency]: currentTotal + purchase.totalAmount,
+      };
+    }, {});
+
+    return Object.entries(grouped)
+      .map(([currency, totalAmount]) => ({ currency, totalAmount }))
+      .sort((a, b) => a.currency.localeCompare(b.currency));
+  }, [purchases]);
+
+  const grandTotalFigurines = useMemo(
+    () => purchases.reduce((total, purchase) => total + purchase.totalFigurines, 0),
+    [purchases]
+  );
+
   const handleCollectionChange = (value: string) => {
     setSelectedCollectionId(value);
     setSearchParams((current) => {
@@ -225,9 +291,148 @@ export default function PurchasesPage() {
     }
   };
 
+  const handleDeletePurchase = async (purchase: PurchaseRecord) => {
+    const backendPurchaseId = purchase.purchaseId ?? Number(purchase.id);
+
+    if (!Number.isFinite(backendPurchaseId) || backendPurchaseId <= 0) {
+      setErrorMessage("Unable to identify purchase id for delete.");
+      setDeletePurchaseTarget(null);
+      return;
+    }
+
+    setIsDeletingPurchase(true);
+    try {
+      await deletePurchaseSummaryLineItems(backendPurchaseId);
+      const refreshedPurchases = await loadBackendPurchasesForCollection(collectionFigurines);
+      setPurchases(refreshedPurchases);
+      setSuccessMessage("Purchase deleted successfully.");
+      setErrorMessage(null);
+      if (editingPurchaseId === purchase.id) {
+        setEditingPurchaseId(null);
+        setDialogOpen(false);
+      }
+    } catch (err) {
+      setErrorMessage(getApiErrorMessage(err, { action: "delete", resource: "purchase" }));
+    } finally {
+      setIsDeletingPurchase(false);
+      setDeletePurchaseTarget(null);
+    }
+  };
+
+  const handleOpenDeleteDialog = (purchase: PurchaseRecord) => {
+    setDeletePurchaseTarget(purchase);
+  };
+
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setEditingPurchaseId(null);
+  };
+
+  const renderShippingStatusTimeline = (status: ShippingStatus) => {
+    const activeIndex = SHIPPING_STATUS_INDEX[status];
+    const isDelivered = status === "DELIVERED";
+    const activeAccent = isDelivered ? theme.palette.success.main : theme.palette.primary.dark;
+
+    return (
+      <Stack spacing={0.5}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+          {SHIPPING_STATUS_STEPS.map((step, index) => {
+            const isReached = index <= activeIndex;
+            const isCurrent = index === activeIndex;
+            const isPast = index < activeIndex;
+
+            return (
+              <Box
+                key={step.value}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  flex: index === SHIPPING_STATUS_STEPS.length - 1 ? "0 0 auto" : "1 1 auto",
+                  minWidth: 0,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: isCurrent ? 11 : 9,
+                    height: isCurrent ? 11 : 9,
+                    borderRadius: "50%",
+                    border: `1px solid ${isReached ? activeAccent : alpha(theme.palette.text.disabled, 0.45)}`,
+                    bgcolor: isCurrent
+                      ? activeAccent
+                      : isPast
+                        ? theme.palette.background.paper
+                        : alpha(theme.palette.text.disabled, 0.2),
+                    boxShadow: isCurrent ? `0 0 0 3px ${alpha(activeAccent, 0.22)}` : "none",
+                    transition: "all 120ms ease-out",
+                  }}
+                />
+                {index < SHIPPING_STATUS_STEPS.length - 1 && (
+                  <Box
+                    sx={{
+                      flex: 1,
+                      height: 2,
+                      mx: 0.5,
+                      borderRadius: 999,
+                      bgcolor: index < activeIndex
+                        ? activeAccent
+                        : alpha(theme.palette.text.disabled, 0.3),
+                    }}
+                  />
+                )}
+              </Box>
+            );
+          })}
+        </Box>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${SHIPPING_STATUS_STEPS.length}, minmax(0, 1fr))`,
+            columnGap: 0.5,
+          }}
+        >
+          {SHIPPING_STATUS_STEPS.map((step, index) => {
+            const isReached = index <= activeIndex;
+            const isCurrent = index === activeIndex;
+
+            return (
+              <Stack
+                key={`${step.value}-label`}
+                direction="row"
+                spacing={0.35}
+                alignItems="center"
+                justifyContent={index === SHIPPING_STATUS_STEPS.length - 1 ? "flex-end" : "flex-start"}
+                sx={{
+                  color: isReached
+                    ? (isDelivered ? theme.palette.success.dark : (isCurrent ? activeAccent : "text.primary"))
+                    : "text.secondary",
+                  minWidth: 0,
+                }}
+              >
+                <step.Icon
+                  sx={{
+                    fontSize: isCurrent ? 16 : 13,
+                    opacity: isReached ? 1 : 0.72,
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: isCurrent ? 700 : 500,
+                    lineHeight: 1.15,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {step.label}
+                </Typography>
+              </Stack>
+            );
+          })}
+        </Box>
+      </Stack>
+    );
   };
 
   return (
@@ -303,6 +508,41 @@ export default function PurchasesPage() {
         </Typography>
       )}
 
+      {purchases.length > 0 && (
+        <Card
+          sx={{
+            p: 1.4,
+            borderRadius: 2,
+            mb: 1.2,
+            bgcolor: alpha(theme.palette.background.paper, 0.92),
+            border: `1px solid ${alpha(theme.palette.divider, 0.35)}`,
+          }}
+        >
+          <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} justifyContent="space-between">
+            <Box>
+              <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
+                Grand total by currency
+              </Typography>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 0.35, sm: 1.2 }} sx={{ mt: 0.3 }}>
+                {totalsByCurrency.map((item) => (
+                  <Typography key={item.currency} variant="subtitle2" sx={{ fontWeight: 800 }}>
+                    {formatCurrencyAmount(item.totalAmount, item.currency)}
+                  </Typography>
+                ))}
+              </Stack>
+            </Box>
+            <Box>
+              <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
+                Total figurines purchased
+              </Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                {formatCount(grandTotalFigurines)}
+              </Typography>
+            </Box>
+          </Stack>
+        </Card>
+      )}
+
       <Stack spacing={1}>
         {purchases.length === 0 ? (
           <Card sx={{ p: 1.6, borderRadius: 2 }}>
@@ -315,42 +555,95 @@ export default function PurchasesPage() {
             <Card
               key={purchase.id}
               sx={{
-                p: 1.3,
+                p: 1.5,
                 borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.divider, 0.18)}`,
+                bgcolor: alpha(theme.palette.background.paper, 0.92),
+                boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
               }}
             >
               <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" spacing={1}>
                 <Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                    {purchase.store} {purchase.orderNumber ? `- ${purchase.orderNumber}` : ""}
+                    {purchase.store?.trim() ? purchase.store : "Store not specified"}
+                  </Typography>
+                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
+                    Order date: {purchase.orderDate?.trim() ? purchase.orderDate : "No order date"}
+                  </Typography>
+                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
+                    Order number: {purchase.orderNumber?.trim() ? purchase.orderNumber : "Not specified"}
                   </Typography>
                   <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
                     Purchase ID: {purchase.purchaseId ?? "pending"}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    {purchase.orderDate} · {purchase.totalAmount} {purchase.currency}
+                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
+                    Tracking: {purchase.trackingNumber?.trim() ? purchase.trackingNumber : "Not available"}
+                    {purchase.carrier?.trim() ? ` · Carrier: ${purchase.carrier}` : ""}
                   </Typography>
                   <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Status: {purchase.shippingStatus} · Total figurines: {purchase.totalFigurines}
+                    Shipped date: {purchase.shippedDate?.trim() ? purchase.shippedDate : "Not shipped yet"}
+                  </Typography>
+                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
+                    Delivered date: {purchase.deliveredDate?.trim() ? purchase.deliveredDate : "Not delivered yet"}
                   </Typography>
                 </Box>
-                <Stack direction="row" spacing={0.8}>
-                  <Button
-                    size="small"
-                    startIcon={<EditIcon />}
-                    onClick={() => void handleOpenEditDialog(purchase)}
-                  >
-                    Edit
-                  </Button>
+
+                <Box sx={{ minWidth: { md: 200 } }}>
+                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
+                    Total amount
+                  </Typography>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                    {formatCurrencyAmount(purchase.totalAmount, purchase.currency)}
+                  </Typography>
+                  <Box sx={{ mt: 0.7 }}>
+                    {renderShippingStatusTimeline(purchase.shippingStatus)}
+                  </Box>
+                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 2.5 }}>
+                    Total figurines: {formatCount(purchase.totalFigurines)}
+                  </Typography>
+                </Box>
+                <Stack direction="row" spacing={0.1} alignItems="center" sx={{ minWidth: 62, justifyContent: "flex-end" }}>
+                  <Tooltip title="Edit">
+                    <IconButton
+                      size="small"
+                      onClick={() => void handleOpenEditDialog(purchase)}
+                      sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleOpenDeleteDialog(purchase)}
+                      sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 </Stack>
               </Stack>
-              <Divider sx={{ my: 0.9 }} />
-              <Stack spacing={0.35}>
+              <Divider sx={{ my: 1, opacity: 0.55 }} />
+              <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.4, fontWeight: 700 }}>
+                Line items
+              </Typography>
+              <Stack spacing={0.6}>
                 {purchase.lines.map((line, index) => (
-                  <Typography key={`${purchase.id}-line-${index}`} variant="caption">
-                    {line.figurineName} x{line.quantity} · {line.pricePaid} {purchase.currency} ({line.purchaseType})
-                  </Typography>
+                  <Box
+                    key={`${purchase.id}-line-${index}`}
+                    sx={{
+                      px: 0.9,
+                      py: 0.65,
+                      borderRadius: 1,
+                      bgcolor: alpha(theme.palette.background.default, 0.42),
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ display: "block", color: "text.primary", fontWeight: 700 }}>
+                      {line.figurineName}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      Qty: {formatCount(line.quantity)} · Price: {formatCurrencyAmount(line.pricePaid, purchase.currency)} · Type: {line.purchaseType}
+                    </Typography>
+                  </Box>
                 ))}
               </Stack>
             </Card>
@@ -367,6 +660,59 @@ export default function PurchasesPage() {
         onSubmit={handleSavePurchase}
         figurines={collectionFigurines}
       />
+
+      <Dialog
+        open={Boolean(deletePurchaseTarget)}
+        onClose={() => {
+          if (!isDeletingPurchase) {
+            setDeletePurchaseTarget(null);
+          }
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Delete purchase?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {deletePurchaseTarget
+              ? `Delete purchase ${deletePurchaseTarget.orderNumber?.trim() ? deletePurchaseTarget.orderNumber : deletePurchaseTarget.purchaseId ?? deletePurchaseTarget.id}? This cannot be undone.`
+              : "Delete this purchase? This cannot be undone."}
+          </DialogContentText>
+          {deletePurchaseTarget && selectedCollection && (
+            <Stack spacing={0.3} sx={{ mt: 1.2 }}>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                Collection: {selectedCollection.name}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                Total amount: {formatCurrencyAmount(deletePurchaseTarget.totalAmount, deletePurchaseTarget.currency)}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                Figurines: {formatCount(deletePurchaseTarget.totalFigurines)}
+              </Typography>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeletePurchaseTarget(null)}
+            disabled={isDeletingPurchase}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              if (deletePurchaseTarget) {
+                void handleDeletePurchase(deletePurchaseTarget);
+              }
+            }}
+            disabled={isDeletingPurchase}
+          >
+            {isDeletingPurchase ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
