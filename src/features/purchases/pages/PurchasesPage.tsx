@@ -28,6 +28,7 @@ import EditIcon from "@mui/icons-material/EditOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import SyncAltOutlinedIcon from "@mui/icons-material/SyncAltOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import type { SvgIconComponent } from "@mui/icons-material";
@@ -41,6 +42,7 @@ import {
   createPurchaseSummaryLineItems,
   getPurchaseSummaryLineItems,
   getPurchaseSummaryLineItemsById,
+  syncPurchaseTotal,
   toPurchaseRecordFromSummaryResponse,
   updatePurchaseSummaryLineItems,
 } from "../api/purchaseApi";
@@ -94,7 +96,9 @@ export default function PurchasesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
   const [deletePurchaseTarget, setDeletePurchaseTarget] = useState<PurchaseRecord | null>(null);
+  const [syncPurchaseTarget, setSyncPurchaseTarget] = useState<PurchaseRecord | null>(null);
   const [isDeletingPurchase, setIsDeletingPurchase] = useState(false);
+  const [isSyncingPurchase, setIsSyncingPurchase] = useState(false);
 
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [loadingFigurines, setLoadingFigurines] = useState(false);
@@ -201,6 +205,14 @@ export default function PurchasesPage() {
     [collectionFigurines]
   );
 
+  const figurineThumbnailById = useMemo(
+    () =>
+      Object.fromEntries(
+        collectionFigurines.map((figurine) => [figurine.id, figurine.officialImageUrls?.[0]?.trim() || ""])
+      ),
+    [collectionFigurines]
+  );
+
   const totalsByCurrency = useMemo(() => {
     const grouped = purchases.reduce<Record<string, number>>((accumulator, purchase) => {
       const currentTotal = accumulator[purchase.currency] ?? 0;
@@ -230,6 +242,20 @@ export default function PurchasesPage() {
     });
   };
 
+  const reloadCurrentCollectionPurchases = async (): Promise<void> => {
+    const collectionIdNumber = Number(selectedCollectionId);
+    if (!Number.isFinite(collectionIdNumber) || collectionIdNumber <= 0) {
+      setCollectionFigurines([]);
+      setPurchases([]);
+      return;
+    }
+
+    const figurines = await getCollectionFigurines(collectionIdNumber);
+    setCollectionFigurines(figurines);
+    const backendPurchases = await loadBackendPurchasesForCollection(figurines);
+    setPurchases(backendPurchases);
+  };
+
   const handleSavePurchase = async (input: PurchaseRecordInput) => {
     if (!selectedCollectionId) {
       return;
@@ -250,8 +276,7 @@ export default function PurchasesPage() {
     }
 
     try {
-      const refreshedPurchases = await loadBackendPurchasesForCollection(collectionFigurines);
-      setPurchases(refreshedPurchases);
+      await reloadCurrentCollectionPurchases();
     } catch (err) {
       setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "purchases" }));
       return;
@@ -303,8 +328,7 @@ export default function PurchasesPage() {
     setIsDeletingPurchase(true);
     try {
       await deletePurchaseSummaryLineItems(backendPurchaseId);
-      const refreshedPurchases = await loadBackendPurchasesForCollection(collectionFigurines);
-      setPurchases(refreshedPurchases);
+      await reloadCurrentCollectionPurchases();
       setSuccessMessage("Purchase deleted successfully.");
       setErrorMessage(null);
       if (editingPurchaseId === purchase.id) {
@@ -319,8 +343,42 @@ export default function PurchasesPage() {
     }
   };
 
+  const handleSyncPurchase = async (purchase: PurchaseRecord) => {
+    const backendPurchaseId = purchase.purchaseId ?? Number(purchase.id);
+    const collectionIdNumber = Number(selectedCollectionId);
+
+    if (!Number.isFinite(backendPurchaseId) || backendPurchaseId <= 0) {
+      setErrorMessage("Unable to identify purchase id for sync.");
+      setSyncPurchaseTarget(null);
+      return;
+    }
+
+    if (!Number.isFinite(collectionIdNumber) || collectionIdNumber <= 0) {
+      setErrorMessage("Unable to identify collection id for sync.");
+      setSyncPurchaseTarget(null);
+      return;
+    }
+
+    setIsSyncingPurchase(true);
+    try {
+      await syncPurchaseTotal(backendPurchaseId, collectionIdNumber);
+      await reloadCurrentCollectionPurchases();
+      setSuccessMessage("Purchase totals synced successfully.");
+      setErrorMessage(null);
+      setSyncPurchaseTarget(null);
+    } catch (err) {
+      setErrorMessage(getApiErrorMessage(err, { action: "update", resource: "purchases" }));
+    } finally {
+      setIsSyncingPurchase(false);
+    }
+  };
+
   const handleOpenDeleteDialog = (purchase: PurchaseRecord) => {
     setDeletePurchaseTarget(purchase);
+  };
+
+  const handleOpenSyncDialog = (purchase: PurchaseRecord) => {
+    setSyncPurchaseTarget(purchase);
   };
 
   const handleCloseDialog = () => {
@@ -602,7 +660,17 @@ export default function PurchasesPage() {
                     Total figurines: {formatCount(purchase.totalFigurines)}
                   </Typography>
                 </Box>
-                <Stack direction="row" spacing={0.1} alignItems="center" sx={{ minWidth: 62, justifyContent: "flex-end" }}>
+                <Stack direction="row" spacing={0.1} alignItems="center" sx={{ minWidth: 84, justifyContent: "flex-end" }}>
+                  <Tooltip title="Sync totals">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleOpenSyncDialog(purchase)}
+                      sx={{ color: "secondary.main", "&:hover": { color: "secondary.light" } }}
+                      disabled={!selectedCollectionId || loadingFigurines}
+                    >
+                      <SyncAltOutlinedIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title="Edit">
                     <IconButton
                       size="small"
@@ -638,9 +706,87 @@ export default function PurchasesPage() {
                       bgcolor: alpha(theme.palette.background.default, 0.42),
                     }}
                   >
-                    <Typography variant="caption" sx={{ display: "block", color: "text.primary", fontWeight: 700 }}>
-                      {line.figurineName}
-                    </Typography>
+                    <Stack direction="row" spacing={0.8} alignItems="center" sx={{ minWidth: 0 }}>
+                      <Tooltip
+                        arrow
+                        placement="right"
+                        enterDelay={180}
+                        title={(
+                          <Stack spacing={0.7} sx={{ p: 0.2, minWidth: 190 }}>
+                            {figurineThumbnailById[line.figurineId] ? (
+                              <Box
+                                component="img"
+                                src={figurineThumbnailById[line.figurineId]}
+                                alt={line.figurineName}
+                                sx={{
+                                  width: 190,
+                                  height: 190,
+                                  objectFit: "cover",
+                                  borderRadius: 1,
+                                  bgcolor: "common.black",
+                                }}
+                              />
+                            ) : (
+                              <Box
+                                sx={{
+                                  width: 190,
+                                  height: 190,
+                                  borderRadius: 1,
+                                  bgcolor: "action.hover",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  color: "text.secondary",
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                }}
+                              >
+                                No image available
+                              </Box>
+                            )}
+                            <Typography variant="caption" sx={{ color: "common.white" }}>
+                              {line.figurineName} · #{line.figurineId}
+                            </Typography>
+                          </Stack>
+                        )}
+                      >
+                        {figurineThumbnailById[line.figurineId] ? (
+                          <Box
+                            component="img"
+                            src={figurineThumbnailById[line.figurineId]}
+                            alt={line.figurineName}
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              objectFit: "cover",
+                              borderRadius: 0.75,
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: 0.75,
+                              bgcolor: "action.hover",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "text.secondary",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {line.figurineName.slice(0, 1).toUpperCase()}
+                          </Box>
+                        )}
+                      </Tooltip>
+                      <Typography variant="caption" sx={{ display: "block", color: "text.primary", fontWeight: 700 }} noWrap>
+                        {line.figurineName}
+                      </Typography>
+                    </Stack>
                     <Typography variant="caption" sx={{ color: "text.secondary" }}>
                       Qty: {formatCount(line.quantity)} · Price: {formatCurrencyAmount(line.pricePaid, purchase.currency)} · Type: {line.purchaseType}
                     </Typography>
@@ -661,6 +807,48 @@ export default function PurchasesPage() {
         onSubmit={handleSavePurchase}
         figurines={collectionFigurines}
       />
+
+      <Dialog
+        open={Boolean(syncPurchaseTarget)}
+        onClose={() => {
+          if (!isSyncingPurchase) {
+            setSyncPurchaseTarget(null);
+          }
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Sync purchase total?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This action will sync this purchase total back into the current collection. It can change the figurine count in the collection.
+          </DialogContentText>
+          {syncPurchaseTarget && selectedCollection && (
+            <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 1 }}>
+              Collection: {selectedCollection.name} · Purchase: {syncPurchaseTarget.orderNumber?.trim() ? syncPurchaseTarget.orderNumber : syncPurchaseTarget.purchaseId ?? syncPurchaseTarget.id}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setSyncPurchaseTarget(null)}
+            disabled={isSyncingPurchase}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              if (syncPurchaseTarget) {
+                void handleSyncPurchase(syncPurchaseTarget);
+              }
+            }}
+            disabled={isSyncingPurchase}
+          >
+            {isSyncingPurchase ? "Syncing..." : "Sync"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={Boolean(deletePurchaseTarget)}

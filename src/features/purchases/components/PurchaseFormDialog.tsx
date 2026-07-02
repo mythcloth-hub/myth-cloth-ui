@@ -17,6 +17,7 @@ import {
   Select,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -37,6 +38,7 @@ type FigurineOption = {
   id: number;
   displayableName: string;
   isCollected?: boolean;
+  officialImageUrls?: string[];
 };
 
 type PurchaseFormDialogProps = {
@@ -79,6 +81,7 @@ export default function PurchaseFormDialog({
   onClose,
   onSubmit,
 }: PurchaseFormDialogProps) {
+  const maxQuantity = 20;
   const [draft, setDraft] = useState<PurchaseDraft>(emptyPurchaseDraft());
   const [formError, setFormError] = useState<string | null>(null);
   const [showValidationErrors, setShowValidationErrors] = useState(false);
@@ -121,6 +124,14 @@ export default function PurchaseFormDialog({
         .map((line) => line.figurineId)
         .filter((figurineId) => figurineId.trim().length > 0)
     );
+
+  const getFigurineThumbnailUrl = (figurine?: FigurineOption): string | undefined => {
+    const firstImageUrl = figurine?.officialImageUrls?.[0];
+    return firstImageUrl?.trim() ? firstImageUrl : undefined;
+  };
+
+  const getFigurineDisplayLabel = (figurine: FigurineOption): string =>
+    `${figurine.displayableName} · #${figurine.id}`;
 
   const parseBackendValidationErrors = (
     error: unknown
@@ -268,6 +279,7 @@ export default function PurchaseFormDialog({
           line.figurineIdNumber > 0 &&
           Number.isFinite(line.quantityNumber) &&
           line.quantityNumber > 0 &&
+            line.quantityNumber <= maxQuantity &&
           Number.isFinite(line.pricePaidNumber) &&
           line.pricePaidNumber > 0
       );
@@ -426,6 +438,7 @@ export default function PurchaseFormDialog({
               )}
             </FormControl>
             <TextField
+              disabled
               label="Total amount"
               size="small"
               value={autoTotalAmount.toFixed(2)}
@@ -476,35 +489,176 @@ export default function PurchaseFormDialog({
           </Typography>
 
           {draft.lines.map((line, index) => (
-            <Stack key={`line-${index}`} direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="flex-start">
+            <Stack
+              key={`line-${index}`}
+              direction={{ xs: "column", sm: "row" }}
+              spacing={{ xs: 1, sm: 0.75, md: 1 }}
+              alignItems="flex-start"
+            >
               {(() => {
                 const selectedFigurineIds = getSelectedFigurineIds(index);
 
                 return (
               <FormControl
                 size="small"
-                fullWidth
                 required
                 error={showValidationErrors && Boolean(getLineFieldError(index, "figurineId") || !Number.isFinite(Number(line.figurineId)) || Number(line.figurineId) <= 0)}
-                sx={{ minWidth: 0 }}
+                sx={{
+                  width: { xs: "100%", sm: 200, md: 320 },
+                  minWidth: 0,
+                  flexShrink: 0,
+                }}
               >
-                <InputLabel required>Figurine</InputLabel>
+                <InputLabel required>Figurines</InputLabel>
                 <Select
                   value={line.figurineId}
                   label="Figurine"
                   onChange={(event) => handleLineChange(index, "figurineId", String(event.target.value))}
+                  renderValue={(selected) => {
+                    const selectedFigurine = figurines.find((figurine) => String(figurine.id) === String(selected));
+                    const thumbnailUrl = getFigurineThumbnailUrl(selectedFigurine);
+
+                    if (!selectedFigurine) {
+                      return "";
+                    }
+
+                    return (
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+                        {thumbnailUrl ? (
+                          <Box
+                            component="img"
+                            src={thumbnailUrl}
+                            alt={selectedFigurine.displayableName}
+                            sx={{
+                              width: 26,
+                              height: 26,
+                              objectFit: "cover",
+                              borderRadius: 0.75,
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              width: 26,
+                              height: 26,
+                              borderRadius: 0.75,
+                              bgcolor: "action.hover",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "text.secondary",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {selectedFigurine.displayableName.slice(0, 1).toUpperCase()}
+                          </Box>
+                        )}
+                        <Typography variant="body2" noWrap>
+                          {getFigurineDisplayLabel(selectedFigurine)}
+                        </Typography>
+                      </Stack>
+                    );
+                  }}
                 >
                   {figurines
                     .filter((figurine) => figurine.isCollected !== false)
-                    .map((figurine) => (
-                      <MenuItem
-                        key={figurine.id}
-                        value={String(figurine.id)}
-                        disabled={selectedFigurineIds.has(String(figurine.id))}
-                      >
-                        {figurine.displayableName}
-                      </MenuItem>
-                    ))}
+                    .map((figurine) => {
+                      const thumbnailUrl = getFigurineThumbnailUrl(figurine);
+                      const figurineLabel = getFigurineDisplayLabel(figurine);
+
+                      return (
+                        <MenuItem
+                          key={figurine.id}
+                          value={String(figurine.id)}
+                          disabled={selectedFigurineIds.has(String(figurine.id))}
+                        >
+                          <Tooltip
+                            arrow
+                            placement="right"
+                            enterDelay={180}
+                            title={(
+                              <Stack spacing={0.8} sx={{ p: 0.2, minWidth: 220 }}>
+                                {thumbnailUrl ? (
+                                  <Box
+                                    component="img"
+                                    src={thumbnailUrl}
+                                    alt={figurine.displayableName}
+                                    sx={{
+                                      width: 220,
+                                      height: 220,
+                                      objectFit: "cover",
+                                      borderRadius: 1,
+                                      bgcolor: "common.black",
+                                    }}
+                                  />
+                                ) : (
+                                  <Box
+                                    sx={{
+                                      width: 220,
+                                      height: 220,
+                                      borderRadius: 1,
+                                      bgcolor: "action.hover",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      color: "text.secondary",
+                                      fontWeight: 700,
+                                      fontSize: 12,
+                                    }}
+                                  >
+                                    No image available
+                                  </Box>
+                                )}
+                                <Typography variant="caption" sx={{ color: "common.white" }}>
+                                  {figurineLabel}
+                                </Typography>
+                              </Stack>
+                            )}
+                          >
+                            <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+                              {thumbnailUrl ? (
+                                <Box
+                                  component="img"
+                                  src={thumbnailUrl}
+                                  alt={figurine.displayableName}
+                                  sx={{
+                                    width: 28,
+                                    height: 28,
+                                    objectFit: "cover",
+                                    borderRadius: 0.75,
+                                    flexShrink: 0,
+                                  }}
+                                />
+                              ) : (
+                                <Box
+                                  sx={{
+                                    width: 28,
+                                    height: 28,
+                                    borderRadius: 0.75,
+                                    bgcolor: "action.hover",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "text.secondary",
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  {figurine.displayableName.slice(0, 1).toUpperCase()}
+                                </Box>
+                              )}
+                              <Typography variant="body2" noWrap>
+                                {figurineLabel}
+                              </Typography>
+                            </Stack>
+                          </Tooltip>
+                        </MenuItem>
+                      );
+                    })}
                 </Select>
                 <FormHelperText sx={{ minHeight: 40 }}>
                   {showValidationErrors && (getLineFieldError(index, "figurineId") || !Number.isFinite(Number(line.figurineId)) || Number(line.figurineId) <= 0)
@@ -520,17 +674,21 @@ export default function PurchaseFormDialog({
                 required
                 size="small"
                 type="number"
-                inputProps={{ min: 1, step: 1 }}
+                inputProps={{ min: 1, max: maxQuantity, step: 1 }}
                 value={line.quantity}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => handleLineChange(index, "quantity", event.target.value)}
-                error={showValidationErrors && Boolean(getLineFieldError(index, "quantity") || !Number.isFinite(Number(line.quantity)) || Number(line.quantity) <= 0)}
+                error={showValidationErrors && Boolean(getLineFieldError(index, "quantity") || !Number.isFinite(Number(line.quantity)) || Number(line.quantity) <= 0 || Number(line.quantity) > maxQuantity)}
                 helperText={
                   showValidationErrors
-                    ? getLineFieldError(index, "quantity") ?? (!Number.isFinite(Number(line.quantity)) || Number(line.quantity) <= 0 ? "Qty must be positive." : " ")
+                    ? getLineFieldError(index, "quantity") ?? (!Number.isFinite(Number(line.quantity)) || Number(line.quantity) <= 0
+                        ? "Qty must be positive."
+                        : Number(line.quantity) > maxQuantity
+                          ? "Qty must be less than or equal to 20."
+                          : " ")
                     : " "
                 }
                 FormHelperTextProps={{ sx: { minHeight: 40 } }}
-                sx={{ width: { xs: "100%", sm: 90 } }}
+                sx={{ width: { xs: "100%", sm: 64, md: 90 } }}
               />
 
               <TextField
@@ -548,10 +706,15 @@ export default function PurchaseFormDialog({
                     : " "
                 }
                 FormHelperTextProps={{ sx: { minHeight: 40 } }}
-                sx={{ width: { xs: "100%", sm: 140 } }}
+                sx={{ width: { xs: "100%", sm: 96, md: 140 } }}
               />
 
-              <FormControl size="small" required error={showValidationErrors && Boolean(getLineFieldError(index, "purchaseType"))} sx={{ width: { xs: "100%", sm: 150 }, minWidth: 0 }}>
+              <FormControl
+                size="small"
+                required
+                error={showValidationErrors && Boolean(getLineFieldError(index, "purchaseType"))}
+                sx={{ width: { xs: "100%", sm: 108, md: 150 }, minWidth: 0 }}
+              >
                 <InputLabel required>Type</InputLabel>
                 <Select
                   value={line.purchaseType}

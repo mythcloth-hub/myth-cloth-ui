@@ -142,3 +142,7 @@ export async function updatePurchaseSummaryLineItems(
 export async function deletePurchaseSummaryLineItems(purchaseId: number): Promise<void> {
   await httpClient.delete(`${API_BASE}/summary-line-items/${purchaseId}`);
 }
+
+export async function syncPurchaseTotal(purchaseId: number, collectionId: number): Promise<void> {
+  await httpClient.put(`${API_BASE}/${purchaseId}/collections/${collectionId}/sync-total`);
+}
