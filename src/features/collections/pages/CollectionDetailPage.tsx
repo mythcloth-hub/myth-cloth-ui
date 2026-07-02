@@ -8,6 +8,10 @@ import {
   Chip,
   Collapse,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   LinearProgress,
   Snackbar,
@@ -25,6 +29,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import {
@@ -77,6 +82,23 @@ type AlbumSlot = {
   figurine?: AlbumFigurine;
 };
 
+type FigurineBackDetail = {
+  displayableName: string;
+  priceWithTax?: number;
+  currency?: string;
+  releaseDateLabel?: string;
+  tamashiiUrl?: string;
+  lineUpUrl?: string;
+};
+
+const RELEASE_STATUS_COLORS: Record<CollectionFigurine["releaseStatus"], string> = {
+  RELEASED: "#43a047",
+  ANNOUNCED: "#fbc02d",
+  RUMORED: "#42a5f5",
+  PROTOTYPE: "#7e57c2",
+  UNRELEASED: "#9e9e9e",
+};
+
 export default function CollectionDetailPage() {
   const theme = useTheme();
   const { id } = useParams<{ id: string }>();
@@ -94,13 +116,15 @@ export default function CollectionDetailPage() {
   const [albumZoom, setAlbumZoom] = useState(1);
   const [showOwnedOnly, setShowOwnedOnly] = useState(false);
   const [timelineProgress, setTimelineProgress] = useState(0);
-  const [figurineBackNames, setFigurineBackNames] = useState<Record<number, string>>({});
+  const [figurineBackDetails, setFigurineBackDetails] = useState<Record<number, FigurineBackDetail>>({});
   const [figurineBackNameLoadingId, setFigurineBackNameLoadingId] = useState<number | null>(null);
   const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
   const [showRecentPurchasesSummary, setShowRecentPurchasesSummary] = useState(false);
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
   const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
   const [purchaseInitialDraft, setPurchaseInitialDraft] = useState<PurchaseDraft | null>(null);
+  const [pendingDeleteFigurineId, setPendingDeleteFigurineId] = useState<number | null>(null);
+  const [isDeletingFigurine, setIsDeletingFigurine] = useState(false);
   const albumGridSectionRef = useRef<HTMLDivElement | null>(null);
 
   const toFigurineNameById = (items: AlbumFigurine[]): Record<number, string> =>
@@ -167,7 +191,7 @@ export default function CollectionDetailPage() {
 
       setCollection(data);
       setFlippedFigurineId(null);
-      setFigurineBackNames({});
+      setFigurineBackDetails({});
       setFigurineBackNameLoadingId(null);
 
       const collectionFigurines = await getCollectionFigurines(data.id);
@@ -189,22 +213,68 @@ export default function CollectionDetailPage() {
     }
   };
 
-  const handleRemoveFigurine = async (figurineId: number) => {
-    if (!collection) return;
+  const handleOpenDeleteFigurineDialog = (figurineId: number) => {
+    setPendingDeleteFigurineId(figurineId);
+  };
+
+  const formatReleaseDateLabel = (releaseDate?: string, releaseDateConfirmed?: boolean): string | undefined => {
+    if (!releaseDate?.trim()) return undefined;
+
+    const parsedDate = new Date(`${releaseDate}T00:00:00`);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return releaseDateConfirmed ? releaseDate : releaseDate.slice(0, 7);
+    }
+
+    return parsedDate.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      ...(releaseDateConfirmed ? { day: "2-digit" } : {}),
+    });
+  };
+
+  const formatPriceWithTax = (amount: number, currency?: string): string => {
+    const normalizedCurrency = currency?.trim().toUpperCase();
+
+    if (normalizedCurrency) {
+      try {
+        return new Intl.NumberFormat(undefined, {
+          style: "currency",
+          currency: normalizedCurrency,
+          maximumFractionDigits: 2,
+        }).format(amount);
+      } catch {
+        return `${amount.toFixed(2)} ${normalizedCurrency}`;
+      }
+    }
+
+    return amount.toFixed(2);
+  };
+
+  const getReleaseStatusLabel = (status: CollectionFigurine["releaseStatus"]): string =>
+    status.replaceAll("_", " ");
+
+  const handleCloseDeleteFigurineDialog = () => {
+    if (isDeletingFigurine) return;
+
+    setPendingDeleteFigurineId(null);
+  };
+
+  const handleConfirmDeleteFigurine = async () => {
+    if (!collection || pendingDeleteFigurineId === null) return;
+
+    setIsDeletingFigurine(true);
 
     try {
-      await removeFigurineFromCollection(collection.id, figurineId);
-      setFigurines(figurines.filter((f) => f.id !== figurineId));
-      setCollection({
-        ...collection,
-        figurineIds: collection.figurineIds.filter((id) => id !== figurineId),
-      });
-      setFlippedFigurineId((current) => (current === figurineId ? null : current));
+      await removeFigurineFromCollection(collection.id, pendingDeleteFigurineId);
+      await loadCollection();
       setSuccessMessage("Figurine removed from collection.");
     } catch (err) {
       setErrorMessage(
-        getApiErrorMessage(err, { action: "update", resource: "figurine from collection" })
+        getApiErrorMessage(err, { action: "delete", resource: "figurine from collection" })
       );
+    } finally {
+      setIsDeletingFigurine(false);
+      setPendingDeleteFigurineId(null);
     }
   };
 
@@ -289,7 +359,7 @@ export default function CollectionDetailPage() {
 
     const figurine = figurines.find((item) => item.id === flippedFigurineId);
     if (!figurine) return;
-    if (figurineBackNames[flippedFigurineId]) return;
+    if (figurineBackDetails[flippedFigurineId]) return;
 
     let isActive = true;
     setFigurineBackNameLoadingId(flippedFigurineId);
@@ -299,17 +369,35 @@ export default function CollectionDetailPage() {
         if (!isActive) return;
 
         const nextDisplayableName = response.displayableName?.trim() || figurine.displayableName;
-        setFigurineBackNames((current) => ({
+        const primaryDistributor = response.distributors?.[0];
+        const releaseDateLabel = formatReleaseDateLabel(
+          primaryDistributor?.releaseDate,
+          primaryDistributor?.releaseDateConfirmed
+        );
+
+        setFigurineBackDetails((current) => ({
           ...current,
-          [flippedFigurineId]: nextDisplayableName,
+          [flippedFigurineId]: {
+            displayableName: nextDisplayableName,
+            priceWithTax:
+              typeof primaryDistributor?.priceWithTax === "number"
+                ? primaryDistributor.priceWithTax
+                : undefined,
+            currency: primaryDistributor?.currency?.trim() || undefined,
+            releaseDateLabel,
+            tamashiiUrl: response.tamashiiUrl?.trim() || undefined,
+            lineUpUrl: response.lineUpUrl?.trim() || undefined,
+          },
         }));
       })
       .catch(() => {
         if (!isActive) return;
 
-        setFigurineBackNames((current) => ({
+        setFigurineBackDetails((current) => ({
           ...current,
-          [flippedFigurineId]: figurine.displayableName,
+          [flippedFigurineId]: {
+            displayableName: figurine.displayableName,
+          },
         }));
       })
       .finally(() => {
@@ -321,20 +409,7 @@ export default function CollectionDetailPage() {
     return () => {
       isActive = false;
     };
-  }, [collection, flippedFigurineId, figurines, figurineBackNames]);
-
-  const getTrackingLabel = (figurine: AlbumFigurine): string => {
-    if (figurine.trackingCode) {
-      return `Tracking: ${figurine.trackingCode}`;
-    }
-    if (figurine.releaseStatus === "ANNOUNCED") {
-      return "Preorder active - tracking pending";
-    }
-    if (figurine.releaseStatus === "RELEASED") {
-      return `Tracking: N/A-${figurine.id}`;
-    }
-    return "No tracking data";
-  };
+  }, [collection, flippedFigurineId, figurines, figurineBackDetails]);
 
   const handleSavePurchase = async (input: PurchaseRecordInput) => {
     if (!collection) return;
@@ -738,6 +813,39 @@ export default function CollectionDetailPage() {
         </Alert>
       </Snackbar>
 
+      <Dialog
+        open={pendingDeleteFigurineId !== null}
+        onClose={(_, reason) => {
+          if (isDeletingFigurine && (reason === "backdropClick" || reason === "escapeKeyDown")) {
+            return;
+          }
+
+          handleCloseDeleteFigurineDialog();
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Remove figurine</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            Are you sure you want to remove this figurine from the collection? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteFigurineDialog} disabled={isDeletingFigurine}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => void handleConfirmDeleteFigurine()}
+            color="error"
+            variant="contained"
+            disabled={isDeletingFigurine}
+          >
+            {isDeletingFigurine ? <CircularProgress size={20} color="inherit" /> : "Remove"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <PurchaseFormDialog
         open={purchaseDialogOpen}
         title={editingPurchase ? "Edit Purchase" : "Record Purchase"}
@@ -936,21 +1044,18 @@ export default function CollectionDetailPage() {
             const pattern = ALBUM_PATTERNS[index % ALBUM_PATTERNS.length];
             const rowSpan = slot.figurine ? Math.max(pattern.rowSpan, 2) : pattern.rowSpan;
             const isFlipped = Boolean(slot.figurine && flippedFigurineId === slot.figurine.id);
-            const backDisplayName = slot.figurine ? figurineBackNames[slot.figurine.id] : undefined;
+            const backDetail = slot.figurine ? figurineBackDetails[slot.figurine.id] : undefined;
+            const backDisplayName = backDetail?.displayableName;
             const isBackDisplayNameLoading = slot.figurine?.id === figurineBackNameLoadingId;
             const imageUrl = slot.figurine?.officialImageUrls?.[0] ?? null;
             const noteText = slot.figurine?.notes?.trim() ?? "";
             const duplicateCount = slot.owned && slot.figurine ? Math.max(1, slot.figurine.ownedQuantity) : 0;
             const stackLayers = Math.min(Math.max(duplicateCount - 1, 0), 4);
             const isAnnounced = slot.figurine?.releaseStatus === "ANNOUNCED";
-            const isReleased = slot.figurine?.releaseStatus === "RELEASED";
             const hasPurchaseForFigurine = slot.figurine
               ? purchases.some((purchase) => purchase.lines.some((line) => line.figurineId === slot.figurine!.id))
               : false;
             const showBackActionLabels = rowSpan >= 2 && pattern.colSpan >= 2 && albumZoom >= 1;
-            const serialNumber = slot.figurine
-              ? `${String((Math.abs(slot.figurine.id) * 73) % 5000).padStart(4, "0")} / 5000`
-              : "0000 / 5000";
 
             return (
               <Box
@@ -1213,10 +1318,11 @@ export default function CollectionDetailPage() {
                         transform: "rotateY(180deg)",
                         borderRadius: 2,
                         border: `1px solid ${alpha("#d4af37", 0.95)}`,
-                        background:
-                            isAnnounced
-                              ? `linear-gradient(155deg, ${alpha(theme.palette.secondary.dark, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.95)} 100%)`
-                              : `linear-gradient(155deg, rgba(88,98,114,0.98) 0%, rgba(70,79,95,0.98) 52%, rgba(53,60,73,0.98) 100%)`,
+                        background: backDetail?.lineUpUrl
+                          ? `linear-gradient(155deg, rgba(18, 26, 38, 0.88) 0%, rgba(12, 18, 28, 0.9) 100%), url(${backDetail.lineUpUrl}) center / contain no-repeat`
+                          : isAnnounced
+                            ? `linear-gradient(155deg, ${alpha(theme.palette.secondary.dark, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.95)} 100%)`
+                            : `linear-gradient(155deg, rgba(88,98,114,0.98) 0%, rgba(70,79,95,0.98) 52%, rgba(53,60,73,0.98) 100%)`,
                         p: { xs: 0.9, md: 1.2 },
                         display: "flex",
                         flexDirection: "column",
@@ -1318,30 +1424,58 @@ export default function CollectionDetailPage() {
                           }}
                         />
                         <Typography variant="caption" sx={{ display: "block", color: "rgba(220,231,246,0.9)", fontWeight: 700 }}>
-                          Serial: {isAnnounced ? "Pending release" : serialNumber}
+                          ID: #{slot.figurine.id}
                         </Typography>
                         <Typography variant="caption" sx={{ display: "block", color: "rgba(220,231,246,0.9)", fontWeight: 700 }}>
-                          Year: {isAnnounced ? "TBA" : slot.figurine.year ?? "Unknown"}
+                          Name: {slot.figurine.name}
                         </Typography>
-                        <Typography variant="caption" sx={{ display: "block", color: "rgba(220,231,246,0.9)", fontWeight: 700 }}>
-                          {isAnnounced ? "Not part of the collection yet" : getTrackingLabel(slot.figurine)}
-                        </Typography>
+                        {typeof backDetail?.priceWithTax === "number" && (
+                          <Typography variant="caption" sx={{ display: "block", color: "rgba(220,231,246,0.9)", fontWeight: 700 }}>
+                            Price w/ Tax: {formatPriceWithTax(backDetail.priceWithTax, backDetail.currency)}
+                          </Typography>
+                        )}
+                        {backDetail?.releaseDateLabel && (
+                          <Typography variant="caption" sx={{ display: "block", color: "rgba(220,231,246,0.9)", fontWeight: 700 }}>
+                            Release Date: {backDetail.releaseDateLabel}
+                          </Typography>
+                        )}
+                        {backDetail?.tamashiiUrl && (
+                          <Tooltip title="Open Tamashii page">
+                            <IconButton
+                              component="a"
+                              href={backDetail.tamashiiUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(event) => event.stopPropagation()}
+                              size="small"
+                              sx={{
+                                mt: 0.2,
+                                p: 0.3,
+                                color: theme.palette.info.light,
+                                border: `1px solid ${alpha(theme.palette.info.light, 0.4)}`,
+                                bgcolor: alpha(theme.palette.background.default, 0.2),
+                                width: 22,
+                                height: 22,
+                              }}
+                            >
+                              <OpenInNewIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
 
-                        <Chip
-                          label={slot.figurine.releaseStatus}
-                          size="small"
-                          sx={{
-                            mt: 0.8,
-                            height: 22,
-                            fontSize: "0.62rem",
-                            fontWeight: 900,
-                            color: "#f5f8ff",
-                            bgcolor: isReleased
-                              ? alpha(theme.palette.success.main, 0.84)
-                              : alpha(theme.palette.secondary.main, 0.82),
-                            border: `1px solid ${alpha(theme.palette.common.white, 0.26)}`,
-                          }}
-                        />
+                        <Tooltip title={getReleaseStatusLabel(slot.figurine.releaseStatus)}>
+                          <Box
+                            sx={{
+                              mt: 0.8,
+                              width: 12,
+                              height: 12,
+                              borderRadius: "50%",
+                              bgcolor: RELEASE_STATUS_COLORS[slot.figurine.releaseStatus],
+                              border: `1px solid ${alpha(theme.palette.common.white, 0.6)}`,
+                              boxShadow: "0 0 0 1px rgba(0,0,0,0.35)",
+                            }}
+                          />
+                        </Tooltip>
                       </Box>
 
                       <Stack
@@ -1422,7 +1556,7 @@ export default function CollectionDetailPage() {
                               size="small"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleRemoveFigurine(slot.figurine!.id);
+                                handleOpenDeleteFigurineDialog(slot.figurine!.id);
                               }}
                               sx={{ color: "rgba(144,52,43,0.92)" }}
                             >

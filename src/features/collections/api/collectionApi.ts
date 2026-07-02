@@ -16,6 +16,14 @@ type CollectionFigurineApiResponse = Partial<CollectionFigurine> & {
 
 type CollectionFigurineDetailApiResponse = {
   displayableName?: string;
+  distributors?: Array<{
+    currency?: string;
+    priceWithTax?: number;
+    releaseDate?: string;
+    releaseDateConfirmed?: boolean;
+  }>;
+  tamashiiUrl?: string;
+  lineUpUrl?: string;
 };
 
 function normalizeCollection(collection: Partial<Collection>): Collection {
@@ -113,11 +121,8 @@ export async function addFigurineToCollection(collectionId: number, figurineId: 
   return normalizeCollection(response.data);
 }
 
-export async function removeFigurineFromCollection(collectionId: number, figurineId: number): Promise<Collection> {
-  const response = await httpClient.delete<Collection>(
-    `${API_BASE}/${collectionId}/figurines/${figurineId}`
-  );
-  return normalizeCollection(response.data);
+export async function removeFigurineFromCollection(collectionId: number, figurineId: number): Promise<void> {
+  await httpClient.delete(`${API_BASE}/${collectionId}/figurines/${figurineId}`);
 }
 
 export async function assignFigurinesToCollections(data: AssignFigurinesRequest): Promise<void> {
