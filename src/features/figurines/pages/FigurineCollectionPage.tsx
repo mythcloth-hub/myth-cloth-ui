@@ -724,6 +724,22 @@ export default function FigurineCollectionPage() {
     }
   }, [selectedCollectionId]);
 
+  useEffect(() => {
+    if (!selectedCollection) {
+      sessionStorage.removeItem("figurineSelectedCollectionContext");
+      return;
+    }
+
+    sessionStorage.setItem(
+      "figurineSelectedCollectionContext",
+      JSON.stringify({
+        id: selectedCollection.id,
+        name: selectedCollection.name,
+        figurineIds: selectedCollection.figurineIds ?? [],
+      })
+    );
+  }, [selectedCollection]);
+
   const displayItems = figurines;
   const displayTotal = totalElements;
   const displayPages = totalPages;
@@ -1219,7 +1235,17 @@ export default function FigurineCollectionPage() {
                             JSON.stringify(displayItems.map((f) => f.id))
                           );
                           // Preserve current search params (including page) in the detail URL
-                          navigate(`/figurines/${fig.id}?${searchParams.toString()}`);
+                          navigate(`/figurines/${fig.id}?${searchParams.toString()}`, {
+                            state: selectedCollection
+                              ? {
+                                  selectedCollection: {
+                                    id: selectedCollection.id,
+                                    name: selectedCollection.name,
+                                    figurineIds: selectedCollection.figurineIds ?? [],
+                                  },
+                                }
+                              : undefined,
+                          });
                         }}
                       />
                     </Grid>

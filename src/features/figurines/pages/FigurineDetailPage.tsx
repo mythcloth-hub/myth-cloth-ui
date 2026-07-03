@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../auth/AuthContext";
 import {
   Alert,
@@ -31,6 +31,7 @@ import { countryCodeToFlag } from "../../../utils/countryFlag";
 import AnniversaryIcon from "./AnniversaryIcon";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AddToCollectionModal from "../../collections/components/AddToCollectionModal";
+import { getCollections } from "../../collections/api/collectionApi";
 
 const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: string; borderColor: string }> = {
   RELEASED:  { label: "Released",  color: "#4caf50", borderColor: "rgba(76,175,80,0.30)"   },
@@ -62,8 +63,15 @@ function BoolRow({ label, value }: { label: string; value: boolean }) {
   );
 }
 
+type SelectedCollectionContext = {
+  id: number;
+  name: string;
+  figurineIds: number[];
+};
+
 export default function FigurineDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const { hasPermission, isAuthenticated } = useAuth();
 
@@ -73,12 +81,53 @@ export default function FigurineDetailPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
+  const [selectedCollectionContext, setSelectedCollectionContext] = useState<SelectedCollectionContext | null>(() => {
+    const stateCollection = (location.state as { selectedCollection?: SelectedCollectionContext } | null)?.selectedCollection;
+    if (stateCollection) {
+      return stateCollection;
+    }
+
+    const rawStoredContext = sessionStorage.getItem("figurineSelectedCollectionContext");
+    if (!rawStoredContext) {
+      return null;
+    }
+
+    try {
+      const parsedContext = JSON.parse(rawStoredContext) as SelectedCollectionContext;
+      if (
+        parsedContext &&
+        typeof parsedContext.id === "number" &&
+        typeof parsedContext.name === "string" &&
+        Array.isArray(parsedContext.figurineIds)
+      ) {
+        return parsedContext;
+      }
+    } catch {
+      sessionStorage.removeItem("figurineSelectedCollectionContext");
+    }
+
+    return null;
+  });
 
   const navList: number[] = JSON.parse(sessionStorage.getItem("figurineNavList") ?? "[]");
   const currentIndex = navList.indexOf(Number(id));
   const prevId = currentIndex > 0 ? navList[currentIndex - 1] : null;
   const nextId = currentIndex !== -1 && currentIndex < navList.length - 1 ? navList[currentIndex + 1] : null;
   const collectionSearch = sessionStorage.getItem("figurineCollectionSearch");
+  const figurineId = Number(id);
+  const isInSelectedCollection = selectedCollectionContext
+    ? selectedCollectionContext.figurineIds.includes(figurineId)
+    : null;
+
+  useEffect(() => {
+    const stateCollection = (location.state as { selectedCollection?: SelectedCollectionContext } | null)?.selectedCollection;
+    if (!stateCollection) {
+      return;
+    }
+
+    setSelectedCollectionContext(stateCollection);
+    sessionStorage.setItem("figurineSelectedCollectionContext", JSON.stringify(stateCollection));
+  }, [location.state]);
 
   const handleBackToCollection = () => {
     navigate(collectionSearch ? `/figurines?${collectionSearch}` : "/figurines");
@@ -159,7 +208,15 @@ export default function FigurineDetailPage() {
             <Tooltip title={prevId ? "Previous figurine" : ""}>
               <span>
                 <IconButton
-                  onClick={() => prevId && navigate(`/figurines/${prevId}`, { replace: true })}
+                  onClick={() =>
+                    prevId &&
+                    navigate(`/figurines/${prevId}`, {
+                      replace: true,
+                      state: selectedCollectionContext
+                        ? { selectedCollection: selectedCollectionContext }
+                        : undefined,
+                    })
+                  }
                   disabled={!prevId}
                   size="small"
                   sx={{ color: prevId ? "primary.main" : "text.disabled" }}
@@ -174,7 +231,15 @@ export default function FigurineDetailPage() {
             <Tooltip title={nextId ? "Next figurine" : ""}>
               <span>
                 <IconButton
-                  onClick={() => nextId && navigate(`/figurines/${nextId}`, { replace: true })}
+                  onClick={() =>
+                    nextId &&
+                    navigate(`/figurines/${nextId}`, {
+                      replace: true,
+                      state: selectedCollectionContext
+                        ? { selectedCollection: selectedCollectionContext }
+                        : undefined,
+                    })
+                  }
                   disabled={!nextId}
                   size="small"
                   sx={{ color: nextId ? "primary.main" : "text.disabled" }}
@@ -376,7 +441,7 @@ export default function FigurineDetailPage() {
                   </Box>
                 </Grid>
               )}
-              {figurine.tamashiiUrl && (
+              {(figurine.tamashiiUrl || selectedCollectionContext) && (
                 <Grid size={{ xs: 12 }}>
                   <Box
                     sx={{
@@ -385,22 +450,57 @@ export default function FigurineDetailPage() {
                       borderTop: "1px solid rgba(212,175,55,0.1)",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: { xs: "stretch", sm: "flex-end" },
-                      gap: 1,
+                      justifyContent: { xs: "stretch", sm: "flex-start" },
+                      gap: 1.25,
                       flexDirection: { xs: "column", sm: "row" },
                     }}
                   >
-                    <Button
-                      component="a"
-                      href={figurine.tamashiiUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      variant="outlined"
-                      endIcon={<OpenInNewIcon />}
-                      sx={{ flexShrink: 0, alignSelf: { xs: "stretch", sm: "auto" } }}
-                    >
-                      Open Official Page
-                    </Button>
+                    {selectedCollectionContext && isInSelectedCollection !== null && (
+                      <Chip
+                        size="small"
+                        icon={isInSelectedCollection ? <CheckCircleOutlineIcon /> : <CancelOutlinedIcon />}
+                        label={
+                          isInSelectedCollection
+                            ? `Owned in ${selectedCollectionContext.name}`
+                            : `Missing in ${selectedCollectionContext.name}`
+                        }
+                        variant="outlined"
+                        sx={{
+                          height: 30,
+                          borderRadius: 999,
+                          fontWeight: 700,
+                          maxWidth: { xs: "100%", sm: 320 },
+                          borderColor: isInSelectedCollection ? "rgba(76,175,80,0.45)" : "rgba(255,152,0,0.38)",
+                          bgcolor: isInSelectedCollection ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.10)",
+                          alignSelf: { xs: "stretch", sm: "auto" },
+                          "& .MuiChip-icon": {
+                            color: isInSelectedCollection ? "#66bb6a" : "#ffb74d",
+                            fontSize: 16,
+                            ml: 0.75,
+                          },
+                          "& .MuiChip-label": {
+                            fontWeight: 700,
+                            letterSpacing: "0.01em",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            pr: 1.1,
+                          },
+                        }}
+                      />
+                    )}
+                    {figurine.tamashiiUrl && (
+                      <Button
+                        component="a"
+                        href={figurine.tamashiiUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        variant="outlined"
+                        endIcon={<OpenInNewIcon />}
+                        sx={{ flexShrink: 0, alignSelf: { xs: "stretch", sm: "auto" }, ml: { sm: "auto" } }}
+                      >
+                        Open Official Page
+                      </Button>
+                    )}
                   </Box>
                 </Grid>
               )}
@@ -758,9 +858,35 @@ export default function FigurineDetailPage() {
           onClose={() => setAddToCollectionOpen(false)}
           figurineId={figurine.id}
           figurineName={figurine.displayableName}
-          onSuccess={() => {
+          onSuccess={async () => {
             setAddSuccess(true);
             setAddToCollectionOpen(false);
+
+            if (!selectedCollectionContext) {
+              return;
+            }
+
+            try {
+              const collections = await getCollections();
+              const refreshedSelectedCollection = collections.find(
+                (collection) => collection.id === selectedCollectionContext.id
+              );
+
+              if (!refreshedSelectedCollection) {
+                return;
+              }
+
+              const updatedContext: SelectedCollectionContext = {
+                id: refreshedSelectedCollection.id,
+                name: refreshedSelectedCollection.name,
+                figurineIds: refreshedSelectedCollection.figurineIds ?? [],
+              };
+
+              setSelectedCollectionContext(updatedContext);
+              sessionStorage.setItem("figurineSelectedCollectionContext", JSON.stringify(updatedContext));
+            } catch {
+              // Keep current UI state if a background refresh fails.
+            }
           }}
         />
       )}
