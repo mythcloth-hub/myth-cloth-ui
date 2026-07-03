@@ -16,6 +16,7 @@ import {
   DialogActions,
   CircularProgress,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -24,6 +25,7 @@ import { catalogApiMap } from "../api/catalogApi";
 import { CATALOG_META } from "../types/catalog";
 import type { Catalog, CatalogType } from "../types/catalog";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 export default function CatalogListPage() {
   const { catalogType } = useParams<{ catalogType: string }>();
@@ -128,13 +130,13 @@ export default function CatalogListPage() {
 
   return (
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
-          {plural}
-        </Typography>
-        <Button variant="contained" onClick={() => navigate(`/catalogs/${catalogType}/new`)}>
-          + Add {singular}
-        </Button>
+      <Box sx={{ mb: 2.5 }}>
+        <AppPageHeader
+          eyebrow="Catalogs"
+          title={plural}
+          subtitle={`Manage ${plural.toLowerCase()} used throughout the collection experience.`}
+          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate(`/catalogs/${catalogType}/new`)}>Add {singular}</Button>}
+        />
       </Box>
 
       <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>

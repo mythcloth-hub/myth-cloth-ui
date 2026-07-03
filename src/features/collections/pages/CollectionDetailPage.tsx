@@ -125,6 +125,7 @@ export default function CollectionDetailPage() {
   const [purchaseInitialDraft, setPurchaseInitialDraft] = useState<PurchaseDraft | null>(null);
   const [pendingDeleteFigurineId, setPendingDeleteFigurineId] = useState<number | null>(null);
   const [isDeletingFigurine, setIsDeletingFigurine] = useState(false);
+  const [animatedProgressPercent, setAnimatedProgressPercent] = useState(0);
   const albumGridSectionRef = useRef<HTMLDivElement | null>(null);
 
   const toFigurineNameById = (items: AlbumFigurine[]): Record<number, string> =>
@@ -327,6 +328,16 @@ export default function CollectionDetailPage() {
   const handleResetZoom = () => {
     setAlbumZoom(1);
   };
+
+  useEffect(() => {
+    setAnimatedProgressPercent(0);
+
+    const frameId = window.requestAnimationFrame(() => {
+      setAnimatedProgressPercent(progressPercent);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [progressPercent, collection?.id]);
 
   const totalNeeded = useMemo(() => {
     if (!collection) return BASE_ALBUM_TARGET;
@@ -536,7 +547,7 @@ export default function CollectionDetailPage() {
           ${alpha(theme.palette.background.default, 0.94)} 0%,
           ${alpha(theme.palette.primary.main, Math.min(0.32, 0.14 + scrollProgress * 0.18))} 42%,
           ${alpha(theme.palette.background.paper, 0.96)} 100%)`,
-        borderRadius: 2,
+       
         minHeight: "calc(100vh - 96px)",
       }}
     >
@@ -554,6 +565,11 @@ export default function CollectionDetailPage() {
           pb: 1,
           mb: 2,
           borderBottom: "1px solid rgba(212,175,55,0.08)",
+          animation: "detailHeaderReveal 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both",
+          "@keyframes detailHeaderReveal": {
+            "0%": { opacity: 0, transform: "translateY(-10px)" },
+            "100%": { opacity: 1, transform: "translateY(0)" },
+          },
         }}
       >
         {/* Header */}
@@ -566,7 +582,7 @@ export default function CollectionDetailPage() {
           }}
         >
           <Tooltip title="Back to Collections">
-            <IconButton onClick={() => navigate("/collections")} sx={{ color: "primary.main" }}>
+            <IconButton onClick={() => navigate("/collections")} sx={{ mt: 0.5 }}>
               <ArrowBackIcon />
             </IconButton>
           </Tooltip>
@@ -596,13 +612,15 @@ export default function CollectionDetailPage() {
         <Box
           sx={{
             p: 1.5,
-            borderRadius: 2,
-            border: `1px solid ${alpha(theme.palette.divider, 0.26)}`,
-            bgcolor: alpha(theme.palette.background.paper, 0.78),
             display: "grid",
             gap: 1,
             gridTemplateColumns: { xs: "1fr", lg: "1fr auto" },
             alignItems: "center",
+            animation: "detailStatsReveal 560ms cubic-bezier(0.2, 0.9, 0.2, 1) 90ms both",
+            "@keyframes detailStatsReveal": {
+              "0%": { opacity: 0, transform: "translateY(14px)" },
+              "100%": { opacity: 1, transform: "translateY(0)" },
+            },
           }}
         >
           <Box>
@@ -624,7 +642,7 @@ export default function CollectionDetailPage() {
               </Stack>
               <LinearProgress
                 variant="determinate"
-                value={progressPercent}
+                value={animatedProgressPercent}
                 sx={{
                   height: 10,
                   borderRadius: 99,
@@ -632,6 +650,7 @@ export default function CollectionDetailPage() {
                   "& .MuiLinearProgress-bar": {
                     borderRadius: 99,
                     background: `linear-gradient(90deg, ${ownedColor} 0%, ${accentColor} 100%)`,
+                    transition: "transform 900ms cubic-bezier(0.2, 0.9, 0.2, 1)",
                   },
                 }}
               />
@@ -913,6 +932,7 @@ export default function CollectionDetailPage() {
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={handleOpenCreatePurchaseDialog}
+                  sx={{ flexShrink: 0 }}
                 >
                   Record Purchase
                 </Button>
@@ -1013,6 +1033,11 @@ export default function CollectionDetailPage() {
           border: `1px solid ${alpha(theme.palette.primary.main, 0.22)}`,
           background:
             `radial-gradient(120% 180% at 30% 0%, ${alpha(theme.palette.info.main, 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.74)} 45%, ${alpha(theme.palette.background.default, 0.9)} 100%)`,
+          animation: "albumSectionReveal 520ms cubic-bezier(0.2, 0.9, 0.2, 1) 140ms both",
+          "@keyframes albumSectionReveal": {
+            "0%": { opacity: 0, transform: "translateY(16px)" },
+            "100%": { opacity: 1, transform: "translateY(0)" },
+          },
         }}
       >
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: { md: 2.2 } }}>
@@ -1064,6 +1089,12 @@ export default function CollectionDetailPage() {
                   gridColumn: { xs: "span 1", sm: `span ${Math.min(pattern.colSpan, 2)}`, md: `span ${pattern.colSpan}` },
                   gridRow: `span ${rowSpan}`,
                   perspective: "1200px",
+                  opacity: 0,
+                  animation: `albumCardReveal 620ms cubic-bezier(0.2, 0.9, 0.2, 1) ${Math.min(index * 35, 420)}ms forwards`,
+                  "@keyframes albumCardReveal": {
+                    "0%": { opacity: 0, transform: "translateY(18px) scale(0.98)" },
+                    "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
+                  },
                 }}
               >
                 <Box

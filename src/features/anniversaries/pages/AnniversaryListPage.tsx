@@ -16,6 +16,7 @@ import {
   DialogActions,
   CircularProgress,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -23,6 +24,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { getAllAnniversaries, deleteAnniversary } from "../api/anniversaryApi";
 import type { Anniversary } from "../types/anniversary";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 const anniversaryTypeLabels: Record<NonNullable<Anniversary["type"]>, string> = {
   TAMASHII_NATIONS_WORLD_TOUR: "Tamashii Nations World Tour",
@@ -141,13 +143,13 @@ export default function AnniversaryListPage() {
 
   return (
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
-          Anniversaries
-        </Typography>
-        <Button variant="contained" onClick={() => navigate("/anniversaries/new")}>
-          + Add Anniversary
-        </Button>
+      <Box sx={{ mb: 2.5 }}>
+        <AppPageHeader
+          eyebrow="Events & Partners"
+          title="Anniversaries"
+          subtitle="Manage anniversary milestones and commemorative entries used across the collection."
+          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/anniversaries/new")}>Add Anniversary</Button>}
+        />
       </Box>
 
       <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>

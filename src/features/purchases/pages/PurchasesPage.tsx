@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -21,12 +21,10 @@ import {
   Typography,
   Snackbar,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import SyncAltOutlinedIcon from "@mui/icons-material/SyncAltOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
@@ -47,6 +45,7 @@ import {
   updatePurchaseSummaryLineItems,
 } from "../api/purchaseApi";
 import type { PurchaseRecord, PurchaseRecordInput, ShippingStatus } from "../types/purchase";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 const SHIPPING_STATUS_STEPS: { value: ShippingStatus; label: string; Icon: SvgIconComponent }[] = [
   { value: "ORDERED", label: "Ordered", Icon: ShoppingCartOutlinedIcon },
@@ -83,7 +82,6 @@ const formatCount = (value: number): string => new Intl.NumberFormat().format(va
 
 export default function PurchasesPage() {
   const theme = useTheme();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -500,17 +498,72 @@ export default function PurchasesPage() {
         minHeight: "calc(100vh - 96px)",
       }}
     >
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-        <Tooltip title="Back to Collections">
-          <IconButton onClick={() => navigate("/collections")}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Tooltip>
-        <ReceiptLongOutlinedIcon color="primary" />
-        <Typography variant="h5" sx={{ fontWeight: 800 }}>
-          Purchases
-        </Typography>
-      </Stack>
+      <Box
+        sx={{
+          position: "sticky",
+          top: 0,
+          zIndex: 9,
+          bgcolor: "background.default",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          mx: { xs: -1.5, sm: -2, md: -3 },
+          px: { xs: 1.5, sm: 2, md: 3 },
+          pt: 0.25,
+          pb: 1,
+          mb: 2,
+        }}
+      >
+        <Box sx={{ mb: 2.5 }}>
+          <AppPageHeader
+            eyebrow="Myth Collection"
+            title="Purchases"
+            subtitle="Track purchase records, totals, and shipping progress by collection."
+          />
+        </Box>
+
+        <Box
+          sx={{
+            p: 1.6,
+            borderRadius: 2,
+            mb: selectedCollection ? 1 : 0,
+          }}
+        >
+          <Stack direction={{ xs: "column", md: "row" }} spacing={1.2} alignItems={{ md: "center" }}>
+            <FormControl size="small" sx={{ minWidth: 260 }} disabled={loadingCollections}>
+              <InputLabel>Collection View</InputLabel>
+              <Select
+                value={selectedCollectionId}
+                label="Collection View"
+                onChange={(event) => handleCollectionChange(event.target.value)}
+              >
+                {collections.map((collection) => (
+                  <MenuItem key={collection.id} value={String(collection.id)}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <span aria-hidden="true">📦</span>
+                      <span>{collection.name}</span>
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleOpenCreateDialog}
+              sx={{ flexShrink: 0 }}
+              disabled={!selectedCollectionId || loadingFigurines}
+            >
+              Record Purchase
+            </Button>
+          </Stack>
+        </Box>
+
+        {selectedCollection && (
+          <Typography variant="subtitle2" sx={{ mb: 1, color: "text.secondary" }}>
+            {selectedCollection.name} · {purchases.length} purchase record{purchases.length === 1 ? "" : "s"}
+          </Typography>
+        )}
+      </Box>
 
       <Snackbar
         open={Boolean(successMessage)}
@@ -524,48 +577,6 @@ export default function PurchasesPage() {
       </Snackbar>
 
       {errorMessage && <Alert severity="error" sx={{ mb: 2 }}>{errorMessage}</Alert>}
-
-      <Box
-        sx={{
-          p: 1.6,
-          borderRadius: 2,
-          mb: 2,
-        }}
-      >
-        <Stack direction={{ xs: "column", md: "row" }} spacing={1.2} alignItems={{ md: "center" }}>
-          <FormControl size="small" sx={{ minWidth: 260 }} disabled={loadingCollections}>
-            <InputLabel>Collection View</InputLabel>
-            <Select
-              value={selectedCollectionId}
-              label="Collection View"
-              onChange={(event) => handleCollectionChange(event.target.value)}
-            >
-              {collections.map((collection) => (
-                <MenuItem key={collection.id} value={String(collection.id)}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <span aria-hidden="true">📦</span>
-                    <span>{collection.name}</span>
-                  </Box>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleOpenCreateDialog}
-            disabled={!selectedCollectionId || loadingFigurines}
-          >
-            Record Purchase
-          </Button>
-        </Stack>
-      </Box>
-
-      {selectedCollection && (
-        <Typography variant="subtitle2" sx={{ mb: 1, color: "text.secondary" }}>
-          {selectedCollection.name} · {purchases.length} purchase record{purchases.length === 1 ? "" : "s"}
-        </Typography>
-      )}
 
       {purchases.length > 0 && (
         <Card

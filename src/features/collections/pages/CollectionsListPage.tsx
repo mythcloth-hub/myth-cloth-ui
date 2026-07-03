@@ -28,6 +28,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { deleteCollection, duplicateCollection, getCollections, updateCollection } from "../api/collectionApi";
 import type { Collection } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 export default function CollectionsListPage() {
   const navigate = useNavigate();
@@ -191,64 +192,38 @@ export default function CollectionsListPage() {
       {/* Header */}
       <Box
         sx={{
-          display: "flex",
-          alignItems: { xs: "flex-start", sm: "center" },
-          flexDirection: { xs: "column", sm: "row" },
-          gap: { xs: 1.25, sm: 1 },
-          justifyContent: "space-between",
-          mb: 2,
-          position: { xs: "sticky", md: "static" },
-          top: { xs: 8, md: "auto" },
-          zIndex: 10,
+          position: "sticky",
+          top: 0,
+          zIndex: 9,
           bgcolor: "background.default",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          borderRadius: 2,
-          px: { xs: 1.5, md: 2 },
-          py: 1.25,
-          borderBottom: "1px solid rgba(212,175,55,0.1)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          mx: { xs: -1.5, sm: -2, md: -3 },
+          px: { xs: 1.5, sm: 2, md: 3 },
+          pt: 0.25,
+          pb: 1,
+          mb: 2,
         }}
       >
-        <Box>
-          <Typography
-            variant="h4"
-            sx={{
-              fontSize: { xs: "1.35rem", md: "1.7rem" },
-              fontWeight: 700,
-              lineHeight: 1.15,
-              background: "linear-gradient(135deg, #d4af37 0%, #4fc3f7 100%)",
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              flexShrink: 0,
-            }}
-          >
-            My Collections
-          </Typography>
-          <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.25, display: "block" }}>
-            Manage groups, compare sizes, and track unique entries.
-          </Typography>
+        <Box sx={{ width: "100%" }}>
+          <AppPageHeader
+            eyebrow="Myth Collection"
+            title="My Collections"
+            subtitle="Manage groups, compare sizes, and track unique entries across your collection library."
+            compact
+            actions={
+              <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+                <Button 
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => navigate("/figurines")} 
+                  sx={{ flexShrink: 0 }}>
+                    New Collection
+                </Button>
+              </Box>
+            }
+          />
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate("/figurines")}
-          sx={{
-            background: "linear-gradient(135deg, #d4af37 0%, #e6c547 100%)",
-            color: "#000",
-            fontWeight: 600,
-            flexShrink: 0,
-            minHeight: 38,
-            px: 1.75,
-            alignSelf: { xs: "stretch", sm: "auto" },
-            "&:hover": {
-              background: "linear-gradient(135deg, #e6c547 0%, #d4af37 100%)",
-              boxShadow: "0 8px 24px rgba(212,175,55,0.3)",
-            },
-          }}
-        >
-          New Collection
-        </Button>
       </Box>
 
       {/* Error message */}

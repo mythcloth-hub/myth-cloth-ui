@@ -53,8 +53,19 @@ export default function AddToCollectionModal({
   // Load collections on open
   useEffect(() => {
     if (open) {
+      setError(null);
+      setSuccessMessage(null);
+      setNewCollectionName("");
+      setNewCollectionDesc("");
+      setSelectedCollections(new Set());
       loadCollections();
+      return;
     }
+
+    // Ensure any transient state is cleared after close as well.
+    setError(null);
+    setSuccessMessage(null);
+    setSelectedCollections(new Set());
   }, [open]);
 
   const loadCollections = async () => {
@@ -181,7 +192,7 @@ export default function AddToCollectionModal({
 
       <DialogContent sx={{ pt: 2 }}>
         {/* Figurine name info */}
-        <Box sx={{ mb: 2, p: 1.5, background: "rgba(79,195,247,0.05)", borderRadius: 1 }}>
+        <Box sx={{ mb: 2, mt: 2, p: 1.5, background: "rgba(79,195,247,0.05)", borderRadius: 1 }}>
           <Typography variant="caption" sx={{ color: "text.secondary" }}>
             Adding:
           </Typography>

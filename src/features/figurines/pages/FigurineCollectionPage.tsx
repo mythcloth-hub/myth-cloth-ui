@@ -32,6 +32,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import TuneIcon from "@mui/icons-material/Tune";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
 import { getFigurines, getSelectableFigurineIds } from "../api/figurineApi";
@@ -48,6 +49,7 @@ import { useBulkSelection } from "../../../hooks/useBulkSelection";
 import BulkAddToCollectionModal from "../../collections/components/BulkAddToCollectionModal";
 import { getCollections } from "../../collections/api/collectionApi";
 import type { Collection } from "../../collections/types/collection";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 const PAGE_SIZE = 24;
 
@@ -298,7 +300,7 @@ function FigurineCard({
         />
 
         {/* Edition badges – top-right corner */}
-        {(badges.length > 0 || hasAnniversary) && (
+        {badges.length > 0 && (
           <Box
             sx={{
               position: "absolute",
@@ -332,13 +334,6 @@ function FigurineCard({
                 }}
               />
             ))}
-            {hasAnniversary && (
-              <Tooltip title={(figurine as any).anniversary?.description || "Anniversary Edition"} arrow>
-                <span>
-                  <AnniversaryIcon sx={{ fontSize: 22, color: "#bfa100", bgcolor: "#fffde7", borderRadius: "50%", boxShadow: 1, p: 0.2 }} />
-                </span>
-              </Tooltip>
-            )}
           </Box>
         )}
 
@@ -408,15 +403,35 @@ function FigurineCard({
 
       {/* Card content */}
       <CardContent sx={{ flexGrow: 1, p: 1.5, "&:last-child": { pb: 1.5 } }}>
-        <Typography
-          variant="subtitle2"
-          fontWeight={700}
-          noWrap
-          title={figurine.displayableName}
-          sx={{ color: "text.primary", mb: 0.5, lineHeight: 1.3 }}
-        >
-          {figurine.name}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.5, minWidth: 0 }}>
+          <Typography
+            variant="subtitle2"
+            fontWeight={700}
+            noWrap
+            title={figurine.displayableName}
+            sx={{ color: "text.primary", lineHeight: 1.3, minWidth: 0, flex: 1 }}
+          >
+            {figurine.name}
+          </Typography>
+          {hasAnniversary && (
+            <Tooltip title={(figurine as any).anniversary?.description || "Anniversary Edition"} arrow>
+              <span>
+                <AnniversaryIcon
+                  sx={{
+                    fontSize: 18,
+                    color: "#bfa100",
+                    bgcolor: "#fffde7",
+                    borderRadius: "50%",
+                    boxShadow: 1,
+                    p: 0.15,
+                    ml: "auto",
+                    flexShrink: 0,
+                  }}
+                />
+              </span>
+            </Tooltip>
+          )}
+        </Box>
 
         <Typography
           variant="caption"
@@ -806,14 +821,21 @@ export default function FigurineCollectionPage() {
           pb: 1,
           mb: 2,
           borderBottom: "1px solid rgba(212,175,55,0.08)",
+          animation: "figurineHeaderReveal 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both",
+          "@keyframes figurineHeaderReveal": {
+            "0%": { opacity: 0, transform: "translateY(-10px)" },
+            "100%": { opacity: 1, transform: "translateY(0)" },
+          },
         }}
       >
-        {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1.5, mb: 1.5, gap: 2, flexWrap: "wrap" }}>
-          <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" }, flexShrink: 0 }}>
-            Myth Cloth Collection
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0 }}>
+        <Box sx={{ mt: 1.5, mb: 1.5 }}>
+          <AppPageHeader
+            eyebrow="Myth Collection"
+            title="Collection"
+            subtitle="Browse, filter, and manage your Myth Cloth catalog from one place."
+            compact
+            actions={
+              <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
             {hasPermission("collections:read") && (
               <ToggleButtonGroup
                 size="small"
@@ -877,11 +899,17 @@ export default function FigurineCollectionPage() {
             )}
             
             {hasPermission("figurines:write") && (
-              <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
-                + New Figurine
+              <Button 
+                variant="contained" 
+                startIcon={<AddIcon />}
+                onClick={() => navigate("/figurines/new")} 
+                sx={{ flexShrink: 0 }}>
+                  New Figurine
               </Button>
             )}
-          </Box>
+              </Box>
+            }
+          />
         </Box>
 
         {/* Search bar + filter toggle */}
@@ -1124,7 +1152,7 @@ export default function FigurineCollectionPage() {
         </Grid>
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          {STATUS_ORDER.map((status) => {
+          {STATUS_ORDER.map((status, statusIndex) => {
             const sectionItems = groupedByStatus[status];
             if (!sectionItems.length) return null;
             const cfg = RELEASE_STATUS_CONFIG[status];
@@ -1137,6 +1165,12 @@ export default function FigurineCollectionPage() {
                   p: { xs: 1, sm: 1.5 },
                   bgcolor: "rgba(255,255,255,0.02)",
                   border: `1px solid ${cfg.borderColor}`,
+                  opacity: 0,
+                  animation: `figurineSectionReveal 520ms cubic-bezier(0.2, 0.9, 0.2, 1) ${120 + statusIndex * 90}ms forwards`,
+                  "@keyframes figurineSectionReveal": {
+                    "0%": { opacity: 0, transform: "translateY(16px)" },
+                    "100%": { opacity: 1, transform: "translateY(0)" },
+                  },
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: 0.5 }}>
@@ -1159,8 +1193,19 @@ export default function FigurineCollectionPage() {
                 </Typography>
 
                 <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-                  {sectionItems.map((fig) => (
-                    <Grid key={fig.id} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
+                  {sectionItems.map((fig, itemIndex) => (
+                    <Grid
+                      key={fig.id}
+                      size={{ xs: 6, sm: 4, md: 3, lg: 2 }}
+                      sx={{
+                        opacity: 0,
+                        animation: `figurineCardReveal 620ms cubic-bezier(0.2, 0.9, 0.2, 1) ${Math.min(180 + statusIndex * 90 + itemIndex * 30, 720)}ms forwards`,
+                        "@keyframes figurineCardReveal": {
+                          "0%": { opacity: 0, transform: "translateY(18px) scale(0.985)" },
+                          "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
+                        },
+                      }}
+                    >
                       <FigurineCard
                         figurine={fig}
                         dimmed={Boolean(selectedCollection) && !selectedCollectionFigurineIds.has(fig.id)}

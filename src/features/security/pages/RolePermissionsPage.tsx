@@ -22,6 +22,7 @@ import { getPermissionsByRoleId, syncRolePermissions } from "../api/rolePermissi
 import type { Role } from "../types/role";
 import type { Permission } from "../types/permission";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 function CustomNoRowsOverlay() {
   return (
@@ -132,9 +133,13 @@ export default function RolePermissionsPage() {
 
   return (
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
-      <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" }, mb: 2 }}>
-        Role Permissions
-      </Typography>
+      <Box sx={{ mb: 2.5 }}>
+        <AppPageHeader
+          eyebrow="Security"
+          title="Role Permissions"
+          subtitle="Assign permissions to roles and keep access aligned across the application."
+        />
+      </Box>
 
       <Paper sx={{ padding: { xs: 2, sm: 3 }, mb: 2 }}>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr auto" }, gap: 2, alignItems: "end" }}>

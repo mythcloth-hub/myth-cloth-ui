@@ -146,7 +146,7 @@ export default function FigurineDetailPage() {
         }}
       >
         <Tooltip title="Back to Myth Cloth Collection">
-          <IconButton onClick={handleBackToCollection} sx={{ color: "primary.main" }}>
+          <IconButton onClick={handleBackToCollection} sx={{ mt: 0.5 }}>
             <ArrowBackIcon />
           </IconButton>
         </Tooltip>
@@ -372,7 +372,6 @@ export default function FigurineDetailPage() {
                     <AnniversaryIcon sx={{ fontSize: 18, color: "#bfa100" }} />
                     <Typography variant="body2" sx={{ color: "text.primary" }}>
                       {figurine.anniversary.description}
-                      {figurine.anniversary.year ? ` (${figurine.anniversary.year})` : ""}
                     </Typography>
                   </Box>
                 </Grid>

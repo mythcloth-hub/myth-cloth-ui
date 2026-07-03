@@ -59,6 +59,7 @@ import type {
   FigurineEventRegion,
 } from "../types/figurine";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 // Event form helpers
 const EVENT_TYPES: { value: FigurineEventType; label: string }[] = [
   { value: "ANNOUNCEMENT", label: "Announcement" },
@@ -600,27 +601,33 @@ export default function FigurineFormPage() {
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
       {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 3 }}>
         <Tooltip title="Back">
           <IconButton
             onClick={() => isEdit ? navigate(-1) : navigate("/figurines")}
+            sx={{ mt: 0.5 }}
           >
             <ArrowBackIcon />
           </IconButton>
         </Tooltip>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.4rem", md: "2rem" } }}>
-          {isEdit ? "Edit Figurine" : "New Figurine"}
-        </Typography>
-        {isEdit && (
-          <Button
-            variant="outlined"
-            startIcon={<EventOutlinedIcon />}
-            sx={{ ml: "auto" }}
-            onClick={() => setEventsModalOpen(true)}
-          >
-            Manage Events
-          </Button>
-        )}
+
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <AppPageHeader
+            eyebrow="Figurines"
+            title={isEdit ? "Edit Figurine" : "New Figurine"}
+            subtitle={isEdit ? "Update figurine details, media, distributors, and timeline events." : "Create a new figurine record with media, distributor pricing, and release data."}
+            compact
+            actions={isEdit ? (
+              <Button
+                variant="outlined"
+                startIcon={<EventOutlinedIcon />}
+                onClick={() => setEventsModalOpen(true)}
+              >
+                Manage Events
+              </Button>
+            ) : undefined}
+          />
+        </Box>
       </Box>
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
