@@ -109,6 +109,10 @@ export async function updateCollection(id: number, data: UpdateCollectionRequest
   return normalizeCollection(response.data);
 }
 
+export async function duplicateCollection(id: number): Promise<void> {
+  await httpClient.post(`${API_BASE}/${id}/duplicate`);
+}
+
 export async function deleteCollection(id: number): Promise<void> {
   await httpClient.delete(`${API_BASE}/${id}`);
 }

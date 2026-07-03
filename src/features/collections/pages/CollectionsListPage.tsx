@@ -21,10 +21,11 @@ import {
   TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { deleteCollection, getCollections, updateCollection } from "../api/collectionApi";
+import { deleteCollection, duplicateCollection, getCollections, updateCollection } from "../api/collectionApi";
 import type { Collection } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
@@ -41,7 +42,31 @@ export default function CollectionsListPage() {
   const [savingEdit, setSavingEdit] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingCollection, setDeletingCollection] = useState(false);
+  const [duplicatingCollection, setDuplicatingCollection] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const totalFigurinesAcrossCollections = collections.reduce(
+    (total, collection) => total + collection.figurineIds.length,
+    0
+  );
+  const uniqueFigurinesAcrossCollections = new Set(
+    collections.flatMap((collection) => collection.figurineIds)
+  ).size;
+  const largestCollection = collections.reduce<Collection | null>((largest, current) => {
+    if (!largest || current.figurineIds.length > largest.figurineIds.length) {
+      return current;
+    }
+
+    return largest;
+  }, null);
+  const topCollectionsBySize = [...collections]
+    .sort((a, b) => b.figurineIds.length - a.figurineIds.length)
+    .slice(0, 5);
+  const maxCollectionSize = topCollectionsBySize[0]?.figurineIds.length ?? 1;
+  const averageFigurinesPerCollection =
+    collections.length > 0 ? totalFigurinesAcrossCollections / collections.length : 0;
+  const uniquenessRatio =
+    totalFigurinesAcrossCollections > 0 ? uniqueFigurinesAcrossCollections / totalFigurinesAcrossCollections : 0;
+  const uniquenessPercent = Math.round(uniquenessRatio * 100);
 
   useEffect(() => {
     loadCollections();
@@ -81,6 +106,24 @@ export default function CollectionsListPage() {
   const handleDeleteClick = () => {
     setDeleteDialogOpen(true);
     handleMenuClose();
+  };
+
+  const handleDuplicateClick = async () => {
+    if (!selectedCollection) return;
+
+    setDuplicatingCollection(true);
+    setError(null);
+    handleMenuClose();
+
+    try {
+      await duplicateCollection(selectedCollection.id);
+      await loadCollections();
+      setSuccessMessage(`Collection "${selectedCollection.name}" duplication started.`);
+    } catch (err) {
+      setError(getApiErrorMessage(err, { action: "update", resource: "collection" }));
+    } finally {
+      setDuplicatingCollection(false);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -251,7 +294,192 @@ export default function CollectionsListPage() {
           </Button>
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <>
+          <Card
+            sx={{
+              mb: 3,
+              border: "1px solid rgba(212,175,55,0.2)",
+              background: "linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(79,195,247,0.12) 100%)",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <CardContent>
+              <Typography variant="overline" sx={{ color: "#4fc3f7", letterSpacing: 1.2 }}>
+                Collections Overview
+              </Typography>
+              {largestCollection && (
+                <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+                  Largest collection: <strong>{largestCollection.name}</strong> with {largestCollection.figurineIds.length}{" "}
+                  figurine{largestCollection.figurineIds.length !== 1 ? "s" : ""}
+                </Typography>
+              )}
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mt: 1 }}>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                    {collections.length}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    collection{collections.length !== 1 ? "s" : ""}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                    {totalFigurinesAcrossCollections}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    figurines across all collections
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                    {uniqueFigurinesAcrossCollections}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    unique figurines across collections
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                    {averageFigurinesPerCollection.toFixed(1)}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    average figurines per collection
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box
+                sx={{
+                  mt: 2.5,
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", md: "1.2fr 0.8fr" },
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    border: "1px solid rgba(79,195,247,0.2)",
+                    background: "rgba(9,20,40,0.35)",
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ color: "#4fc3f7", mb: 1.5, fontWeight: 700 }}>
+                    Collection Size Distribution
+                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+                    {topCollectionsBySize.map((collection, index) => {
+                      const count = collection.figurineIds.length;
+                      const barWidth = maxCollectionSize > 0 ? (count / maxCollectionSize) * 100 : 0;
+
+                      return (
+                        <Box key={collection.id}>
+                          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5, gap: 1 }}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: "text.primary",
+                                fontWeight: 600,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {collection.name}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: "#d4af37", fontWeight: 700, flexShrink: 0 }}>
+                              {count}
+                            </Typography>
+                          </Box>
+                          <Box
+                            sx={{
+                              height: 8,
+                              borderRadius: 999,
+                              background: "rgba(79,195,247,0.12)",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                height: "100%",
+                                width: `${Math.max(barWidth, count > 0 ? 6 : 0)}%`,
+                                borderRadius: 999,
+                                background: "linear-gradient(90deg, #4fc3f7 0%, #d4af37 100%)",
+                                transformOrigin: "left center",
+                                animation: `barReveal 700ms cubic-bezier(0.2, 0.9, 0.2, 1) ${index * 90}ms both`,
+                                "@keyframes barReveal": {
+                                  "0%": { transform: "scaleX(0)", opacity: 0.7 },
+                                  "100%": { transform: "scaleX(1)", opacity: 1 },
+                                },
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                </Box>
+
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    border: "1px solid rgba(212,175,55,0.2)",
+                    background: "rgba(26,20,8,0.28)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 1,
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ color: "#d4af37", fontWeight: 700 }}>
+                    Uniqueness Score
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      borderRadius: "50%",
+                      p: "10px",
+                      background: `conic-gradient(#4fc3f7 0% ${uniquenessPercent}%, rgba(212,175,55,0.2) ${uniquenessPercent}% 100%)`,
+                      boxShadow: "0 8px 24px rgba(79,195,247,0.2)",
+                      animation: "donutReveal 700ms ease-out both",
+                      "@keyframes donutReveal": {
+                        "0%": { transform: "scale(0.86)", opacity: 0 },
+                        "100%": { transform: "scale(1)", opacity: 1 },
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "50%",
+                        bgcolor: "rgba(8,12,24,0.95)",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Typography variant="h5" sx={{ color: "#4fc3f7", fontWeight: 800, lineHeight: 1 }}>
+                        {uniquenessPercent}%
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        unique
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "center", maxWidth: 220 }}>
+                    {uniqueFigurinesAcrossCollections} unique out of {totalFigurinesAcrossCollections} total figurine entries.
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+
+          <Grid container spacing={3}>
           {collections.map((collection) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={collection.id}>
               <Card
@@ -373,13 +601,17 @@ export default function CollectionsListPage() {
               </Card>
             </Grid>
           ))}
-        </Grid>
+          </Grid>
+        </>
       )}
 
       {/* Menu */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         <MenuItem onClick={handleEdit} sx={{ gap: 1 }}>
           <EditIcon fontSize="small" /> Edit
+        </MenuItem>
+        <MenuItem onClick={() => void handleDuplicateClick()} sx={{ gap: 1 }} disabled={duplicatingCollection}>
+          <ContentCopyIcon fontSize="small" /> Duplicate
         </MenuItem>
         <MenuItem onClick={handleDeleteClick} sx={{ gap: 1, color: "error.main" }}>
           <DeleteIcon fontSize="small" /> Delete

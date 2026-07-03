@@ -16,6 +16,43 @@ const actionFallbackByType: Record<ApiAction, string> = {
 
 const normalizeResource = (resource: string) => resource.trim().toLowerCase();
 
+function extractApiProvidedMessage(error: unknown): string | undefined {
+  if (!axios.isAxiosError(error)) {
+    return undefined;
+  }
+
+  const data = error.response?.data;
+
+  if (typeof data === "string") {
+    const trimmed = data.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  }
+
+  if (typeof data !== "object" || data === null) {
+    return undefined;
+  }
+
+  const errorPayload = data as {
+    detail?: unknown;
+    title?: unknown;
+    message?: unknown;
+    error?: unknown;
+  };
+
+  const candidates = [errorPayload.detail, errorPayload.title, errorPayload.message, errorPayload.error];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "string") {
+      const trimmed = candidate.trim();
+      if (trimmed.length > 0) {
+        return trimmed;
+      }
+    }
+  }
+
+  return undefined;
+}
+
 function getStatusFromUnknownError(error: unknown): number | undefined {
   if (axios.isAxiosError(error)) {
     return error.response?.status;
@@ -44,6 +81,11 @@ function getStatusFromUnknownError(error: unknown): number | undefined {
 export function getApiErrorMessage(error: unknown, options: GetApiErrorMessageOptions): string {
   const resource = normalizeResource(options.resource);
   const action = actionFallbackByType[options.action];
+  const apiProvidedMessage = extractApiProvidedMessage(error);
+
+  if (apiProvidedMessage) {
+    return apiProvidedMessage;
+  }
 
   const status = getStatusFromUnknownError(error);
 
