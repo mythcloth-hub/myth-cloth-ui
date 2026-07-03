@@ -13,6 +13,7 @@ import type { Distributor } from "../types/distributor";
 import type { GridColDef } from "@mui/x-data-grid";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 function CustomNoRowsOverlay() {
   return (
@@ -152,16 +153,13 @@ export default function DistributorListPage() {
 
   return (
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
-          Distributors
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate("/distributors/new")}
-        >
-          + Add Distributor
-        </Button>
+      <Box sx={{ mb: 2.5 }}>
+        <AppPageHeader
+          eyebrow="Events & Partners"
+          title="Distributors"
+          subtitle="Manage distributor partners, countries, and reference links for release tracking."
+          actions={<Button variant="contained" onClick={() => navigate("/distributors/new")}>+ Add Distributor</Button>}
+        />
       </Box>
 
       <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>

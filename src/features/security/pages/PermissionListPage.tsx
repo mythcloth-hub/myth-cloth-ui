@@ -23,6 +23,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { getAllPermissions, deletePermission } from "../api/permissionApi";
 import type { Permission } from "../types/permission";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 function CustomNoRowsOverlay() {
   return (
@@ -122,16 +123,13 @@ export default function PermissionListPage() {
 
   return (
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
-          Permissions
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate("/security/permissions/new")}
-        >
-          + Add Permission
-        </Button>
+      <Box sx={{ mb: 2.5 }}>
+        <AppPageHeader
+          eyebrow="Security"
+          title="Permissions"
+          subtitle="Manage granular permissions that are assigned to roles and protected features."
+          actions={<Button variant="contained" onClick={() => navigate("/security/permissions/new")}>+ Add Permission</Button>}
+        />
       </Box>
 
       <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>

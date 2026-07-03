@@ -28,6 +28,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { deleteCollection, duplicateCollection, getCollections, updateCollection } from "../api/collectionApi";
 import type { Collection } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 export default function CollectionsListPage() {
   const navigate = useNavigate();
@@ -209,46 +210,34 @@ export default function CollectionsListPage() {
           borderBottom: "1px solid rgba(212,175,55,0.1)",
         }}
       >
-        <Box>
-          <Typography
-            variant="h4"
-            sx={{
-              fontSize: { xs: "1.35rem", md: "1.7rem" },
-              fontWeight: 700,
-              lineHeight: 1.15,
-              background: "linear-gradient(135deg, #d4af37 0%, #4fc3f7 100%)",
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              flexShrink: 0,
-            }}
-          >
-            My Collections
-          </Typography>
-          <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.25, display: "block" }}>
-            Manage groups, compare sizes, and track unique entries.
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate("/figurines")}
-          sx={{
-            background: "linear-gradient(135deg, #d4af37 0%, #e6c547 100%)",
-            color: "#000",
-            fontWeight: 600,
-            flexShrink: 0,
-            minHeight: 38,
-            px: 1.75,
-            alignSelf: { xs: "stretch", sm: "auto" },
-            "&:hover": {
-              background: "linear-gradient(135deg, #e6c547 0%, #d4af37 100%)",
-              boxShadow: "0 8px 24px rgba(212,175,55,0.3)",
-            },
-          }}
-        >
-          New Collection
-        </Button>
+        <AppPageHeader
+          eyebrow="Myth Collection"
+          title="My Collections"
+          subtitle="Manage groups, compare sizes, and track unique entries across your collection library."
+          compact
+          actions={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate("/figurines")}
+              sx={{
+                background: "linear-gradient(135deg, #d4af37 0%, #e6c547 100%)",
+                color: "#000",
+                fontWeight: 600,
+                flexShrink: 0,
+                minHeight: 38,
+                px: 1.75,
+                alignSelf: { xs: "stretch", sm: "auto" },
+                "&:hover": {
+                  background: "linear-gradient(135deg, #e6c547 0%, #d4af37 100%)",
+                  boxShadow: "0 8px 24px rgba(212,175,55,0.3)",
+                },
+              }}
+            >
+              New Collection
+            </Button>
+          }
+        />
       </Box>
 
       {/* Error message */}

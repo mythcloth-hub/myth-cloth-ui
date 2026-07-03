@@ -19,6 +19,7 @@ import {
   type ReleaseYearSummary,
 } from "../api/releaseStatsApi";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 function getLineupColor(lineup: string) {
   const palette = ["#D4AF37", "#4AA3D8", "#E7A6C7", "#7B61C8", "#C97A3D", "#7FA36B", "#B8C6D9", "#6E7681"];
@@ -668,6 +669,14 @@ export default function ReleasesPage() {
           "radial-gradient(circle at top, rgba(74,163,216,0.12), transparent 24%), radial-gradient(circle at 82% 12%, rgba(212,175,55,0.12), transparent 18%)",
       }}
     >
+      <Box sx={{ mb: 2.5 }}>
+        <AppPageHeader
+          eyebrow="Stats & Charts"
+          title="Releases"
+          subtitle="Explore your release history by lineup and drill down from yearly trends into month-by-month figurine drops."
+        />
+      </Box>
+
       {/* Header */}
       <Paper
         sx={{
@@ -693,17 +702,6 @@ export default function ReleasesPage() {
           }}
         />
         <Stack spacing={2} sx={{ position: "relative" }}>
-          <Box>
-            <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 2.2 }}>
-              COLLECTION ANALYTICS
-            </Typography>
-            <Typography variant="h3" sx={{ fontSize: { xs: "2rem", md: "2.7rem" }, fontWeight: 900, lineHeight: 1.02 }}>
-              Release timeline by year
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 1, maxWidth: 760, color: "rgba(255,255,255,0.72)" }}>
-              Explore your release history by lineup and drill down from yearly trends into month-by-month figurine drops.
-            </Typography>
-          </Box>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
             <Chip label={`${visibleSummary.length} years with releases`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
             <Chip label={`${totalReleases} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />

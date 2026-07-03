@@ -12,6 +12,7 @@ import {
 
 import { getStats, type StatsResponse } from "../api/statsApi";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 const RELEASE_STATUS_META: Record<string, { label: string; color: string }> = {
   ANNOUNCED: { label: "Announced", color: "#4fc3f7" },
@@ -276,6 +277,14 @@ export default function ChartsPage() {
           "radial-gradient(circle at top left, rgba(212,175,55,0.1), transparent 24%), radial-gradient(circle at 85% 8%, rgba(79,195,247,0.1), transparent 20%)",
       }}
     >
+      <Box sx={{ mb: 2.5 }}>
+        <AppPageHeader
+          eyebrow="Stats & Charts"
+          title="Charts"
+          subtitle="Get a quick overview of your collection, including total figurines, release status, and category distribution."
+        />
+      </Box>
+
       <Paper
         sx={{
           mb: 3,
@@ -287,17 +296,6 @@ export default function ChartsPage() {
           boxShadow: "0 24px 70px rgba(0,0,0,0.25)",
         }}
       >
-        <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 2.2 }}>
-          COLLECTION ANALYTICS
-        </Typography>
-        <Typography variant="h3" sx={{ fontSize: { xs: "2rem", md: "2.7rem" }, fontWeight: 900, lineHeight: 1.02 }}>
-          Statistics overview
-        </Typography>
-        <Typography variant="body1" sx={{ mt: 1, maxWidth: 780, color: "rgba(255,255,255,0.72)" }}>
-          Get a quick overview of your collection, including total figurines, release status, and how your catalog
-          is distributed across categories.
-        </Typography>
-
         {dashboard && (
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap" sx={{ mt: 2.25 }}>
             <Chip label={`${dashboard.totalFigurines} total figurines`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />

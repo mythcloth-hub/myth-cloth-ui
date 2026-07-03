@@ -48,6 +48,7 @@ import { useBulkSelection } from "../../../hooks/useBulkSelection";
 import BulkAddToCollectionModal from "../../collections/components/BulkAddToCollectionModal";
 import { getCollections } from "../../collections/api/collectionApi";
 import type { Collection } from "../../collections/types/collection";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 const PAGE_SIZE = 24;
 
@@ -808,12 +809,14 @@ export default function FigurineCollectionPage() {
           borderBottom: "1px solid rgba(212,175,55,0.08)",
         }}
       >
-        {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1.5, mb: 1.5, gap: 2, flexWrap: "wrap" }}>
-          <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" }, flexShrink: 0 }}>
-            Myth Cloth Collection
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0 }}>
+        <Box sx={{ mt: 1.5, mb: 1.5 }}>
+          <AppPageHeader
+            eyebrow="Myth Collection"
+            title="Collection"
+            subtitle="Browse, filter, and manage your Myth Cloth catalog from one place."
+            compact
+            actions={
+              <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
             {hasPermission("collections:read") && (
               <ToggleButtonGroup
                 size="small"
@@ -881,7 +884,9 @@ export default function FigurineCollectionPage() {
                 + New Figurine
               </Button>
             )}
-          </Box>
+              </Box>
+            }
+          />
         </Box>
 
         {/* Search bar + filter toggle */}

@@ -23,6 +23,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { getAllRoles, deleteRole } from "../api/roleApi";
 import type { Role } from "../types/role";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 function CustomNoRowsOverlay() {
   return (
@@ -125,16 +126,13 @@ export default function RoleListPage() {
 
   return (
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
-          Roles
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate("/security/roles/new")}
-        >
-          + Add Role
-        </Button>
+      <Box sx={{ mb: 2.5 }}>
+        <AppPageHeader
+          eyebrow="Security"
+          title="Roles"
+          subtitle="Manage role definitions used to control access across the application."
+          actions={<Button variant="contained" onClick={() => navigate("/security/roles/new")}>+ Add Role</Button>}
+        />
       </Box>
 
       <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>

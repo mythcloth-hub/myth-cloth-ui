@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -21,12 +21,10 @@ import {
   Typography,
   Snackbar,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import SyncAltOutlinedIcon from "@mui/icons-material/SyncAltOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
@@ -47,6 +45,7 @@ import {
   updatePurchaseSummaryLineItems,
 } from "../api/purchaseApi";
 import type { PurchaseRecord, PurchaseRecordInput, ShippingStatus } from "../types/purchase";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 const SHIPPING_STATUS_STEPS: { value: ShippingStatus; label: string; Icon: SvgIconComponent }[] = [
   { value: "ORDERED", label: "Ordered", Icon: ShoppingCartOutlinedIcon },
@@ -83,7 +82,6 @@ const formatCount = (value: number): string => new Intl.NumberFormat().format(va
 
 export default function PurchasesPage() {
   const theme = useTheme();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -500,17 +498,13 @@ export default function PurchasesPage() {
         minHeight: "calc(100vh - 96px)",
       }}
     >
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-        <Tooltip title="Back to Collections">
-          <IconButton onClick={() => navigate("/collections")}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Tooltip>
-        <ReceiptLongOutlinedIcon color="primary" />
-        <Typography variant="h5" sx={{ fontWeight: 800 }}>
-          Purchases
-        </Typography>
-      </Stack>
+      <Box sx={{ mb: 2.5 }}>
+        <AppPageHeader
+          eyebrow="Myth Collection"
+          title="Purchases"
+          subtitle="Track purchase records, totals, and shipping progress by collection."
+        />
+      </Box>
 
       <Snackbar
         open={Boolean(successMessage)}
