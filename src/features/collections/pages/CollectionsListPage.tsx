@@ -192,44 +192,55 @@ export default function CollectionsListPage() {
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          alignItems: { xs: "flex-start", sm: "center" },
+          flexDirection: { xs: "column", sm: "row" },
+          gap: { xs: 1.25, sm: 1 },
           justifyContent: "space-between",
-          mb: 3,
-          position: "sticky",
-          top: 0,
+          mb: 2,
+          position: { xs: "sticky", md: "static" },
+          top: { xs: 8, md: "auto" },
           zIndex: 10,
           bgcolor: "background.default",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          mx: { xs: -2, md: -3 },
-          px: { xs: 2, md: 3 },
-          py: 2,
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          borderRadius: 2,
+          px: { xs: 1.5, md: 2 },
+          py: 1.25,
           borderBottom: "1px solid rgba(212,175,55,0.1)",
         }}
       >
-        <Typography
-          variant="h4"
-          sx={{
-            fontSize: { xs: "1.5rem", md: "2.125rem" },
-            fontWeight: 700,
-            background: "linear-gradient(135deg, #d4af37 0%, #4fc3f7 100%)",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            flexShrink: 0,
-          }}
-        >
-          💫 My Collections
-        </Typography>
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontSize: { xs: "1.35rem", md: "1.7rem" },
+              fontWeight: 700,
+              lineHeight: 1.15,
+              background: "linear-gradient(135deg, #d4af37 0%, #4fc3f7 100%)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              flexShrink: 0,
+            }}
+          >
+            My Collections
+          </Typography>
+          <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.25, display: "block" }}>
+            Manage groups, compare sizes, and track unique entries.
+          </Typography>
+        </Box>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-              onClick={() => navigate("/figurines")}
+          onClick={() => navigate("/figurines")}
           sx={{
             background: "linear-gradient(135deg, #d4af37 0%, #e6c547 100%)",
             color: "#000",
             fontWeight: 600,
             flexShrink: 0,
+            minHeight: 38,
+            px: 1.75,
+            alignSelf: { xs: "stretch", sm: "auto" },
             "&:hover": {
               background: "linear-gradient(135deg, #e6c547 0%, #d4af37 100%)",
               boxShadow: "0 8px 24px rgba(212,175,55,0.3)",
@@ -297,52 +308,63 @@ export default function CollectionsListPage() {
         <>
           <Card
             sx={{
-              mb: 3,
+              mb: 2.5,
               border: "1px solid rgba(212,175,55,0.2)",
               background: "linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(79,195,247,0.12) 100%)",
               backdropFilter: "blur(10px)",
             }}
           >
             <CardContent>
-              <Typography variant="overline" sx={{ color: "#4fc3f7", letterSpacing: 1.2 }}>
+              <Typography variant="overline" sx={{ color: "#4fc3f7", letterSpacing: 1.1, lineHeight: 1 }}>
                 Collections Overview
               </Typography>
+              <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5, maxWidth: 760 }}>
+                Track how your collection library is growing over time, compare collection sizes, and quickly spot
+                how many figurines are unique versus repeated across your groups.
+              </Typography>
               {largestCollection && (
-                <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+                <Typography variant="caption" sx={{ color: "#d4af37", mt: 0.75, display: "block", fontWeight: 600 }}>
                   Largest collection: <strong>{largestCollection.name}</strong> with {largestCollection.figurineIds.length}{" "}
                   figurine{largestCollection.figurineIds.length !== 1 ? "s" : ""}
                 </Typography>
               )}
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mt: 1 }}>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+              <Box
+                sx={{
+                  mt: 1.5,
+                  display: "grid",
+                  gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(4, minmax(0, 1fr))" },
+                  gap: 1.25,
+                }}
+              >
+                <Box sx={{ p: 1.25, borderRadius: 1.5, bgcolor: "rgba(6,12,24,0.36)", border: "1px solid rgba(79,195,247,0.2)" }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
                     {collections.length}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
                     collection{collections.length !== 1 ? "s" : ""}
                   </Typography>
                 </Box>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                <Box sx={{ p: 1.25, borderRadius: 1.5, bgcolor: "rgba(6,12,24,0.36)", border: "1px solid rgba(79,195,247,0.2)" }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
                     {totalFigurinesAcrossCollections}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
                     figurines across all collections
                   </Typography>
                 </Box>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                <Box sx={{ p: 1.25, borderRadius: 1.5, bgcolor: "rgba(6,12,24,0.36)", border: "1px solid rgba(79,195,247,0.2)" }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
                     {uniqueFigurinesAcrossCollections}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
                     unique figurines across collections
                   </Typography>
                 </Box>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                <Box sx={{ p: 1.25, borderRadius: 1.5, bgcolor: "rgba(6,12,24,0.36)", border: "1px solid rgba(79,195,247,0.2)" }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
                     {averageFigurinesPerCollection.toFixed(1)}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
                     average figurines per collection
                   </Typography>
                 </Box>
