@@ -1,9 +1,8 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 import Button from "@mui/material/Button";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import GoogleIcon from "@mui/icons-material/Google";
-import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Avatar,
@@ -38,6 +37,7 @@ import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettin
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
 import { alpha, useTheme } from "@mui/material/styles";
@@ -139,6 +139,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate();
   const { themeId, setThemeId } = useAppTheme();
   const theme = useTheme();
+  const navScrollRef = useRef<HTMLDivElement | null>(null);
+  const [showScrollHint, setShowScrollHint] = useState(false);
 
   const authCardSx = {
     px: 1.25,
@@ -214,6 +216,22 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     }))
     .filter((section) => section.items.length > 0);
 
+  const updateScrollHint = useCallback(() => {
+    const el = navScrollRef.current;
+    if (!el) return;
+
+    const hasOverflow = el.scrollHeight > el.clientHeight + 1;
+    const canScrollDown = el.scrollTop + el.clientHeight < el.scrollHeight - 1;
+    setShowScrollHint(hasOverflow && canScrollDown);
+  }, []);
+
+  useEffect(() => {
+    updateScrollHint();
+    const handleResize = () => updateScrollHint();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [updateScrollHint, visibleSections.length, isAuthenticated]);
+
   const handleClick = (path: string) => {
     if (path === "/figurines") {
       // Remove page param from sessionStorage so Collection always goes to page 1
@@ -239,7 +257,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
       {/* Brand */}
       <Box sx={{ px: 3, py: 2.5, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <Typography
@@ -254,9 +272,23 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </Box>
 
       {/* Nav sections */}
-      <Box sx={{ flex: 1, overflowY: "auto", pt: 1 }}>
-        {visibleSections.map((section) => (
-          <Box key={section.heading || "main"}>
+      <Box sx={{ flex: 1, minHeight: 0, position: "relative" }}>
+        <Box
+          ref={navScrollRef}
+          onScroll={updateScrollHint}
+          sx={{
+            height: "100%",
+            overflowY: "auto",
+            pt: 1,
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+          }}
+        >
+          {visibleSections.map((section) => (
+            <Box key={section.heading || "main"}>
             {section.heading && (
               <Typography
                 variant="overline"
@@ -325,8 +357,35 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             {section.heading === "" && (
               <Divider sx={{ borderColor: "rgba(255,255,255,0.07)", mx: 2, mt: 1 }} />
             )}
+            </Box>
+          ))}
+        </Box>
+
+        {showScrollHint && (
+          <Box
+            sx={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 44,
+              pointerEvents: "none",
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "center",
+              pb: 0.4,
+              background: `linear-gradient(180deg, ${alpha(theme.palette.background.default, 0)} 0%, ${alpha(theme.palette.background.default, 0.88)} 74%)`,
+            }}
+          >
+            <KeyboardArrowDownOutlinedIcon
+              sx={{
+                color: "text.secondary",
+                fontSize: 20,
+                animation: "mythSidebarScrollHint 1.4s ease-in-out infinite",
+              }}
+            />
           </Box>
-        ))}
+        )}
       </Box>
 
       {/* Theme switcher */}
@@ -573,7 +632,7 @@ export default function MainLayout() {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", textAlign: "left" }}>
+    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden", textAlign: "left" }}>
       {/* Mobile AppBar */}
       <AppBar
         position="fixed"
@@ -626,6 +685,7 @@ export default function MainLayout() {
         sx={{
           flex: 1,
           minWidth: 0,
+          overflowY: "auto",
           mt: { xs: 6, md: 0 },
         }}
       >
