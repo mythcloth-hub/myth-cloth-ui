@@ -809,28 +809,11 @@ export default function FigurineCollectionPage() {
         }}
       >
         {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5, gap: 2, flexWrap: "wrap" }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1.5, mb: 1.5, gap: 2, flexWrap: "wrap" }}>
           <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" }, flexShrink: 0 }}>
             Myth Cloth Collection
           </Typography>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0 }}>
-            {hasPermission("collections:read") && (
-              <FormControl size="small" sx={{ minWidth: 190, flexShrink: 0 }}>
-              <InputLabel>Collection View</InputLabel>
-              <Select
-                label="Collection View"
-                value={selectedCollectionId}
-                onChange={(e) => setSelectedCollectionId(e.target.value)}
-              >
-                <MenuItem value=""><em>All Figurines</em></MenuItem>
-                {collections.map((collection) => (
-                  <MenuItem key={collection.id} value={String(collection.id)}>
-                    {collection.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            )}
             {hasPermission("collections:read") && (
               <ToggleButtonGroup
                 size="small"
@@ -866,6 +849,31 @@ export default function FigurineCollectionPage() {
                 <ToggleButton value="all">All</ToggleButton>
                 <ToggleButton value="owned">Owned</ToggleButton>
               </ToggleButtonGroup>
+            )}
+            {hasPermission("collections:read") && (
+              <FormControl size="small" sx={{ minWidth: 190, flexShrink: 0 }}>
+              <InputLabel>Collection View</InputLabel>
+              <Select
+                label="Collection View"
+                value={selectedCollectionId}
+                onChange={(e) => setSelectedCollectionId(e.target.value)}
+              >
+                <MenuItem value="">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <span aria-hidden="true">📦</span>
+                    <em>All Figurines</em>
+                  </Box>
+                </MenuItem>
+                {collections.map((collection) => (
+                  <MenuItem key={collection.id} value={String(collection.id)}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <span aria-hidden="true">📦</span>
+                      <span>{collection.name}</span>
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             )}
             
             {hasPermission("figurines:write") && (

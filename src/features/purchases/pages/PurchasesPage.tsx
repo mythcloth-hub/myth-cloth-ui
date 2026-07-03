@@ -525,26 +525,27 @@ export default function PurchasesPage() {
 
       {errorMessage && <Alert severity="error" sx={{ mb: 2 }}>{errorMessage}</Alert>}
 
-      <Card
+      <Box
         sx={{
           p: 1.6,
           borderRadius: 2,
-          border: `1px solid ${alpha(theme.palette.divider, 0.25)}`,
-          bgcolor: alpha(theme.palette.background.paper, 0.78),
           mb: 2,
         }}
       >
         <Stack direction={{ xs: "column", md: "row" }} spacing={1.2} alignItems={{ md: "center" }}>
           <FormControl size="small" sx={{ minWidth: 260 }} disabled={loadingCollections}>
-            <InputLabel>Collection</InputLabel>
+            <InputLabel>Collection View</InputLabel>
             <Select
               value={selectedCollectionId}
-              label="Collection"
+              label="Collection View"
               onChange={(event) => handleCollectionChange(event.target.value)}
             >
               {collections.map((collection) => (
                 <MenuItem key={collection.id} value={String(collection.id)}>
-                  {collection.name}
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <span aria-hidden="true">📦</span>
+                    <span>{collection.name}</span>
+                  </Box>
                 </MenuItem>
               ))}
             </Select>
@@ -558,7 +559,7 @@ export default function PurchasesPage() {
             Record Purchase
           </Button>
         </Stack>
-      </Card>
+      </Box>
 
       {selectedCollection && (
         <Typography variant="subtitle2" sx={{ mb: 1, color: "text.secondary" }}>
