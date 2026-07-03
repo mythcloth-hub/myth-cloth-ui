@@ -128,7 +128,7 @@ const SELECTABLE_STATUSES: ReleaseStatus[] = ["ANNOUNCED", "RELEASED"];
 function FigurineCard({
   figurine,
   onClick,
-  selectionMode = false,
+  selectionEnabled = false,
   isSelected = false,
   onToggleSelect,
   dimmed = false,
@@ -136,7 +136,7 @@ function FigurineCard({
 }: {
   figurine: Figurine;
   onClick: () => void;
-  selectionMode?: boolean;
+  selectionEnabled?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (id: number) => void;
   dimmed?: boolean;
@@ -180,18 +180,17 @@ function FigurineCard({
           opacity: 0.45,
           filter: "grayscale(0.9)",
         }),
-        ...(selectionMode && !selectable && {
-          opacity: 0.3,
-          filter: "grayscale(1)",
-          cursor: "default",
-        }),
         "&:hover": {
-          transform: (dimmed || (selectionMode && !selectable)) ? "none" : "translateY(-3px)",
-          boxShadow: (dimmed || (selectionMode && !selectable))
+          transform: dimmed ? "none" : "translateY(-3px)",
+          boxShadow: dimmed
             ? "none"
             : statusCfg
               ? `0 12px 40px ${statusCfg.hoverGlow}`
               : "0 12px 40px rgba(212, 175, 55, 0.25)",
+        },
+        "&:hover .selection-checkbox, &:focus-within .selection-checkbox": {
+          opacity: selectionEnabled && selectable ? 1 : 0,
+          transform: selectionEnabled && selectable ? "translateY(0) scale(1)" : "translateY(-4px) scale(0.96)",
         },
       }}
     >
@@ -344,13 +343,21 @@ function FigurineCard({
         )}
 
         {/* Selection checkbox – top-left corner */}
-        {selectionMode && selectable && (
+        {selectionEnabled && selectable && (
           <Box
+            className="selection-checkbox"
             sx={{
               position: "absolute",
               top: 8,
               left: 8,
               zIndex: 5,
+              opacity: isSelected ? 1 : 0,
+              transform: isSelected ? "translateY(0) scale(1)" : "translateY(-4px) scale(0.96)",
+              transition: "opacity 0.2s ease, transform 0.2s ease",
+              "@media (hover: none), (pointer: coarse)": {
+                opacity: 1,
+                transform: "translateY(0) scale(1)",
+              },
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -364,8 +371,18 @@ function FigurineCard({
                 backgroundColor: "rgba(0,0,0,0.4)",
                 borderRadius: "4px",
                 padding: "4px",
+                "& .MuiSvgIcon-root": {
+                  fontSize: 22,
+                },
                 "&:hover": {
                   backgroundColor: "rgba(0,0,0,0.6)",
+                },
+                "@media (hover: none), (pointer: coarse)": {
+                  padding: "8px",
+                  backgroundColor: "rgba(0,0,0,0.55)",
+                  "& .MuiSvgIcon-root": {
+                    fontSize: 28,
+                  },
                 },
               }}
             />
@@ -530,7 +547,6 @@ export default function FigurineCollectionPage() {
     (location.state as { deleted?: boolean } | null)?.deleted ? "Figurine deleted successfully." : null
   );
   const [filtersOpen,    setFiltersOpen]    = useState(false);
-  const [selectionMode,  setSelectionMode]  = useState(false);
   const [bulkAddModalOpen, setBulkAddModalOpen] = useState(false);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollectionId, setSelectedCollectionId] = useState("");
@@ -645,7 +661,7 @@ export default function FigurineCollectionPage() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (!selectionMode) return;
+      if (!isAuthenticated) return;
 
       // Escape: Clear selection
       if (e.key === "Escape") {
@@ -662,7 +678,13 @@ export default function FigurineCollectionPage() {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [selectionMode, bulkSelection]);
+  }, [isAuthenticated, bulkSelection.clearAll, bulkSelection.selectAll]);
+
+  useEffect(() => {
+    if (!isAuthenticated && bulkSelection.selectedCount > 0) {
+      bulkSelection.clearAll();
+    }
+  }, [isAuthenticated, bulkSelection.selectedCount, bulkSelection.clearAll]);
 
 
 
@@ -846,27 +868,6 @@ export default function FigurineCollectionPage() {
               </ToggleButtonGroup>
             )}
             
-            {isAuthenticated && (
-              <Button
-                variant={selectionMode ? "contained" : "outlined"}
-                startIcon={<ChecklistIcon />}
-                onClick={() => {
-                  setSelectionMode(!selectionMode);
-                  if (selectionMode) {
-                    bulkSelection.clearAll();
-                  }
-                }}
-                sx={{
-                  ...(selectionMode && {
-                    background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
-                    color: "#000",
-                    fontWeight: 600,
-                  }),
-                }}
-              >
-                {selectionMode ? "Selection Mode" : "Select Multiple"}
-              </Button>
-            )}
             {hasPermission("figurines:write") && (
               <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
                 + New Figurine
@@ -1155,23 +1156,17 @@ export default function FigurineCollectionPage() {
                       <FigurineCard
                         figurine={fig}
                         dimmed={Boolean(selectedCollection) && !selectedCollectionFigurineIds.has(fig.id)}
-                        selectionMode={selectionMode}
+                        selectionEnabled={isAuthenticated}
                         isSelected={bulkSelection.isSelected(fig.id)}
                         onToggleSelect={bulkSelection.toggleSelect}
                         selectable={SELECTABLE_STATUSES.includes(fig.releaseStatus)}
                         onClick={() => {
-                          if (selectionMode) {
-                            if (SELECTABLE_STATUSES.includes(fig.releaseStatus)) {
-                              bulkSelection.toggleSelect(fig.id);
-                            }
-                          } else {
-                            sessionStorage.setItem(
-                              "figurineNavList",
-                              JSON.stringify(displayItems.map((f) => f.id))
-                            );
-                            // Preserve current search params (including page) in the detail URL
-                            navigate(`/figurines/${fig.id}?${searchParams.toString()}`);
-                          }
+                          sessionStorage.setItem(
+                            "figurineNavList",
+                            JSON.stringify(displayItems.map((f) => f.id))
+                          );
+                          // Preserve current search params (including page) in the detail URL
+                          navigate(`/figurines/${fig.id}?${searchParams.toString()}`);
                         }}
                       />
                     </Grid>
@@ -1249,7 +1244,7 @@ export default function FigurineCollectionPage() {
       </Snackbar>
 
       {/* Floating action bar for bulk selection */}
-      {selectionMode && bulkSelection.selectedCount > 0 && (
+      {isAuthenticated && bulkSelection.selectedCount > 0 && (
         <Box
           sx={{
             position: "fixed",
@@ -1321,7 +1316,6 @@ export default function FigurineCollectionPage() {
             </Button>
             <IconButton
               onClick={() => {
-                setSelectionMode(false);
                 bulkSelection.clearAll();
               }}
               sx={{
@@ -1345,7 +1339,6 @@ export default function FigurineCollectionPage() {
           loadCollections();
           setBulkAddModalOpen(false);
           bulkSelection.clearAll();
-          setSelectionMode(false);
         }}
       />
     </Box>
