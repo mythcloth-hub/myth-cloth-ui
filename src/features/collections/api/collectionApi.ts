@@ -117,12 +117,8 @@ export async function deleteCollection(id: number): Promise<void> {
   await httpClient.delete(`${API_BASE}/${id}`);
 }
 
-export async function addFigurineToCollection(collectionId: number, figurineId: number): Promise<Collection> {
-  const response = await httpClient.post<Collection>(
-    `${API_BASE}/${collectionId}/figurines`,
-    { figurineId }
-  );
-  return normalizeCollection(response.data);
+export async function addFigurineToCollection(collectionId: number, figurineId: number): Promise<void> {
+  await httpClient.post(`${API_BASE}/${collectionId}/figurines/${figurineId}`);
 }
 
 export async function removeFigurineFromCollection(collectionId: number, figurineId: number): Promise<void> {

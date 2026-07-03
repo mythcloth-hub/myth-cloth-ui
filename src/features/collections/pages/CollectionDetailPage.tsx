@@ -27,12 +27,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import AddIcon from "@mui/icons-material/Add";
+import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import {
+  addFigurineToCollection,
   getCollectionFigurines,
   getCollectionFigurine,
   removeFigurineFromCollection,
@@ -99,6 +101,27 @@ const RELEASE_STATUS_COLORS: Record<CollectionFigurine["releaseStatus"], string>
   UNRELEASED: "#9e9e9e",
 };
 
+const getNearestScrollContainer = (element: HTMLElement | null): HTMLElement | null => {
+  if (!element) return null;
+
+  let current: HTMLElement | null = element.parentElement;
+  while (current) {
+    const style = window.getComputedStyle(current);
+    const overflowY = style.overflowY;
+    const isScrollable =
+      (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
+      current.scrollHeight > current.clientHeight;
+
+    if (isScrollable) {
+      return current;
+    }
+
+    current = current.parentElement;
+  }
+
+  return null;
+};
+
 export default function CollectionDetailPage() {
   const theme = useTheme();
   const { id } = useParams<{ id: string }>();
@@ -125,6 +148,8 @@ export default function CollectionDetailPage() {
   const [purchaseInitialDraft, setPurchaseInitialDraft] = useState<PurchaseDraft | null>(null);
   const [pendingDeleteFigurineId, setPendingDeleteFigurineId] = useState<number | null>(null);
   const [isDeletingFigurine, setIsDeletingFigurine] = useState(false);
+  const [addingFigurineId, setAddingFigurineId] = useState<number | null>(null);
+  const [recentlyAddedFigurineId, setRecentlyAddedFigurineId] = useState<number | null>(null);
   const [animatedProgressPercent, setAnimatedProgressPercent] = useState(0);
   const albumGridSectionRef = useRef<HTMLDivElement | null>(null);
 
@@ -150,29 +175,57 @@ export default function CollectionDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    const onScroll = () => {
-      const maxScrollable = document.documentElement.scrollHeight - window.innerHeight;
-      if (maxScrollable <= 0) {
-        setScrollProgress(0);
-      } else {
-        const ratio = Math.min(1, Math.max(0, window.scrollY / maxScrollable));
-        setScrollProgress(ratio);
-      }
+    if (loading) return;
 
+    const updateScrollMetrics = () => {
       const gridSection = albumGridSectionRef.current;
       if (!gridSection) return;
 
+      const scrollContainer = getNearestScrollContainer(gridSection);
+
+      if (scrollContainer) {
+        const maxScrollable = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+        if (maxScrollable <= 0) {
+          setScrollProgress(0);
+        } else {
+          const ratio = Math.min(1, Math.max(0, scrollContainer.scrollTop / maxScrollable));
+          setScrollProgress(ratio);
+        }
+      } else {
+        const maxScrollable = document.documentElement.scrollHeight - window.innerHeight;
+        if (maxScrollable <= 0) {
+          setScrollProgress(0);
+        } else {
+          const ratio = Math.min(1, Math.max(0, window.scrollY / maxScrollable));
+          setScrollProgress(ratio);
+        }
+      }
+
       const rect = gridSection.getBoundingClientRect();
-      const totalTravel = rect.height + window.innerHeight;
-      const passed = window.innerHeight - rect.top;
+      const viewportHeight = scrollContainer?.clientHeight ?? window.innerHeight;
+      const viewportTop = scrollContainer?.getBoundingClientRect().top ?? 0;
+      const relativeTop = rect.top - viewportTop;
+      const totalTravel = rect.height + viewportHeight;
+      const passed = viewportHeight - relativeTop;
       const ratioInSection = Math.min(1, Math.max(0, passed / Math.max(1, totalTravel)));
       setTimelineProgress(ratioInSection);
     };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    const initialGridSection = albumGridSectionRef.current;
+    const scrollContainer = getNearestScrollContainer(initialGridSection);
+
+    window.addEventListener("scroll", updateScrollMetrics, { passive: true });
+    scrollContainer?.addEventListener("scroll", updateScrollMetrics, { passive: true });
+    window.addEventListener("resize", updateScrollMetrics);
+
+    updateScrollMetrics();
+
+    return () => {
+      window.removeEventListener("scroll", updateScrollMetrics);
+      scrollContainer?.removeEventListener("scroll", updateScrollMetrics);
+      window.removeEventListener("resize", updateScrollMetrics);
+    };
+  }, [loading]);
 
   const loadCollection = async () => {
     if (!id) return;
@@ -279,6 +332,24 @@ export default function CollectionDetailPage() {
     }
   };
 
+  const handleAddFigurine = async (figurineId: number) => {
+    if (!collection) return;
+
+    setAddingFigurineId(figurineId);
+    try {
+      await addFigurineToCollection(collection.id, figurineId);
+      await loadCollection();
+      setRecentlyAddedFigurineId(figurineId);
+      setSuccessMessage("Figurine added to collection.");
+    } catch (err) {
+      setErrorMessage(
+        getApiErrorMessage(err, { action: "update", resource: "figurine to collection" })
+      );
+    } finally {
+      setAddingFigurineId((current) => (current === figurineId ? null : current));
+    }
+  };
+
   const baseVisibleFigurines = figurines;
   const visibleFigurines = showOwnedOnly
     ? baseVisibleFigurines.filter((figurine) => figurine.isCollected)
@@ -338,6 +409,16 @@ export default function CollectionDetailPage() {
 
     return () => window.cancelAnimationFrame(frameId);
   }, [progressPercent, collection?.id]);
+
+  useEffect(() => {
+    if (recentlyAddedFigurineId === null) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setRecentlyAddedFigurineId((current) => (current === recentlyAddedFigurineId ? null : current));
+    }, 1800);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [recentlyAddedFigurineId]);
 
   const totalNeeded = useMemo(() => {
     if (!collection) return BASE_ALBUM_TARGET;
@@ -599,13 +680,12 @@ export default function CollectionDetailPage() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              {collection.name}
+              You are in collection {collection.name}
             </Typography>
-            {collection.description && (
-              <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-                {collection.description}
-              </Typography>
-            )}
+            <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+              {collection.description?.trim() ||
+                "Browse this collection to track progress, review figurines, and manage purchases."}
+            </Typography>
           </Box>
         </Box>
 
@@ -1081,6 +1161,9 @@ export default function CollectionDetailPage() {
               ? purchases.some((purchase) => purchase.lines.some((line) => line.figurineId === slot.figurine!.id))
               : false;
             const showBackActionLabels = rowSpan >= 2 && pattern.colSpan >= 2 && albumZoom >= 1;
+            const isRecentlyAdded = Boolean(
+              slot.figurine && slot.owned && slot.figurine.id === recentlyAddedFigurineId
+            );
 
             return (
               <Box
@@ -1152,6 +1235,21 @@ export default function CollectionDetailPage() {
                       filter: slot.owned ? "none" : "grayscale(1) contrast(0.82) brightness(0.78)",
                       transform: `rotate(${pattern.tilt}deg)`,
                       transition: "transform 0.2s ease, box-shadow 0.25s ease",
+                      animation: isRecentlyAdded ? "newlyCollectedPulse 820ms ease-out 2" : undefined,
+                      "@keyframes newlyCollectedPulse": {
+                        "0%": {
+                          transform: `scale(1) rotate(${pattern.tilt}deg)`,
+                          boxShadow: "0 8px 26px rgba(0,0,0,0.34)",
+                        },
+                        "50%": {
+                          transform: `translateY(-2px) scale(1.02) rotate(${pattern.tilt}deg)`,
+                          boxShadow: `0 0 0 2px ${alpha(theme.palette.success.light, 0.42)}, 0 12px 30px ${alpha(theme.palette.success.main, 0.3)}`,
+                        },
+                        "100%": {
+                          transform: `scale(1) rotate(${pattern.tilt}deg)`,
+                          boxShadow: "0 8px 26px rgba(0,0,0,0.34)",
+                        },
+                      },
                       boxShadow: slot.owned
                         ? "0 8px 26px rgba(0,0,0,0.34)"
                         : "inset 0 0 0 1px rgba(255,255,255,0.08)",
@@ -1258,6 +1356,40 @@ export default function CollectionDetailPage() {
                           boxShadow: "0 2px 8px rgba(0,0,0,0.34)",
                         }}
                       />
+                    )}
+
+                    {slot.figurine && !slot.owned && (
+                      <Tooltip title="Add this figurine to this collection">
+                        <span>
+                          <IconButton
+                            size="small"
+                            disabled={addingFigurineId === slot.figurine.id}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              void handleAddFigurine(slot.figurine!.id);
+                            }}
+                            sx={{
+                              position: "absolute",
+                              top: 8,
+                              right: 8,
+                              width: 24,
+                              height: 24,
+                              color: theme.palette.success.light,
+                              bgcolor: alpha(theme.palette.background.default, 0.56),
+                              border: `1px solid ${alpha(theme.palette.success.main, 0.42)}`,
+                              "&:hover": {
+                                bgcolor: alpha(theme.palette.background.default, 0.72),
+                              },
+                            }}
+                          >
+                            {addingFigurineId === slot.figurine.id ? (
+                              <CircularProgress size={14} sx={{ color: theme.palette.success.light }} />
+                            ) : (
+                              <FavoriteBorderOutlinedIcon sx={{ fontSize: 16 }} />
+                            )}
+                          </IconButton>
+                        </span>
+                      </Tooltip>
                     )}
 
                     {isAnnounced && (
