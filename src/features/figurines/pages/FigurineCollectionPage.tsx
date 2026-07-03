@@ -11,7 +11,6 @@ import {
   Chip,
   Collapse,
   FormControl,
-  FormControlLabel,
   Grid,
   IconButton,
   InputAdornment,
@@ -20,7 +19,8 @@ import {
   Pagination,
   Select,
   Skeleton,
-  Switch,
+  ToggleButton,
+  ToggleButtonGroup,
   Snackbar,
   Alert,
   TextField,
@@ -810,18 +810,40 @@ export default function FigurineCollectionPage() {
             </FormControl>
             )}
             {hasPermission("collections:read") && (
-              <FormControlLabel
-                control={
-                  <Switch
-                    size="small"
-                    checked={showOwnedOnly}
-                    onChange={(e) => setShowOwnedOnly(e.target.checked)}
-                    disabled={!selectedCollection || !isAuthenticated}
-                  />
-                }
-                label="Show owned only"
-                sx={{ ml: 0.5, mr: 0, color: "text.secondary" }}
-              />
+              <ToggleButtonGroup
+                size="small"
+                value={showOwnedOnly ? "owned" : "all"}
+                exclusive
+                disabled={!selectedCollection || !isAuthenticated}
+                onChange={(_, value: "all" | "owned" | null) => {
+                  if (!value) return;
+                  setShowOwnedOnly(value === "owned");
+                }}
+                sx={{
+                  ml: 0.5,
+                  bgcolor: "rgba(6,8,24,0.3)",
+                  borderRadius: 1.2,
+                  border: "1px solid rgba(255,255,255,0.14)",
+                  p: 0.3,
+                  "& .MuiToggleButtonGroup-grouped": {
+                    border: "none",
+                    borderRadius: 0.9,
+                    px: 1.2,
+                    py: 0.35,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    color: "text.secondary",
+                  },
+                  "& .MuiToggleButtonGroup-grouped.Mui-selected": {
+                    bgcolor: "rgba(79,195,247,0.22)",
+                    color: "#4fc3f7",
+                    boxShadow: "none",
+                  },
+                }}
+              >
+                <ToggleButton value="all">All</ToggleButton>
+                <ToggleButton value="owned">Owned</ToggleButton>
+              </ToggleButtonGroup>
             )}
             
             {isAuthenticated && (
