@@ -57,16 +57,26 @@ type NavSection = {
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    heading: "",
+    heading: "Myth Collection",
     items: [
       { label: "Collection",    path: "/figurines",      icon: <CollectionsOutlinedIcon /> },
       { label: "My Collections", path: "/collections",   icon: <FavoriteBorderOutlinedIcon /> },
       { label: "Purchases",     path: "/purchases",      icon: <ReceiptLongOutlinedIcon /> },
+    ],
+  },
+  {
+    heading: "Stats & Charts",
+    items: [
       { label: "Charts",        path: "/charts",         icon: <InsightsOutlinedIcon /> },
       { label: "Releases",      path: "/releases",       icon: <CalendarMonthOutlinedIcon /> },
       { label: "Pricing",       path: "/pricing",        icon: <PaidOutlinedIcon /> },
-      { label: "Distributors",  path: "/distributors",   icon: <LocalShippingOutlinedIcon /> },
+    ],
+  },
+  {
+    heading: "Events & Partners",
+    items: [
       { label: "Anniversaries", path: "/anniversaries",  icon: <CakeOutlinedIcon /> },
+      { label: "Distributors",  path: "/distributors",   icon: <LocalShippingOutlinedIcon /> },
     ],
   },
   {
@@ -160,11 +170,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         if (item.path === "/collections") {
           return hasPermission("collections:read");
         }
-        if (item.path === "/charts") {
-          return hasPermission("stats:read");
-        }
         if (item.path === "/purchases") {
           return hasPermission("collections:read");
+        }
+        if (item.path === "/charts") {
+          return hasPermission("stats:read");
         }
         if (item.path === "/releases") {
           return hasPermission("stats:read");
@@ -239,7 +249,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           MythCloth
         </Typography>
         <Typography variant="caption" sx={{ color: "text.secondary" }}>
-          Management Console
+          Your Myth Cloth Collection
         </Typography>
       </Box>
 
@@ -320,68 +330,46 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </Box>
 
       {/* Theme switcher */}
-      <Box sx={{ px: 2, pb: 2, pt: 1, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-        <Typography
-          variant="overline"
-          sx={{
-            display: "block",
-            px: 1,
-            pb: 1,
-            color: "text.secondary",
-            fontSize: "0.65rem",
-            letterSpacing: "0.1em",
-          }}
-        >
-          Theme
-        </Typography>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+      <Box sx={{ px: 2, pb: 1.25, pt: 0.75, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mt: 1, mb: 0.6 }}>
+          <Typography
+            variant="overline"
+            sx={{
+              display: "block",
+              px: 1,
+              color: "text.secondary",
+              fontSize: "0.62rem",
+              letterSpacing: "0.1em",
+              lineHeight: 1,
+            }}
+          >
+            Theme
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap", px: 1 }}>
           {(Object.keys(THEME_META) as ThemeId[]).map((id) => {
             const meta = THEME_META[id];
             const active = themeId === id;
             return (
-              <Tooltip key={id} title={meta.description} placement="right" arrow>
+              <Tooltip key={id} title={`${meta.label}: ${meta.description}`} placement="right" arrow>
                 <Box
                   onClick={() => setThemeId(id)}
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.25,
-                    px: 1.25,
-                    py: 0.6,
-                    borderRadius: 1.5,
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
                     cursor: "pointer",
-                    backgroundColor: active ? "rgba(255,255,255,0.08)" : "transparent",
-                    border: active ? "1px solid" : "1px solid transparent",
-                    borderColor: active ? "primary.main" : "transparent",
-                    transition: "all 0.18s ease",
+                    backgroundColor: meta.preview,
+                    border: "1.5px solid",
+                    borderColor: active ? "primary.main" : "rgba(255,255,255,0.22)",
+                    boxShadow: active ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.18)}` : "none",
+                    transition: "transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease",
                     "&:hover": {
-                      backgroundColor: "rgba(255,255,255,0.06)",
+                      transform: "scale(1.06)",
+                      borderColor: active ? "primary.main" : "rgba(255,255,255,0.5)",
                     },
                   }}
-                >
-                  <Box
-                    sx={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      backgroundColor: meta.preview,
-                      border: "2px solid",
-                      borderColor: active ? "primary.main" : "rgba(255,255,255,0.25)",
-                      flexShrink: 0,
-                    }}
-                  />
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: active ? "primary.main" : "text.secondary",
-                      fontWeight: active ? 600 : 400,
-                      fontSize: "0.78rem",
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {meta.label}
-                  </Typography>
-                </Box>
+                />
               </Tooltip>
             );
           })}
@@ -389,7 +377,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </Box>
 
       {/* Auth section: Facebook (and Google in future) */}
-      <Box sx={{ px: 2, pb: 3, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.7)}`, mt: 2 }}>
+      <Box
+        sx={{
+          px: 2,
+          pb: 3,
+          pt: 1.5,
+          mt: 1.5,
+        }}
+      >
         <Typography
           variant="overline"
           sx={{
@@ -402,7 +397,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             fontWeight: 700,
           }}
         >
-          Account
+          Your account
         </Typography>
 
         {isAuthenticated ? (
@@ -509,7 +504,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   },
                 }}
               >
-                Continue with Facebook
+                Facebook
               </Button>
             )}
             {!facebookEnabled && (
@@ -541,7 +536,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   },
                 }}
               >
-                Continue with Google
+                Google
               </Button>
             )}
             {!googleEnabled && (
