@@ -25,7 +25,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CollectionsOutlinedIcon from "@mui/icons-material/CollectionsOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import CakeOutlinedIcon from "@mui/icons-material/CakeOutlined";
+import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
 import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
@@ -75,7 +75,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: "Events & Partners",
     items: [
-      { label: "Anniversaries", path: "/anniversaries",  icon: <CakeOutlinedIcon /> },
+      { label: "Anniversaries", path: "/anniversaries",  icon: <StarBorderOutlinedIcon /> },
       { label: "Distributors",  path: "/distributors",   icon: <LocalShippingOutlinedIcon /> },
     ],
   },

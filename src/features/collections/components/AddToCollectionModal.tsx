@@ -53,8 +53,19 @@ export default function AddToCollectionModal({
   // Load collections on open
   useEffect(() => {
     if (open) {
+      setError(null);
+      setSuccessMessage(null);
+      setNewCollectionName("");
+      setNewCollectionDesc("");
+      setSelectedCollections(new Set());
       loadCollections();
+      return;
     }
+
+    // Ensure any transient state is cleared after close as well.
+    setError(null);
+    setSuccessMessage(null);
+    setSelectedCollections(new Set());
   }, [open]);
 
   const loadCollections = async () => {

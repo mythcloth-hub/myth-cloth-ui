@@ -372,7 +372,6 @@ export default function FigurineDetailPage() {
                     <AnniversaryIcon sx={{ fontSize: 18, color: "#bfa100" }} />
                     <Typography variant="body2" sx={{ color: "text.primary" }}>
                       {figurine.anniversary.description}
-                      {figurine.anniversary.year ? ` (${figurine.anniversary.year})` : ""}
                     </Typography>
                   </Box>
                 </Grid>

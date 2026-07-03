@@ -300,7 +300,7 @@ function FigurineCard({
         />
 
         {/* Edition badges – top-right corner */}
-        {(badges.length > 0 || hasAnniversary) && (
+        {badges.length > 0 && (
           <Box
             sx={{
               position: "absolute",
@@ -334,13 +334,6 @@ function FigurineCard({
                 }}
               />
             ))}
-            {hasAnniversary && (
-              <Tooltip title={(figurine as any).anniversary?.description || "Anniversary Edition"} arrow>
-                <span>
-                  <AnniversaryIcon sx={{ fontSize: 22, color: "#bfa100", bgcolor: "#fffde7", borderRadius: "50%", boxShadow: 1, p: 0.2 }} />
-                </span>
-              </Tooltip>
-            )}
           </Box>
         )}
 
@@ -410,15 +403,35 @@ function FigurineCard({
 
       {/* Card content */}
       <CardContent sx={{ flexGrow: 1, p: 1.5, "&:last-child": { pb: 1.5 } }}>
-        <Typography
-          variant="subtitle2"
-          fontWeight={700}
-          noWrap
-          title={figurine.displayableName}
-          sx={{ color: "text.primary", mb: 0.5, lineHeight: 1.3 }}
-        >
-          {figurine.name}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.5, minWidth: 0 }}>
+          <Typography
+            variant="subtitle2"
+            fontWeight={700}
+            noWrap
+            title={figurine.displayableName}
+            sx={{ color: "text.primary", lineHeight: 1.3, minWidth: 0, flex: 1 }}
+          >
+            {figurine.name}
+          </Typography>
+          {hasAnniversary && (
+            <Tooltip title={(figurine as any).anniversary?.description || "Anniversary Edition"} arrow>
+              <span>
+                <AnniversaryIcon
+                  sx={{
+                    fontSize: 18,
+                    color: "#bfa100",
+                    bgcolor: "#fffde7",
+                    borderRadius: "50%",
+                    boxShadow: 1,
+                    p: 0.15,
+                    ml: "auto",
+                    flexShrink: 0,
+                  }}
+                />
+              </span>
+            </Tooltip>
+          )}
+        </Box>
 
         <Typography
           variant="caption"
