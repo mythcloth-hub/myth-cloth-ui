@@ -22,7 +22,45 @@ export default function AppPageHeader({
       spacing={compact ? 1 : 1.5}
       alignItems={{ xs: "flex-start", md: "center" }}
       justifyContent="space-between"
-      sx={{ gap: compact ? 1 : 2 }}
+      sx={{
+        gap: compact ? 1 : 2,
+        position: "relative",
+        isolation: "isolate",
+        overflow: "hidden",
+        borderRadius: 2,
+        px: { xs: 0.5, md: 0.75 },
+        py: { xs: 0.35, md: 0.5 },
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          width: { xs: 220, md: 320 },
+          height: { xs: 220, md: 320 },
+          top: { xs: -150, md: -210 },
+          right: { xs: -120, md: -150 },
+          borderRadius: "50%",
+          pointerEvents: "none",
+          zIndex: -1,
+          background:
+            "conic-gradient(from 18deg, rgba(212,175,55,0) 0deg, rgba(212,175,55,0.14) 22deg, rgba(212,175,55,0) 44deg, rgba(212,175,55,0.1) 96deg, rgba(212,175,55,0) 138deg, rgba(212,175,55,0.14) 186deg, rgba(212,175,55,0) 228deg, rgba(212,175,55,0.09) 286deg, rgba(212,175,55,0) 330deg, rgba(212,175,55,0.12) 360deg)",
+          maskImage: "radial-gradient(circle, transparent 56%, black 57%, black 62%, transparent 63%)",
+          WebkitMaskImage: "radial-gradient(circle, transparent 56%, black 57%, black 62%, transparent 63%)",
+          opacity: compact ? 0.42 : 0.55,
+          transform: compact ? "rotate(-6deg)" : "rotate(0deg)",
+        },
+        "&::after": {
+          content: '""',
+          position: "absolute",
+          width: { xs: 220, md: 320 },
+          height: { xs: 220, md: 320 },
+          top: { xs: -150, md: -210 },
+          right: { xs: -120, md: -150 },
+          borderRadius: "50%",
+          pointerEvents: "none",
+          zIndex: -1,
+          background: "radial-gradient(circle, rgba(212,175,55,0.09) 0%, rgba(212,175,55,0.03) 36%, rgba(212,175,55,0) 66%)",
+          filter: "blur(0.5px)",
+        },
+      }}
     >
       <Box sx={{ minWidth: 0, flex: 1 }}>
         <Typography
