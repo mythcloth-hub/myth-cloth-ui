@@ -350,6 +350,24 @@ export default function CollectionDetailPage() {
     }
   };
 
+  const handleIncreaseFigurineQuantity = async (figurineId: number) => {
+    if (!collection) return;
+
+    setAddingFigurineId(figurineId);
+    try {
+      await addFigurineToCollection(collection.id, figurineId);
+      await loadCollection();
+      setRecentlyAddedFigurineId(figurineId);
+      setSuccessMessage("Figurine quantity increased.");
+    } catch (err) {
+      setErrorMessage(
+        getApiErrorMessage(err, { action: "update", resource: "figurine quantity" })
+      );
+    } finally {
+      setAddingFigurineId((current) => (current === figurineId ? null : current));
+    }
+  };
+
   const baseVisibleFigurines = figurines;
   const visibleFigurines = showOwnedOnly
     ? baseVisibleFigurines.filter((figurine) => figurine.isCollected)
@@ -1164,6 +1182,9 @@ export default function CollectionDetailPage() {
             const isRecentlyAdded = Boolean(
               slot.figurine && slot.owned && slot.figurine.id === recentlyAddedFigurineId
             );
+            const isQuantityUpdating = Boolean(
+              slot.figurine && slot.owned && slot.figurine.id === addingFigurineId
+            );
 
             return (
               <Box
@@ -1182,6 +1203,14 @@ export default function CollectionDetailPage() {
               >
                 <Box
                   onClick={slot.owned ? () => handleToggleFlip(slot) : undefined}
+                  onDoubleClick={
+                    slot.owned && slot.figurine
+                      ? (event) => {
+                          event.stopPropagation();
+                          void handleIncreaseFigurineQuantity(slot.figurine!.id);
+                        }
+                      : undefined
+                  }
                   sx={{
                     position: "relative",
                     width: "100%",
@@ -1189,7 +1218,8 @@ export default function CollectionDetailPage() {
                     transformStyle: "preserve-3d",
                     transition: "transform 0.62s ease",
                     transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-                    cursor: slot.owned ? "pointer" : "default",
+                    cursor: isQuantityUpdating ? "progress" : slot.owned ? "pointer" : "default",
+                    pointerEvents: isQuantityUpdating ? "none" : "auto",
                   }}
                 >
                   {stackLayers > 0 &&
@@ -1312,6 +1342,28 @@ export default function CollectionDetailPage() {
                       }}
                     />
 
+                    {isQuantityUpdating && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          inset: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexDirection: "column",
+                          gap: 0.7,
+                          zIndex: 5,
+                          background: "rgba(8, 12, 20, 0.55)",
+                          backdropFilter: "blur(1.5px)",
+                        }}
+                      >
+                        <CircularProgress size={22} sx={{ color: theme.palette.info.light }} />
+                        <Typography variant="caption" sx={{ color: "rgba(230,240,255,0.94)", fontWeight: 700 }}>
+                          Updating quantity...
+                        </Typography>
+                      </Box>
+                    )}
+
                     {stackLayers > 0 && (
                       <Chip
                         label={`x${duplicateCount}`}
@@ -1331,9 +1383,30 @@ export default function CollectionDetailPage() {
                       />
                     )}
 
-                    {slot.figurine && (
+                    {slot.figurine && slot.owned && (
+                      <Tooltip title="Double-click to increase quantity">
+                        <Chip
+                          label="Collected"
+                          size="small"
+                          sx={{
+                            position: "absolute",
+                            top: 8,
+                            left: 8,
+                            height: 20,
+                            fontSize: "0.65rem",
+                            fontWeight: 800,
+                            bgcolor: alpha(theme.palette.info.main, 0.84),
+                            color: "#fff",
+                            border: `1px solid ${alpha(theme.palette.info.light, 0.46)}`,
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.34)",
+                          }}
+                        />
+                      </Tooltip>
+                    )}
+
+                    {slot.figurine && !slot.owned && (
                       <Chip
-                        label={slot.owned ? "Collected" : isAnnounced ? "Announced" : "Missing"}
+                        label={isAnnounced ? "Announced" : "Missing"}
                         size="small"
                         sx={{
                           position: "absolute",
@@ -1342,17 +1415,13 @@ export default function CollectionDetailPage() {
                           height: 20,
                           fontSize: "0.65rem",
                           fontWeight: 800,
-                          bgcolor: slot.owned
-                            ? alpha(theme.palette.info.main, 0.84)
-                            : isAnnounced
-                              ? alpha(theme.palette.secondary.main, 0.82)
-                              : alpha(theme.palette.grey[500], 0.76),
+                          bgcolor: isAnnounced
+                            ? alpha(theme.palette.secondary.main, 0.82)
+                            : alpha(theme.palette.grey[500], 0.76),
                           color: "#fff",
-                          border: slot.owned
-                            ? `1px solid ${alpha(theme.palette.info.light, 0.46)}`
-                            : isAnnounced
-                              ? `1px solid ${alpha(theme.palette.secondary.light, 0.5)}`
-                              : `1px solid ${alpha(theme.palette.common.white, 0.34)}`,
+                          border: isAnnounced
+                            ? `1px solid ${alpha(theme.palette.secondary.light, 0.5)}`
+                            : `1px solid ${alpha(theme.palette.common.white, 0.34)}`,
                           boxShadow: "0 2px 8px rgba(0,0,0,0.34)",
                         }}
                       />
