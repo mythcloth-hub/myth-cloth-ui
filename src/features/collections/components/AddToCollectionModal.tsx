@@ -181,7 +181,7 @@ export default function AddToCollectionModal({
 
       <DialogContent sx={{ pt: 2 }}>
         {/* Figurine name info */}
-        <Box sx={{ mb: 2, p: 1.5, background: "rgba(79,195,247,0.05)", borderRadius: 1 }}>
+        <Box sx={{ mb: 2, mt: 2, p: 1.5, background: "rgba(79,195,247,0.05)", borderRadius: 1 }}>
           <Typography variant="caption" sx={{ color: "text.secondary" }}>
             Adding:
           </Typography>

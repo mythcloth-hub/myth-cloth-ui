@@ -16,6 +16,7 @@ import {
   DialogActions,
   CircularProgress,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -131,7 +132,7 @@ export default function RoleListPage() {
           eyebrow="Security"
           title="Roles"
           subtitle="Manage role definitions used to control access across the application."
-          actions={<Button variant="contained" onClick={() => navigate("/security/roles/new")}>+ Add Role</Button>}
+          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/security/roles/new")}>Add Role</Button>}
         />
       </Box>
 

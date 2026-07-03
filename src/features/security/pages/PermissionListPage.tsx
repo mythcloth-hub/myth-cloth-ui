@@ -16,6 +16,7 @@ import {
   DialogActions,
   CircularProgress,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -128,7 +129,7 @@ export default function PermissionListPage() {
           eyebrow="Security"
           title="Permissions"
           subtitle="Manage granular permissions that are assigned to roles and protected features."
-          actions={<Button variant="contained" onClick={() => navigate("/security/permissions/new")}>+ Add Permission</Button>}
+          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/security/permissions/new")}>Add Permission</Button>}
         />
       </Box>
 

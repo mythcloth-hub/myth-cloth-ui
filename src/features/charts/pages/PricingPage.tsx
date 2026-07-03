@@ -382,6 +382,18 @@ function YearExtremeCard({
 }
 
 function ReleaseCountBars({ data }: { data: ReleaseYearPriceStats[] }) {
+  const [animateBars, setAnimateBars] = useState(false);
+
+  useEffect(() => {
+    setAnimateBars(false);
+
+    const frameId = window.requestAnimationFrame(() => {
+      setAnimateBars(true);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [data]);
+
   if (data.length === 0) {
     return null;
   }
@@ -404,10 +416,11 @@ function ReleaseCountBars({ data }: { data: ReleaseYearPriceStats[] }) {
               <Box
                 sx={{
                   width: "100%",
-                  height: barHeight,
+                  height: animateBars ? barHeight : 0,
                   borderRadius: "8px 8px 3px 3px",
                   background: "linear-gradient(180deg, rgba(212,175,55,0.95) 0%, rgba(212,175,55,0.45) 100%)",
                   border: "1px solid rgba(212,175,55,0.4)",
+                  transition: "height 900ms cubic-bezier(0.2, 0.9, 0.2, 1)",
                 }}
               />
               <Typography variant="caption" sx={{ display: "block", mt: 0.5, color: "rgba(255,255,255,0.58)", fontSize: "0.62rem" }}>
@@ -478,67 +491,82 @@ export default function PricingPage() {
           "radial-gradient(circle at top left, rgba(212,175,55,0.1), transparent 24%), radial-gradient(circle at 85% 8%, rgba(79,195,247,0.1), transparent 20%)",
       }}
     >
-      <Box sx={{ mb: 2.5 }}>
-        <AppPageHeader
-          eyebrow="Stats & Charts"
-          title="Pricing"
-          subtitle="Track average, highest, and lowest release prices over time, plus yearly release volume and price extremes."
-        />
-      </Box>
-
-      <Paper
+      <Box
         sx={{
+          position: "sticky",
+          top: 0,
+          zIndex: 9,
+          bgcolor: "background.default",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          mx: { xs: -1.5, sm: -2, md: -3 },
+          px: { xs: 1.5, sm: 2, md: 3 },
+          pt: 0.25,
+          pb: 1,
           mb: 3,
-          p: { xs: 2, md: 3 },
-          borderRadius: 4,
-          border: "1px solid rgba(255,255,255,0.08)",
-          background:
-            "radial-gradient(circle at top left, rgba(212,175,55,0.14), transparent 26%), radial-gradient(circle at right, rgba(79,195,247,0.14), transparent 24%), linear-gradient(135deg, rgba(10,14,22,0.98) 0%, rgba(15,20,31,0.98) 100%)",
-          boxShadow: "0 24px 70px rgba(0,0,0,0.25)",
         }}
       >
-        {summary && (
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap" sx={{ mt: 2.25 }}>
-            <Chip label={`${summary.firstYear} - ${summary.lastYear}`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
-            <Chip label={`${formatCount(summary.totalReleases)} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
-            <Chip label={`${formatCurrency(summary.weightedAverage)} weighted avg`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
-            <Chip label={`${formatCurrency(summary.highestPrice)} peak price`} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
-          </Stack>
-        )}
+        <Box sx={{ mb: 2.5 }}>
+          <AppPageHeader
+            eyebrow="Stats & Charts"
+            title="Pricing"
+            subtitle="Track average, highest, and lowest release prices over time, plus yearly release volume and price extremes."
+          />
+        </Box>
 
-        {summary && (
-          <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mt: 2.5 }}>
-            <Box sx={{ flex: 1 }}>
-              <PriceMetricCard
-                label="Year range"
-                value={`${summary.firstYear} - ${summary.lastYear}`}
-                accent="#d4af37"
-              />
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <PriceMetricCard
-                label="Weighted average"
-                value={formatCurrency(summary.weightedAverage)}
-                accent="#4fc3f7"
-              />
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <PriceMetricCard
-                label="Absolute range"
-                value={`${formatCurrency(summary.lowestPrice)} - ${formatCurrency(summary.highestPrice)}`}
-                accent="#81c784"
-              />
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <PriceMetricCard
-                label="Total releases"
-                value={formatCount(summary.totalReleases)}
-                accent="#ffb74d"
-              />
-            </Box>
-          </Stack>
-        )}
-      </Paper>
+        <Paper
+          sx={{
+            p: { xs: 2, md: 3 },
+            borderRadius: 4,
+            border: "1px solid rgba(255,255,255,0.08)",
+            background:
+              "radial-gradient(circle at top left, rgba(212,175,55,0.14), transparent 26%), radial-gradient(circle at right, rgba(79,195,247,0.14), transparent 24%), linear-gradient(135deg, rgba(10,14,22,0.98) 0%, rgba(15,20,31,0.98) 100%)",
+            boxShadow: "0 24px 70px rgba(0,0,0,0.25)",
+          }}
+        >
+          {summary && (
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap" sx={{ mt: 2.25 }}>
+              <Chip label={`${summary.firstYear} - ${summary.lastYear}`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
+              <Chip label={`${formatCount(summary.totalReleases)} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
+              <Chip label={`${formatCurrency(summary.weightedAverage)} weighted avg`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
+              <Chip label={`${formatCurrency(summary.highestPrice)} peak price`} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
+            </Stack>
+          )}
+
+          {summary && (
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mt: 2.5 }}>
+              <Box sx={{ flex: 1 }}>
+                <PriceMetricCard
+                  label="Year range"
+                  value={`${summary.firstYear} - ${summary.lastYear}`}
+                  accent="#d4af37"
+                />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <PriceMetricCard
+                  label="Weighted average"
+                  value={formatCurrency(summary.weightedAverage)}
+                  accent="#4fc3f7"
+                />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <PriceMetricCard
+                  label="Absolute range"
+                  value={`${formatCurrency(summary.lowestPrice)} - ${formatCurrency(summary.highestPrice)}`}
+                  accent="#81c784"
+                />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <PriceMetricCard
+                  label="Total releases"
+                  value={formatCount(summary.totalReleases)}
+                  accent="#ffb74d"
+                />
+              </Box>
+            </Stack>
+          )}
+        </Paper>
+      </Box>
 
       {errorMessage && (
         <Alert severity="error" sx={{ mb: 3 }}>

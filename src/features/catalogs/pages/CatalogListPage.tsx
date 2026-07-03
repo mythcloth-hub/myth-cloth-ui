@@ -16,6 +16,7 @@ import {
   DialogActions,
   CircularProgress,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -134,7 +135,7 @@ export default function CatalogListPage() {
           eyebrow="Catalogs"
           title={plural}
           subtitle={`Manage ${plural.toLowerCase()} used throughout the collection experience.`}
-          actions={<Button variant="contained" onClick={() => navigate(`/catalogs/${catalogType}/new`)}>+ Add {singular}</Button>}
+          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate(`/catalogs/${catalogType}/new`)}>Add {singular}</Button>}
         />
       </Box>
 

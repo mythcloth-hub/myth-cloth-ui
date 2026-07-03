@@ -32,6 +32,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import TuneIcon from "@mui/icons-material/Tune";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
 import { getFigurines, getSelectableFigurineIds } from "../api/figurineApi";
@@ -807,6 +808,11 @@ export default function FigurineCollectionPage() {
           pb: 1,
           mb: 2,
           borderBottom: "1px solid rgba(212,175,55,0.08)",
+          animation: "figurineHeaderReveal 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both",
+          "@keyframes figurineHeaderReveal": {
+            "0%": { opacity: 0, transform: "translateY(-10px)" },
+            "100%": { opacity: 1, transform: "translateY(0)" },
+          },
         }}
       >
         <Box sx={{ mt: 1.5, mb: 1.5 }}>
@@ -880,8 +886,12 @@ export default function FigurineCollectionPage() {
             )}
             
             {hasPermission("figurines:write") && (
-              <Button variant="contained" onClick={() => navigate("/figurines/new")} sx={{ flexShrink: 0 }}>
-                + New Figurine
+              <Button 
+                variant="contained" 
+                startIcon={<AddIcon />}
+                onClick={() => navigate("/figurines/new")} 
+                sx={{ flexShrink: 0 }}>
+                  New Figurine
               </Button>
             )}
               </Box>
@@ -1129,7 +1139,7 @@ export default function FigurineCollectionPage() {
         </Grid>
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          {STATUS_ORDER.map((status) => {
+          {STATUS_ORDER.map((status, statusIndex) => {
             const sectionItems = groupedByStatus[status];
             if (!sectionItems.length) return null;
             const cfg = RELEASE_STATUS_CONFIG[status];
@@ -1142,6 +1152,12 @@ export default function FigurineCollectionPage() {
                   p: { xs: 1, sm: 1.5 },
                   bgcolor: "rgba(255,255,255,0.02)",
                   border: `1px solid ${cfg.borderColor}`,
+                  opacity: 0,
+                  animation: `figurineSectionReveal 520ms cubic-bezier(0.2, 0.9, 0.2, 1) ${120 + statusIndex * 90}ms forwards`,
+                  "@keyframes figurineSectionReveal": {
+                    "0%": { opacity: 0, transform: "translateY(16px)" },
+                    "100%": { opacity: 1, transform: "translateY(0)" },
+                  },
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: 0.5 }}>
@@ -1164,8 +1180,19 @@ export default function FigurineCollectionPage() {
                 </Typography>
 
                 <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-                  {sectionItems.map((fig) => (
-                    <Grid key={fig.id} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
+                  {sectionItems.map((fig, itemIndex) => (
+                    <Grid
+                      key={fig.id}
+                      size={{ xs: 6, sm: 4, md: 3, lg: 2 }}
+                      sx={{
+                        opacity: 0,
+                        animation: `figurineCardReveal 620ms cubic-bezier(0.2, 0.9, 0.2, 1) ${Math.min(180 + statusIndex * 90 + itemIndex * 30, 720)}ms forwards`,
+                        "@keyframes figurineCardReveal": {
+                          "0%": { opacity: 0, transform: "translateY(18px) scale(0.985)" },
+                          "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
+                        },
+                      }}
+                    >
                       <FigurineCard
                         figurine={fig}
                         dimmed={Boolean(selectedCollection) && !selectedCollectionFigurineIds.has(fig.id)}

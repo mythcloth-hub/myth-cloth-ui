@@ -16,6 +16,7 @@ import {
   DialogActions,
   CircularProgress,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -147,7 +148,7 @@ export default function AnniversaryListPage() {
           eyebrow="Events & Partners"
           title="Anniversaries"
           subtitle="Manage anniversary milestones and commemorative entries used across the collection."
-          actions={<Button variant="contained" onClick={() => navigate("/anniversaries/new")}>+ Add Anniversary</Button>}
+          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/anniversaries/new")}>Add Anniversary</Button>}
         />
       </Box>
 

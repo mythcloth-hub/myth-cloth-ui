@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import AddIcon from "@mui/icons-material/Add";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import { Box, Typography, Tooltip, IconButton, Button, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CircularProgress } from "@mui/material";
@@ -158,7 +159,7 @@ export default function DistributorListPage() {
           eyebrow="Events & Partners"
           title="Distributors"
           subtitle="Manage distributor partners, countries, and reference links for release tracking."
-          actions={<Button variant="contained" onClick={() => navigate("/distributors/new")}>+ Add Distributor</Button>}
+          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/distributors/new")}>Add Distributor</Button>}
         />
       </Box>
 

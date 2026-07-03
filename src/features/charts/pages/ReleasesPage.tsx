@@ -104,6 +104,17 @@ function YearBarChart({
   const LABEL_H = 44;
   const selectedYearData = selectedYear ? sortedYears.find((year) => year.year === selectedYear) : null;
   const selectedYearTotal = selectedYearData ? getYearReleaseTotal(selectedYearData) : null;
+  const [animateBars, setAnimateBars] = useState(false);
+
+  useEffect(() => {
+    setAnimateBars(false);
+
+    const frameId = window.requestAnimationFrame(() => {
+      setAnimateBars(true);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [sortedYears]);
 
   return (
     <Box
@@ -240,7 +251,7 @@ function YearBarChart({
                   <Box
                     sx={{
                       width: "100%",
-                      height: barH,
+                      height: animateBars ? barH : 0,
                       borderRadius: "10px 10px 2px 2px",
                       overflow: "hidden",
                       display: "flex",
@@ -251,7 +262,7 @@ function YearBarChart({
                       boxShadow: isSelected
                         ? "0 0 0 2px rgba(255,255,255,0.2), 0 20px 40px rgba(74,163,216,0.28)"
                         : "0 10px 24px rgba(0,0,0,0.28)",
-                      transition: "transform 0.18s, border-color 0.18s, box-shadow 0.18s, opacity 0.18s",
+                      transition: "height 900ms cubic-bezier(0.2, 0.9, 0.2, 1), transform 0.18s, border-color 0.18s, box-shadow 0.18s, opacity 0.18s",
                       background: "linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.02) 16%, rgba(0,0,0,0.1) 100%)",
                       "&:hover": {
                         opacity: 0.94,
@@ -669,46 +680,60 @@ export default function ReleasesPage() {
           "radial-gradient(circle at top, rgba(74,163,216,0.12), transparent 24%), radial-gradient(circle at 82% 12%, rgba(212,175,55,0.12), transparent 18%)",
       }}
     >
-      <Box sx={{ mb: 2.5 }}>
-        <AppPageHeader
-          eyebrow="Stats & Charts"
-          title="Releases"
-          subtitle="Explore your release history by lineup and drill down from yearly trends into month-by-month figurine drops."
-        />
-      </Box>
-
-      {/* Header */}
-      <Paper
+      <Box
         sx={{
+          position: "sticky",
+          top: 0,
+          zIndex: 9,
+          bgcolor: "background.default",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          mx: { xs: -1.5, sm: -2, md: -3 },
+          px: { xs: 1.5, sm: 2, md: 3 },
+          pt: 0.25,
+          pb: 1,
           mb: 3,
-          p: { xs: 2, md: 3 },
-          borderRadius: 4,
-          color: "common.white",
-          border: "1px solid rgba(255,255,255,0.08)",
-          background:
-            "radial-gradient(circle at top left, rgba(212,175,55,0.18), transparent 26%), radial-gradient(circle at right, rgba(74,163,216,0.18), transparent 24%), linear-gradient(135deg, rgba(9,12,20,0.98) 0%, rgba(16,22,34,0.98) 100%)",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.28)",
-          overflow: "hidden",
-          position: "relative",
         }}
       >
-        <Box
+        <Box sx={{ mb: 2.5 }}>
+          <AppPageHeader
+            eyebrow="Stats & Charts"
+            title="Releases"
+            subtitle="Explore your release history by lineup and drill down from yearly trends into month-by-month figurine drops."
+          />
+        </Box>
+
+        <Paper
           sx={{
-            position: "absolute",
-            inset: 0,
-            pointerEvents: "none",
-            backgroundImage:
-              "radial-gradient(circle at 16% 22%, rgba(255,255,255,0.2) 0 1px, transparent 1.5px), radial-gradient(circle at 76% 30%, rgba(255,255,255,0.14) 0 1px, transparent 1.5px), radial-gradient(circle at 62% 76%, rgba(255,255,255,0.1) 0 1px, transparent 1.5px)",
+            p: { xs: 2, md: 3 },
+            borderRadius: 4,
+            color: "common.white",
+            border: "1px solid rgba(255,255,255,0.08)",
+            background:
+              "radial-gradient(circle at top left, rgba(212,175,55,0.18), transparent 26%), radial-gradient(circle at right, rgba(74,163,216,0.18), transparent 24%), linear-gradient(135deg, rgba(9,12,20,0.98) 0%, rgba(16,22,34,0.98) 100%)",
+            boxShadow: "0 24px 80px rgba(0,0,0,0.28)",
+            overflow: "hidden",
+            position: "relative",
           }}
-        />
-        <Stack spacing={2} sx={{ position: "relative" }}>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
-            <Chip label={`${visibleSummary.length} years with releases`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
-            <Chip label={`${totalReleases} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
-            <Chip label={`${Object.keys(lineupColors).length} lineups represented`} sx={{ bgcolor: "rgba(74,163,216,0.12)", color: "#9FD7F4", border: "1px solid rgba(74,163,216,0.24)", fontWeight: 700 }} />
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+              backgroundImage:
+                "radial-gradient(circle at 16% 22%, rgba(255,255,255,0.2) 0 1px, transparent 1.5px), radial-gradient(circle at 76% 30%, rgba(255,255,255,0.14) 0 1px, transparent 1.5px), radial-gradient(circle at 62% 76%, rgba(255,255,255,0.1) 0 1px, transparent 1.5px)",
+            }}
+          />
+          <Stack spacing={2} sx={{ position: "relative" }}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
+              <Chip label={`${visibleSummary.length} years with releases`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
+              <Chip label={`${totalReleases} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
+              <Chip label={`${Object.keys(lineupColors).length} lineups represented`} sx={{ bgcolor: "rgba(74,163,216,0.12)", color: "#9FD7F4", border: "1px solid rgba(74,163,216,0.24)", fontWeight: 700 }} />
+            </Stack>
           </Stack>
-        </Stack>
-      </Paper>
+        </Paper>
+      </Box>
 
       {errorMessage && (
         <Alert severity="error" sx={{ mb: 3 }}>

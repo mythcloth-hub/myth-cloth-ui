@@ -146,7 +146,7 @@ export default function FigurineDetailPage() {
         }}
       >
         <Tooltip title="Back to Myth Cloth Collection">
-          <IconButton onClick={handleBackToCollection} sx={{ color: "primary.main" }}>
+          <IconButton onClick={handleBackToCollection} sx={{ mt: 0.5 }}>
             <ArrowBackIcon />
           </IconButton>
         </Tooltip>

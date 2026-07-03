@@ -40,11 +40,13 @@ export default function AppPageHeader({
         <Typography
           variant="h4"
           sx={{
-            fontSize: { xs: "1.55rem", md: compact ? "1.9rem" : "2.2rem" },
+            fontSize: {
+                xs: "1.4rem",
+                md: compact ? "1.9rem" : "2.2rem"
+            },
             fontWeight: 800,
-            lineHeight: 1.08,
-            color: "text.primary",
-          }}
+            lineHeight: 1.08 
+        }}
         >
           {title}
         </Typography>
