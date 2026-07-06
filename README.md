@@ -61,24 +61,38 @@ Use one block only, then continue to Local Setup (Step by Step).
 Path A: NVM (recommended)
 
 ```bash
+# Refresh package index and upgrade installed packages
 sudo apt update && sudo apt upgrade -y
+# Install required tools: git, curl, compiler tools, and trusted certificates
 sudo apt install -y git curl build-essential ca-certificates
+# Download and run the official NVM installer
 curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+# Point to NVM installation folder
 export NVM_DIR="$HOME/.nvm"
+# Load NVM into this terminal session
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+# Install Node.js 20 (LTS major)
 nvm install 20
+# Activate Node.js 20 for current shell
 nvm use 20
+# Make Node.js 20 the default for new shells
 nvm alias default 20
+# Verify installed versions
 node -v && npm -v && git --version
 ```
 
 Path B: NodeSource (system-wide)
 
 ```bash
+# Refresh package index and upgrade installed packages
 sudo apt update && sudo apt upgrade -y
+# Install required tools: git, curl, compiler tools, and trusted certificates
 sudo apt install -y git curl build-essential ca-certificates
+# Add NodeSource LTS repository to apt sources
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+# Install system-wide Node.js from NodeSource
 sudo apt install -y nodejs
+# Verify installed versions
 node -v && npm -v && git --version
 ```
 
@@ -89,38 +103,54 @@ Use one block only, based on your chosen Node installation path.
 Path A: NVM + project setup + run
 
 ```bash
+# Refresh package index and upgrade installed packages
 sudo apt update && sudo apt upgrade -y
+# Install required tools for cloning and building packages
 sudo apt install -y git curl build-essential ca-certificates
+# Install NVM
 curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+# Configure and load NVM in this session
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+# Install and activate Node.js 20, and keep it as default
 nvm install 20
 nvm use 20
 nvm alias default 20
+# Clone the frontend repository and enter project directory
 git clone https://github.com/mythcloth-hub/myth-cloth-ui.git
 cd myth-cloth-ui
+# Install JavaScript dependencies from package-lock.json/package.json
 npm install
+# Create .env with required social login variables
 cat > .env << 'EOF'
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
 VITE_FACEBOOK_APP_ID=your_facebook_app_id
 EOF
+# Start Vite development server
 npm run dev
 ```
 
 Path B: NodeSource + project setup + run
 
 ```bash
+# Refresh package index and upgrade installed packages
 sudo apt update && sudo apt upgrade -y
+# Install required tools for cloning and building packages
 sudo apt install -y git curl build-essential ca-certificates
+# Add NodeSource LTS repo and install system-wide Node.js
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 sudo apt install -y nodejs
+# Clone the frontend repository and enter project directory
 git clone https://github.com/mythcloth-hub/myth-cloth-ui.git
 cd myth-cloth-ui
+# Install JavaScript dependencies
 npm install
+# Create .env with required social login variables
 cat > .env << 'EOF'
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
 VITE_FACEBOOK_APP_ID=your_facebook_app_id
 EOF
+# Start Vite development server
 npm run dev
 ```
 
@@ -147,21 +177,27 @@ NVM makes it easy to manage Node versions and avoids permission issues.
 Install NVM:
 
 ```bash
+# Download and run the official NVM installer
 curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 ```
 
 Load NVM in the current terminal:
 
 ```bash
+# Set NVM directory location
 export NVM_DIR="$HOME/.nvm"
+# Load NVM for current terminal session
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 ```
 
 Install and use Node 20 LTS:
 
 ```bash
+# Install Node.js 20 (LTS major)
 nvm install 20
+# Switch current terminal to Node.js 20
 nvm use 20
+# Make Node.js 20 default in future terminal sessions
 nvm alias default 20
 ```
 
@@ -185,12 +221,14 @@ Use this if you prefer apt-managed, system-wide Node.js instead of NVM.
 Add the NodeSource LTS repository:
 
 ```bash
+# Add NodeSource LTS apt repository
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 ```
 
 Install Node.js:
 
 ```bash
+# Install Node.js from apt (NodeSource repository)
 sudo apt install -y nodejs
 ```
 
@@ -282,19 +320,23 @@ Then restart the frontend dev server.
 1. Clone the repository:
 
 ```bash
+# Clone repository from GitHub
 git clone https://github.com/mythcloth-hub/myth-cloth-ui.git
+# Enter project directory
 cd myth-cloth-ui
 ```
 
 2. (If using NVM) confirm you are using the right Node version:
 
 ```bash
+# Activate Node.js 20 in this terminal (NVM users)
 nvm use 20
 ```
 
 3. Install dependencies:
 
 ```bash
+# Install dependencies listed in package.json
 npm install
 ```
 
@@ -317,6 +359,7 @@ Notes:
 5. Start the development server:
 
 ```bash
+# Start local development server (Vite)
 npm run dev
 ```
 
@@ -335,13 +378,19 @@ http://localhost:5173
 After system dependencies are installed, this sequence gets you running quickly:
 
 ```bash
+# Clone the repository and move into it
 git clone https://github.com/mythcloth-hub/myth-cloth-ui.git
 cd myth-cloth-ui
+# Load NVM in case this is a new terminal
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+# Use Node.js 20 for this project
 nvm use 20
+# Install project dependencies
 npm install
+# Copy .env to .env.local if .env exists (safe no-op otherwise)
 cp .env .env.local 2>/dev/null || true
+# Start development server
 npm run dev
 ```
 
@@ -393,6 +442,7 @@ npm run preview
 - Stop the process using that port, or run Vite on another port:
 
 ```bash
+# Run dev server on alternate port if 5173 is busy
 npm run dev -- --port 5174
 ```
 
