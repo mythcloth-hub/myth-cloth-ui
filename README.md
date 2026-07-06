@@ -31,6 +31,181 @@ Install these tools on your new machine before running the app:
 2. npm 10 or newer
 3. Git
 
+## Linux Mint Fresh Install Guide (From Scratch)
+
+If you have a fresh Linux Mint install, follow this exact order.
+
+If you only want the fastest path to run the app, use:
+
+- Full End-to-End Setup -> Path A (NVM + project setup + run)
+
+Choose one Node.js installation path:
+
+- Path A (recommended): NVM (best for development and switching versions)
+- Path B (alternative): NodeSource (system-wide installation)
+
+### Which One Should I Choose?
+
+| Scenario | Recommended Option | Why |
+| --- | --- | --- |
+| You work on multiple projects with different Node versions | NVM | Easy switching per project (`nvm use`) |
+| You want project-safe installs without `sudo npm ...` | NVM | Avoids most global permission issues |
+| You want one system-wide Node install managed by apt | NodeSource | Simpler for single-version environments |
+| You prefer standard system paths like `/usr/bin/node` | NodeSource | Predictable path and package-manager workflow |
+| You are unsure which to pick | NVM | Most flexible and safest default for development |
+
+### Install Node Only (Quick Commands)
+
+Use one block only, then continue to Local Setup (Step by Step).
+
+Path A: NVM (recommended)
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y git curl build-essential ca-certificates
+curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm install 20
+nvm use 20
+nvm alias default 20
+node -v && npm -v && git --version
+```
+
+Path B: NodeSource (system-wide)
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y git curl build-essential ca-certificates
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt install -y nodejs
+node -v && npm -v && git --version
+```
+
+### Full End-to-End Setup (From Zero to Running App)
+
+Use one block only, based on your chosen Node installation path.
+
+Path A: NVM + project setup + run
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y git curl build-essential ca-certificates
+curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm install 20
+nvm use 20
+nvm alias default 20
+git clone https://github.com/mythcloth-hub/myth-cloth-ui.git
+cd myth-cloth-ui
+npm install
+cat > .env << 'EOF'
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+VITE_FACEBOOK_APP_ID=your_facebook_app_id
+EOF
+npm run dev
+```
+
+Path B: NodeSource + project setup + run
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y git curl build-essential ca-certificates
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt install -y nodejs
+git clone https://github.com/mythcloth-hub/myth-cloth-ui.git
+cd myth-cloth-ui
+npm install
+cat > .env << 'EOF'
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+VITE_FACEBOOK_APP_ID=your_facebook_app_id
+EOF
+npm run dev
+```
+
+After the server starts, open:
+
+http://localhost:5173
+
+### 1. Update your system packages
+
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+### 2. Install required base tools
+
+```bash
+sudo apt install -y git curl build-essential ca-certificates
+```
+
+### 3. Install Node.js with NVM (recommended)
+
+NVM makes it easy to manage Node versions and avoids permission issues.
+
+Install NVM:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+```
+
+Load NVM in the current terminal:
+
+```bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+```
+
+Install and use Node 20 LTS:
+
+```bash
+nvm install 20
+nvm use 20
+nvm alias default 20
+```
+
+Verify tooling:
+
+```bash
+node -v
+npm -v
+git --version
+```
+
+Expected:
+
+- Node version should be 20.x or newer
+- npm should be installed and working
+
+### 4. Alternative: Install Node.js LTS with NodeSource (system-wide)
+
+Use this if you prefer apt-managed, system-wide Node.js instead of NVM.
+
+Add the NodeSource LTS repository:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+```
+
+Install Node.js:
+
+```bash
+sudo apt install -y nodejs
+```
+
+Verify:
+
+```bash
+node -v
+npm -v
+```
+
+Note:
+
+- Do not mix NVM and NodeSource in the same shell session unless you know which one is active.
+- If both are installed, running which node helps confirm which binary is being used.
+
 Recommended checks:
 
 ```bash
@@ -107,17 +282,23 @@ Then restart the frontend dev server.
 1. Clone the repository:
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/mythcloth-hub/myth-cloth-ui.git
 cd myth-cloth-ui
 ```
 
-2. Install dependencies:
+2. (If using NVM) confirm you are using the right Node version:
+
+```bash
+nvm use 20
+```
+
+3. Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Configure environment variables.
+4. Configure environment variables.
 
 This project uses Vite environment variables for social login.
 
@@ -133,15 +314,38 @@ Notes:
 - If these values are missing, the app still starts, but Facebook and Google login actions will show configuration errors.
 - Only variables prefixed with VITE_ are available in the frontend.
 
-4. Start the development server:
+5. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-5. Open the app in your browser:
+6. Open the app in your browser:
 
 http://localhost:5173
+
+7. Confirm frontend can reach backend:
+
+- Open browser developer tools (F12) and go to Network.
+- Trigger any screen that loads API data.
+- Verify requests go to http://localhost:9090/api/v1 and return successful status codes.
+
+## First-Time Setup (One-Command Sequence)
+
+After system dependencies are installed, this sequence gets you running quickly:
+
+```bash
+git clone https://github.com/mythcloth-hub/myth-cloth-ui.git
+cd myth-cloth-ui
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm use 20
+npm install
+cp .env .env.local 2>/dev/null || true
+npm run dev
+```
+
+If no .env exists yet, create one manually using the variables shown above.
 
 ## Available Scripts
 
@@ -169,6 +373,7 @@ npm run preview
 1. npm install fails:
 - Delete node_modules and package-lock.json, then run npm install again.
 - Confirm you are on a supported Node.js version.
+- If you get EACCES permission errors, avoid sudo npm install and use NVM-managed Node.
 
 2. API calls fail or return network errors:
 - Verify backend is running on port 9090.
@@ -179,6 +384,21 @@ npm run preview
 3. Facebook or Google login unavailable:
 - Verify .env contains VITE_FACEBOOK_APP_ID and VITE_GOOGLE_CLIENT_ID.
 - Restart npm run dev after changing .env.
+
+4. nvm command not found after reboot (NVM users):
+- Restart terminal or run source ~/.bashrc (or source ~/.zshrc).
+- Re-run nvm use 20 before running npm commands.
+
+5. Port 5173 already in use:
+- Stop the process using that port, or run Vite on another port:
+
+```bash
+npm run dev -- --port 5174
+```
+
+6. Wrong Node version after installing NodeSource:
+- Run which node and confirm it points to /usr/bin/node.
+- Open a new terminal session and run node -v again.
 
 ## Project Structure (High Level)
 
