@@ -2,8 +2,13 @@
 import axios from "axios";
 import { clearAuthSession, getAuthorizationHeaderValue } from "../auth/authSession";
 
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+const apiBaseUrl = configuredApiBaseUrl
+  ? configuredApiBaseUrl.replace(/\/+$/, "")
+  : "http://localhost:9090/api/v1";
+
 const httpClient = axios.create({
-  baseURL: "http://localhost:9090/api/v1",
+  baseURL: apiBaseUrl,
   headers: {
     "Content-Type": "application/json",
   },

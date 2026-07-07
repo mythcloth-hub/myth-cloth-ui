@@ -121,11 +121,9 @@ git clone https://github.com/mythcloth-hub/myth-cloth-ui.git
 cd myth-cloth-ui
 # Install JavaScript dependencies from package-lock.json/package.json
 npm install
-# Create .env with required social login variables
-cat > .env << 'EOF'
-VITE_GOOGLE_CLIENT_ID=your_google_client_id
-VITE_FACEBOOK_APP_ID=your_facebook_app_id
-EOF
+# Create local environment file from template
+cp .env.example .env
+# Edit .env and set your real social login values
 # Start Vite development server
 npm run dev
 ```
@@ -145,11 +143,9 @@ git clone https://github.com/mythcloth-hub/myth-cloth-ui.git
 cd myth-cloth-ui
 # Install JavaScript dependencies
 npm install
-# Create .env with required social login variables
-cat > .env << 'EOF'
-VITE_GOOGLE_CLIENT_ID=your_google_client_id
-VITE_FACEBOOK_APP_ID=your_facebook_app_id
-EOF
+# Create local environment file from template
+cp .env.example .env
+# Edit .env and set your real social login values
 # Start Vite development server
 npm run dev
 ```
@@ -254,11 +250,15 @@ git --version
 
 ## Backend Dependency
 
-This frontend expects the backend API to be running locally at:
+This frontend reads the API base URL from:
+
+VITE_API_BASE_URL
+
+If this variable is not set, it falls back to:
 
 http://localhost:9090/api/v1
 
-The base URL is currently configured in src/api/httpClient.ts. Start the backend before using the UI features that call APIs.
+The API base URL is configured in src/api/httpClient.ts. Start the backend before using the UI features that call APIs.
 
 ## Backend Setup Assumptions (Recommended)
 
@@ -305,15 +305,13 @@ Before starting the frontend, verify backend health:
 
 ### If Your Backend URL Is Different
 
-Update the Axios base URL in src/api/httpClient.ts:
+Set VITE_API_BASE_URL in your environment and restart the frontend dev server.
 
-```ts
-const httpClient = axios.create({
-	baseURL: "http://your-host:your-port/api/v1",
-});
+Example:
+
+```env
+VITE_API_BASE_URL=https://your-backend-host/api/v1
 ```
-
-Then restart the frontend dev server.
 
 ## Local Setup (Step by Step)
 
@@ -344,9 +342,16 @@ npm install
 
 This project uses Vite environment variables for social login.
 
-Create or update .env in the project root with:
+Copy the template and update values:
+
+```bash
+cp .env.example .env
+```
+
+Then set your values in .env:
 
 ```env
+VITE_API_BASE_URL=http://localhost:9090/api/v1
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
 VITE_FACEBOOK_APP_ID=your_facebook_app_id
 ```
@@ -371,7 +376,34 @@ http://localhost:5173
 
 - Open browser developer tools (F12) and go to Network.
 - Trigger any screen that loads API data.
-- Verify requests go to http://localhost:9090/api/v1 and return successful status codes.
+- Verify requests go to the URL defined in VITE_API_BASE_URL and return successful status codes.
+
+## Deploy on Render (Static Site)
+
+Use Render Static Site for this Vite frontend.
+
+1. Push this repo to GitHub.
+2. In Render, click New + -> Static Site.
+3. Connect your frontend repository.
+4. Configure build settings:
+
+```text
+Build Command: npm install && npm run build
+Publish Directory: dist
+```
+
+5. Add environment variables in Render:
+
+```text
+VITE_API_BASE_URL=https://your-backend-render-url/api/v1
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+VITE_FACEBOOK_APP_ID=your_facebook_app_id
+```
+
+6. Deploy.
+7. After deploy, open the site and verify API calls in browser Network tab.
+
+Important: because this is a Vite app, VITE_* variables are injected at build time. If you change VITE_API_BASE_URL later, trigger a new deploy in Render.
 
 ## First-Time Setup (One-Command Sequence)
 
@@ -388,13 +420,13 @@ export NVM_DIR="$HOME/.nvm"
 nvm use 20
 # Install project dependencies
 npm install
-# Copy .env to .env.local if .env exists (safe no-op otherwise)
-cp .env .env.local 2>/dev/null || true
+# Create .env from example template
+cp .env.example .env
 # Start development server
 npm run dev
 ```
 
-If no .env exists yet, create one manually using the variables shown above.
+Then edit .env and set your real values.
 
 ## Available Scripts
 
@@ -427,7 +459,7 @@ npm run preview
 2. API calls fail or return network errors:
 - Verify backend is running on port 9090.
 - Confirm backend routes are exposed under /api/v1.
-- If backend uses a different URL, update src/api/httpClient.ts.
+- If backend uses a different URL, update VITE_API_BASE_URL.
 - Verify backend CORS allows http://localhost:5173.
 
 3. Facebook or Google login unavailable:
