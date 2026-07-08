@@ -392,6 +392,14 @@ Build Command: npm install && npm run build
 Publish Directory: dist
 ```
 
+For SPA routing (React Router with BrowserRouter), add a rewrite rule so deep links do not 404:
+
+```text
+Source: /*
+Destination: /index.html
+Action: Rewrite
+```
+
 5. Add environment variables in Render:
 
 ```text
@@ -404,6 +412,8 @@ VITE_FACEBOOK_APP_ID=your_facebook_app_id
 7. After deploy, open the site and verify API calls in browser Network tab.
 
 Important: because this is a Vite app, VITE_* variables are injected at build time. If you change VITE_API_BASE_URL later, trigger a new deploy in Render.
+
+If you deploy using a Render Blueprint, this repo includes render.yaml with the SPA rewrite already configured.
 
 ## First-Time Setup (One-Command Sequence)
 
