@@ -111,3 +111,8 @@ export const updateFigurine = async (id: number, data: unknown): Promise<Figurin
 export const deleteFigurine = async (id: number): Promise<void> => {
   await httpClient.delete(`${BASE}/${id}`);
 };
+
+export const loadAllFigurines = async (): Promise<number> => {
+  const res = await httpClient.post(`${BASE}/load`);
+  return res.status;
+};

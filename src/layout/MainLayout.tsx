@@ -36,6 +36,7 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
+import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import { useAppTheme } from "../theme/ThemeContext";
@@ -94,6 +95,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Roles", path: "/security/roles", icon: <AdminPanelSettingsOutlinedIcon /> },
       { label: "Permissions", path: "/security/permissions", icon: <LockOutlinedIcon /> },
       { label: "Role Permissions", path: "/security/role-permissions", icon: <LinkOutlinedIcon /> },
+      { label: "Figurine Loader", path: "/security/figurines/load", icon: <UploadFileOutlinedIcon /> },
     ],
   },
 ];
@@ -210,6 +212,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         }
         if (item.path === "/security/role-permissions") {
           return hasPermission("roles:read");
+        }
+        if (item.path === "/security/figurines/load") {
+          return hasPermission("figurines:load");
         }
         return true;
       }),
