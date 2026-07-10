@@ -52,53 +52,25 @@ body::before {
     mythKeyTwinkle 13s ease-in-out infinite;
 }
 
-/* Constellation motifs without SVG data URLs to avoid parser fragility */
+/* Polar star-map constellation motifs */
 body::after {
   z-index: 0;
   opacity: var(--myth-constellation-opacity);
-  background-image:
-    /* Pegasus */
-    radial-gradient(circle at 10% 28%, rgba(255, 255, 255, 0.85) 0 1px, transparent 2px),
-    radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.95) 0 1.35px, transparent 2.3px),
-    radial-gradient(circle at 22% 25%, rgba(255, 255, 255, 0.84) 0 1px, transparent 2px),
-    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.82) 0 1px, transparent 2px),
-    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.84) 0 1.1px, transparent 2px),
-    linear-gradient(121deg, transparent 14.2%, rgba(188, 216, 255, 0.24) 14.36%, rgba(188, 216, 255, 0.24) 14.5%, transparent 14.64%),
-    linear-gradient(104deg, transparent 22.2%, rgba(188, 216, 255, 0.2) 22.35%, rgba(188, 216, 255, 0.2) 22.5%, transparent 22.65%),
-    linear-gradient(133deg, transparent 29.2%, rgba(188, 216, 255, 0.2) 29.35%, rgba(188, 216, 255, 0.2) 29.5%, transparent 29.65%),
-    /* Cygnus */
-    radial-gradient(circle at 64% 20%, rgba(255, 255, 255, 0.88) 0 1.25px, transparent 2.2px),
-    radial-gradient(circle at 71% 16%, rgba(255, 255, 255, 0.97) 0 1.5px, transparent 2.6px),
-    radial-gradient(circle at 78% 20%, rgba(255, 255, 255, 0.88) 0 1.2px, transparent 2.1px),
-    radial-gradient(circle at 85% 16%, rgba(255, 255, 255, 0.8) 0 1px, transparent 2px),
-    radial-gradient(circle at 74% 27%, rgba(255, 255, 255, 0.82) 0 1px, transparent 2px),
-    linear-gradient(124deg, transparent 65.2%, rgba(188, 216, 255, 0.23) 65.36%, rgba(188, 216, 255, 0.23) 65.5%, transparent 65.64%),
-    linear-gradient(98deg, transparent 72.2%, rgba(188, 216, 255, 0.21) 72.35%, rgba(188, 216, 255, 0.21) 72.5%, transparent 72.65%),
-    linear-gradient(112deg, transparent 76.9%, rgba(188, 216, 255, 0.18) 77.03%, rgba(188, 216, 255, 0.18) 77.16%, transparent 77.3%),
-    /* Dragon */
-    radial-gradient(circle at 18% 66%, rgba(255, 255, 255, 0.88) 0 1.25px, transparent 2.2px),
-    radial-gradient(circle at 25% 61%, rgba(255, 255, 255, 0.95) 0 1.45px, transparent 2.5px),
-    radial-gradient(circle at 33% 64%, rgba(255, 255, 255, 0.84) 0 1.15px, transparent 2px),
-    radial-gradient(circle at 41% 60%, rgba(255, 255, 255, 0.82) 0 1px, transparent 2px),
-    radial-gradient(circle at 48% 63%, rgba(255, 255, 255, 0.82) 0 1px, transparent 2px),
-    linear-gradient(134deg, transparent 24.3%, rgba(188, 216, 255, 0.21) 24.45%, rgba(188, 216, 255, 0.21) 24.6%, transparent 24.75%),
-    linear-gradient(104deg, transparent 31.5%, rgba(188, 216, 255, 0.18) 31.65%, rgba(188, 216, 255, 0.18) 31.8%, transparent 31.95%),
-    linear-gradient(122deg, transparent 39.2%, rgba(188, 216, 255, 0.16) 39.35%, rgba(188, 216, 255, 0.16) 39.5%, transparent 39.65%),
-    /* Andromeda and Phoenix accents */
-    radial-gradient(circle at 62% 62%, rgba(255, 255, 255, 0.8) 0 1px, transparent 2px),
-    radial-gradient(circle at 68% 58%, rgba(255, 255, 255, 0.9) 0 1.2px, transparent 2px),
-    radial-gradient(circle at 74% 64%, rgba(255, 255, 255, 0.82) 0 1px, transparent 2px),
-    radial-gradient(circle at 86% 58%, rgba(var(--myth-stars-accent), 0.75) 0 1.6px, transparent 2.8px),
-    radial-gradient(circle at 90% 54%, rgba(var(--myth-stars-accent), 0.85) 0 1.9px, transparent 3px),
-    radial-gradient(circle at 93% 60%, rgba(var(--myth-stars-accent), 0.65) 0 1.35px, transparent 2.5px),
-    linear-gradient(118deg, transparent 66.9%, rgba(188, 216, 255, 0.14) 67.02%, rgba(188, 216, 255, 0.14) 67.16%, transparent 67.3%),
-    linear-gradient(144deg, transparent 87.6%, rgba(var(--myth-stars-accent), 0.22) 87.72%, rgba(var(--myth-stars-accent), 0.22) 87.84%, transparent 87.96%);
-  background-size: 100% 100%;
+  background-image: url("/constellations/polar-star-chart.svg");
+  background-size: min(124vw, 1500px) auto;
+  background-position: center 4%;
   background-repeat: no-repeat;
-  filter: drop-shadow(0 0 6px rgba(var(--myth-stars-accent), 0.15));
+  filter: drop-shadow(0 0 10px rgba(var(--myth-stars-accent), 0.22));
   animation:
     mythDrift var(--myth-constellation-drift) linear infinite,
     mythConstellationPulse 7.8s ease-in-out infinite alternate;
+}
+
+@media (max-width: 900px) {
+  body::after {
+    background-size: min(210vw, 1180px) auto;
+    background-position: center 8%;
+  }
 }
 
 @keyframes mythTwinkle {
@@ -205,7 +177,7 @@ body[data-theme="minimalLight"] {
   --myth-key-stars-opacity: 0.42;
   --myth-stars-brightness-min: 0.9;
   --myth-stars-brightness-max: 0.98;
-  --myth-constellation-opacity: 0.12;
+  --myth-constellation-opacity: 0.08;
   --myth-constellation-drift: 45s;
   --myth-stars-accent: 130, 130, 130;
   --myth-sacred-glow: 0.08;
