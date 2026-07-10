@@ -1,0 +1,242 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1600" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <filter id="chartGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <radialGradient id="centerHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
+      <stop offset="42%" stop-color="#7ec2ff" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#7ec2ff" stop-opacity="0" />
+    </radialGradient>
+
+    <circle id="starNode" r="4.5" fill="#f4fbff" />
+    <circle id="starDot" r="2" fill="#9fd0ff" />
+
+    <g id="spoke">
+      <line x1="800" y1="800" x2="800" y2="120" />
+    </g>
+  </defs>
+
+  <g opacity="0.2" stroke="#6fb9ff" fill="none">
+    <circle cx="800" cy="800" r="120" stroke-dasharray="2 7" />
+    <circle cx="800" cy="800" r="260" stroke-dasharray="2 7" />
+    <circle cx="800" cy="800" r="400" stroke-dasharray="2 7" />
+    <circle cx="800" cy="800" r="540" stroke-dasharray="2 7" />
+    <circle cx="800" cy="800" r="680" stroke-dasharray="2 7" />
+  </g>
+
+  <circle cx="800" cy="800" r="220" fill="url(#centerHalo)" opacity="0.55" />
+  <g opacity="0.44" stroke="#8bcaff" fill="none" filter="url(#chartGlow)">
+    <circle cx="800" cy="800" r="78" stroke-width="1.5" />
+    <circle cx="800" cy="800" r="170" stroke-width="1.3" stroke-dasharray="3 6" />
+  </g>
+
+  <g opacity="0.18" stroke="#5aa9ef" stroke-dasharray="2 8" fill="none">
+    <use href="#spoke" />
+    <use href="#spoke" transform="rotate(15 800 800)" />
+    <use href="#spoke" transform="rotate(30 800 800)" />
+    <use href="#spoke" transform="rotate(45 800 800)" />
+    <use href="#spoke" transform="rotate(60 800 800)" />
+    <use href="#spoke" transform="rotate(75 800 800)" />
+    <use href="#spoke" transform="rotate(90 800 800)" />
+    <use href="#spoke" transform="rotate(105 800 800)" />
+    <use href="#spoke" transform="rotate(120 800 800)" />
+    <use href="#spoke" transform="rotate(135 800 800)" />
+    <use href="#spoke" transform="rotate(150 800 800)" />
+    <use href="#spoke" transform="rotate(165 800 800)" />
+    <use href="#spoke" transform="rotate(180 800 800)" />
+    <use href="#spoke" transform="rotate(195 800 800)" />
+    <use href="#spoke" transform="rotate(210 800 800)" />
+    <use href="#spoke" transform="rotate(225 800 800)" />
+    <use href="#spoke" transform="rotate(240 800 800)" />
+    <use href="#spoke" transform="rotate(255 800 800)" />
+    <use href="#spoke" transform="rotate(270 800 800)" />
+    <use href="#spoke" transform="rotate(285 800 800)" />
+    <use href="#spoke" transform="rotate(300 800 800)" />
+    <use href="#spoke" transform="rotate(315 800 800)" />
+    <use href="#spoke" transform="rotate(330 800 800)" />
+    <use href="#spoke" transform="rotate(345 800 800)" />
+  </g>
+
+  <g opacity="0.46">
+    <use href="#starDot" x="130" y="190" />
+    <use href="#starDot" x="220" y="300" />
+    <use href="#starDot" x="340" y="148" />
+    <use href="#starDot" x="430" y="260" />
+    <use href="#starDot" x="560" y="132" />
+    <use href="#starDot" x="650" y="275" />
+    <use href="#starDot" x="760" y="160" />
+    <use href="#starDot" x="860" y="210" />
+    <use href="#starDot" x="950" y="140" />
+    <use href="#starDot" x="1060" y="220" />
+    <use href="#starDot" x="1180" y="178" />
+    <use href="#starDot" x="1280" y="280" />
+    <use href="#starDot" x="1360" y="190" />
+    <use href="#starDot" x="1450" y="300" />
+    <use href="#starDot" x="120" y="540" />
+    <use href="#starDot" x="240" y="460" />
+    <use href="#starDot" x="360" y="530" />
+    <use href="#starDot" x="500" y="420" />
+    <use href="#starDot" x="620" y="520" />
+    <use href="#starDot" x="730" y="430" />
+    <use href="#starDot" x="890" y="500" />
+    <use href="#starDot" x="1030" y="430" />
+    <use href="#starDot" x="1180" y="520" />
+    <use href="#starDot" x="1320" y="450" />
+    <use href="#starDot" x="1440" y="520" />
+    <use href="#starDot" x="170" y="790" />
+    <use href="#starDot" x="300" y="700" />
+    <use href="#starDot" x="430" y="820" />
+    <use href="#starDot" x="560" y="730" />
+    <use href="#starDot" x="680" y="860" />
+    <use href="#starDot" x="920" y="720" />
+    <use href="#starDot" x="1060" y="860" />
+    <use href="#starDot" x="1200" y="760" />
+    <use href="#starDot" x="1350" y="860" />
+    <use href="#starDot" x="1460" y="740" />
+    <use href="#starDot" x="140" y="1080" />
+    <use href="#starDot" x="280" y="980" />
+    <use href="#starDot" x="420" y="1120" />
+    <use href="#starDot" x="560" y="1000" />
+    <use href="#starDot" x="690" y="1140" />
+    <use href="#starDot" x="830" y="1000" />
+    <use href="#starDot" x="960" y="1130" />
+    <use href="#starDot" x="1100" y="1000" />
+    <use href="#starDot" x="1240" y="1120" />
+    <use href="#starDot" x="1360" y="1010" />
+    <use href="#starDot" x="1470" y="1120" />
+    <use href="#starDot" x="220" y="1330" />
+    <use href="#starDot" x="350" y="1240" />
+    <use href="#starDot" x="470" y="1360" />
+    <use href="#starDot" x="620" y="1260" />
+    <use href="#starDot" x="760" y="1400" />
+    <use href="#starDot" x="900" y="1260" />
+    <use href="#starDot" x="1040" y="1380" />
+    <use href="#starDot" x="1190" y="1260" />
+    <use href="#starDot" x="1330" y="1360" />
+    <use href="#starDot" x="1450" y="1240" />
+  </g>
+
+  <g stroke="#f7fbff" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#chartGlow)" opacity="0.84">
+    <polyline points="170,510 290,470 430,440 520,350 620,370" />
+    <polyline points="430,440 460,560 520,640" />
+
+    <polyline points="900,240 1000,220 1080,300 1060,410 930,480" />
+    <polyline points="1060,410 1160,470 1240,420" />
+
+    <polyline points="1290,520 1400,460 1460,560 1440,690 1320,700" />
+    <polyline points="1400,460 1320,380 1220,420" />
+
+    <polyline points="1180,1060 1220,1140 1180,1230 1070,1240 1000,1160 1030,1050" />
+    <polyline points="1000,1160 900,1220 840,1320" />
+
+    <polyline points="840,1080 760,1180 640,1200 560,1140 580,1040 700,1000 840,1010" />
+    <polyline points="640,1200 520,1320 420,1260" />
+
+    <polyline points="360,820 430,730 520,760 560,860 510,930 400,920 330,860" />
+    <polyline points="560,860 640,840 700,900" />
+
+    <polyline points="680,600 760,570 840,610 820,700 730,730 660,680 680,600" />
+    <polyline points="840,610 930,560 1030,590" />
+  </g>
+
+  <g fill="#f7fbff" opacity="0.95" filter="url(#chartGlow)">
+    <use href="#starNode" x="170" y="510" />
+    <use href="#starNode" x="290" y="470" />
+    <use href="#starNode" x="430" y="440" />
+    <use href="#starNode" x="520" y="350" />
+    <use href="#starNode" x="620" y="370" />
+    <use href="#starNode" x="460" y="560" />
+    <use href="#starNode" x="520" y="640" />
+
+    <use href="#starNode" x="900" y="240" />
+    <use href="#starNode" x="1000" y="220" />
+    <use href="#starNode" x="1080" y="300" />
+    <use href="#starNode" x="1060" y="410" />
+    <use href="#starNode" x="930" y="480" />
+    <use href="#starNode" x="1160" y="470" />
+    <use href="#starNode" x="1240" y="420" />
+
+    <use href="#starNode" x="1290" y="520" />
+    <use href="#starNode" x="1400" y="460" />
+    <use href="#starNode" x="1460" y="560" />
+    <use href="#starNode" x="1440" y="690" />
+    <use href="#starNode" x="1320" y="700" />
+    <use href="#starNode" x="1320" y="380" />
+    <use href="#starNode" x="1220" y="420" />
+
+    <use href="#starNode" x="1180" y="1060" />
+    <use href="#starNode" x="1220" y="1140" />
+    <use href="#starNode" x="1180" y="1230" />
+    <use href="#starNode" x="1070" y="1240" />
+    <use href="#starNode" x="1000" y="1160" />
+    <use href="#starNode" x="1030" y="1050" />
+    <use href="#starNode" x="900" y="1220" />
+    <use href="#starNode" x="840" y="1320" />
+
+    <use href="#starNode" x="840" y="1080" />
+    <use href="#starNode" x="760" y="1180" />
+    <use href="#starNode" x="640" y="1200" />
+    <use href="#starNode" x="560" y="1140" />
+    <use href="#starNode" x="580" y="1040" />
+    <use href="#starNode" x="700" y="1000" />
+    <use href="#starNode" x="840" y="1010" />
+    <use href="#starNode" x="520" y="1320" />
+    <use href="#starNode" x="420" y="1260" />
+
+    <use href="#starNode" x="360" y="820" />
+    <use href="#starNode" x="430" y="730" />
+    <use href="#starNode" x="520" y="760" />
+    <use href="#starNode" x="560" y="860" />
+    <use href="#starNode" x="510" y="930" />
+    <use href="#starNode" x="400" y="920" />
+    <use href="#starNode" x="330" y="860" />
+    <use href="#starNode" x="640" y="840" />
+    <use href="#starNode" x="700" y="900" />
+
+    <use href="#starNode" x="680" y="600" />
+    <use href="#starNode" x="760" y="570" />
+    <use href="#starNode" x="840" y="610" />
+    <use href="#starNode" x="820" y="700" />
+    <use href="#starNode" x="730" y="730" />
+    <use href="#starNode" x="660" y="680" />
+    <use href="#starNode" x="930" y="560" />
+    <use href="#starNode" x="1030" y="590" />
+  </g>
+
+  <g fill="#ffffff" filter="url(#chartGlow)">
+    <circle cx="430" cy="440" r="6" opacity="0.22">
+      <animate attributeName="opacity" values="0.2;0.72;0.24" dur="6.8s" begin="0s" repeatCount="indefinite" />
+      <animate attributeName="r" values="5.2;6.4;5.2" dur="6.8s" begin="0s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="1080" cy="300" r="5.6" opacity="0.2">
+      <animate attributeName="opacity" values="0.18;0.66;0.22" dur="5.6s" begin="0.8s" repeatCount="indefinite" />
+      <animate attributeName="r" values="4.9;6.1;4.9" dur="5.6s" begin="0.8s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="1400" cy="460" r="6.2" opacity="0.24">
+      <animate attributeName="opacity" values="0.22;0.78;0.28" dur="7.8s" begin="0.4s" repeatCount="indefinite" />
+      <animate attributeName="r" values="5.5;6.9;5.5" dur="7.8s" begin="0.4s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="1000" cy="1160" r="5.6" opacity="0.2">
+      <animate attributeName="opacity" values="0.18;0.68;0.23" dur="5s" begin="1.3s" repeatCount="indefinite" />
+      <animate attributeName="r" values="4.9;6.2;4.9" dur="5s" begin="1.3s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="640" cy="1200" r="5.8" opacity="0.2">
+      <animate attributeName="opacity" values="0.18;0.7;0.22" dur="7.4s" begin="0.2s" repeatCount="indefinite" />
+      <animate attributeName="r" values="5.1;6.3;5.1" dur="7.4s" begin="0.2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="520" cy="760" r="5.3" opacity="0.18">
+      <animate attributeName="opacity" values="0.16;0.62;0.2" dur="6.1s" begin="1s" repeatCount="indefinite" />
+      <animate attributeName="r" values="4.5;5.8;4.5" dur="6.1s" begin="1s" repeatCount="indefinite" />
+    </circle>
+  </g>
+
+  <circle cx="800" cy="800" r="13" fill="#ffffff" opacity="0.98" filter="url(#chartGlow)">
+    <animate attributeName="opacity" values="0.72;0.9;0.76" dur="4.8s" repeatCount="indefinite" />
+  </circle>
+</svg>
