@@ -1,4 +1,5 @@
 import { validateFacebookToken, validateGoogleToken } from "./facebookApi";
+import { getDemoAvailability, loginWithDemoUser, type DemoAvailabilityResponse } from "./demoApi";
 import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   AUTH_SESSION_CHANGED_EVENT,
@@ -22,9 +23,11 @@ type AuthContextType = {
   session: AuthSession | null;
   facebookEnabled: boolean;
   googleEnabled: boolean;
+  demoEnabled: boolean;
   hasPermission: (permission: string) => boolean;
   loginWithFacebook: () => void;
   loginWithGoogle: () => void;
+  loginWithDemo: () => void;
   logout: () => void;
 };
 
@@ -33,9 +36,11 @@ export const AuthContext = createContext<AuthContextType>({
   session: null,
   facebookEnabled: true,
   googleEnabled: true,
+  demoEnabled: false,
   hasPermission: () => false,
   loginWithFacebook: () => { },
   loginWithGoogle: () => { },
+  loginWithDemo: () => { },
   logout: () => { },
 });
 
@@ -65,8 +70,30 @@ function parseGooglePictureFromIdToken(idToken: string): string | undefined {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(() => getValidAuthSession());
   const [notice, setNotice] = useState<AuthNotice | null>(null);
+  const [demoAvailability, setDemoAvailability] = useState<DemoAvailabilityResponse | null>(null);
   const facebookAppId = import.meta.env.VITE_FACEBOOK_APP_ID as string | undefined;
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      try {
+        const availability = await getDemoAvailability();
+        if (isMounted) {
+          setDemoAvailability(availability);
+        }
+      } catch {
+        if (isMounted) {
+          setDemoAvailability(null);
+        }
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const syncSession = () => {
@@ -193,6 +220,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, [googleClientId]);
 
+  const loginWithDemo = useCallback(async () => {
+    if (!demoAvailability?.enabled) {
+      setNotice({ message: "Demo login is currently disabled.", severity: "error" });
+      return;
+    }
+
+    try {
+      const authResponse = await loginWithDemoUser();
+      const nextSession = buildAuthSession(authResponse);
+      saveAuthSession(nextSession);
+      setSession(nextSession);
+      setNotice({ message: `Welcome, ${nextSession.displayName}!`, severity: "success" });
+    } catch (err) {
+      setNotice({ message: getApiErrorMessage(err, { action: "create", resource: "login session" }), severity: "error" });
+    }
+  }, [demoAvailability]);
+
   const logout = useCallback(() => {
     clearAuthSession();
     setSession(null);
@@ -214,12 +258,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       facebookEnabled: Boolean(facebookAppId),
       googleEnabled: Boolean(googleClientId),
+      demoEnabled: Boolean(demoAvailability?.enabled),
       hasPermission,
       loginWithFacebook,
       loginWithGoogle,
+      loginWithDemo,
       logout,
     }),
-    [session, facebookAppId, googleClientId, hasPermission, loginWithFacebook, loginWithGoogle, logout]
+    [session, facebookAppId, googleClientId, demoAvailability, hasPermission, loginWithFacebook, loginWithGoogle, loginWithDemo, logout]
   );
 
   return (

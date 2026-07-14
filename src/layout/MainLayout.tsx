@@ -3,6 +3,7 @@ import { useAuth } from "../auth/AuthContext";
 import Button from "@mui/material/Button";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import GoogleIcon from "@mui/icons-material/Google";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Avatar,
@@ -136,7 +137,7 @@ function useGoogleSDK() {
 }
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { isAuthenticated, session, hasPermission, loginWithFacebook, loginWithGoogle, facebookEnabled, googleEnabled, logout } = useAuth();
+  const { isAuthenticated, session, hasPermission, loginWithFacebook, loginWithGoogle, loginWithDemo, facebookEnabled, googleEnabled, demoEnabled, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { themeId, setThemeId } = useAppTheme();
@@ -525,7 +526,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </Box>
         ) : (
           <Box sx={authCardSx}>
-            {(!facebookEnabled || !googleEnabled) && (
+            {!facebookEnabled && !googleEnabled && !demoEnabled && (
               <Box
                 sx={{
                   display: "inline-flex",
@@ -601,6 +602,26 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 }}
               >
                 Google
+              </Button>
+            )}
+            {demoEnabled && (
+              <Button
+                onClick={loginWithDemo}
+                startIcon={<PersonOutlineOutlinedIcon sx={{ fontSize: 20, color: "inherit" }} />}
+                variant="outlined"
+                sx={{
+                  ...authButtonBaseSx,
+                  mt: 1,
+                  color: theme.palette.info.main,
+                  borderColor: alpha(theme.palette.info.main, 0.45),
+                  backgroundColor: alpha(theme.palette.info.main, 0.1),
+                  "&:hover": {
+                    borderColor: alpha(theme.palette.info.main, 0.8),
+                    backgroundColor: alpha(theme.palette.info.main, 0.2),
+                  },
+                }}
+              >
+                Demo
               </Button>
             )}
             {!googleEnabled && (
