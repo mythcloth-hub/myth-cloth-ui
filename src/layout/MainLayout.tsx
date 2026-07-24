@@ -33,6 +33,7 @@ import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
+import CompareArrowsOutlinedIcon from "@mui/icons-material/CompareArrowsOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -72,6 +73,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Charts",        path: "/charts",         icon: <InsightsOutlinedIcon /> },
       { label: "Releases",      path: "/releases",       icon: <CalendarMonthOutlinedIcon /> },
       { label: "Pricing",       path: "/pricing",        icon: <PaidOutlinedIcon /> },
+      { label: "Figurine Matching", path: "/figurine-matching", icon: <CompareArrowsOutlinedIcon /> },
     ],
   },
   {
@@ -185,6 +187,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           return hasPermission("stats:read");
         }
         if (item.path === "/pricing") {
+          return hasPermission("stats:read");
+        }
+        if (item.path === "/figurine-matching") {
           return hasPermission("stats:read");
         }
         if (item.path === "/anniversaries") {

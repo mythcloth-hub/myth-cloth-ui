@@ -25,7 +25,7 @@ import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
-import { getFigurineById } from "../api/figurineApi";
+import { getFigurineAverageRealtimePrice, getFigurineById } from "../api/figurineApi";
 import type { Figurine, ReleaseStatus } from "../types/figurine";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 import AnniversaryIcon from "./AnniversaryIcon";
@@ -81,6 +81,9 @@ export default function FigurineDetailPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
+  const [averageRealtimePrice, setAverageRealtimePrice] = useState<number | null>(null);
+  const [, setAverageRealtimePriceLoading] = useState(false);
+  const [, setAverageRealtimePriceError] = useState<string | null>(null);
   const [selectedCollectionContext, setSelectedCollectionContext] = useState<SelectedCollectionContext | null>(() => {
     const stateCollection = (location.state as { selectedCollection?: SelectedCollectionContext } | null)?.selectedCollection;
     if (stateCollection) {
@@ -135,6 +138,9 @@ export default function FigurineDetailPage() {
 
   useEffect(() => {
     setLoading(true);
+    setAverageRealtimePriceLoading(true);
+    setAverageRealtimePriceError(null);
+
     getFigurineById(Number(id))
       .then((data) => {
         setFigurine(data);
@@ -145,6 +151,16 @@ export default function FigurineDetailPage() {
         setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurine details" }));
       })
       .finally(() => setLoading(false));
+
+    getFigurineAverageRealtimePrice(Number(id))
+      .then((price) => {
+        setAverageRealtimePrice(price);
+      })
+      .catch(() => {
+        setAverageRealtimePrice(null);
+        setAverageRealtimePriceError("Live average price is not available right now.");
+      })
+      .finally(() => setAverageRealtimePriceLoading(false));
   }, [id]);
 
   if (loading) {
@@ -172,6 +188,19 @@ export default function FigurineDetailPage() {
     { label: "Distribution", value: figurine.distribution?.description },
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
   const notesText = figurine.notes ? figurine.notes.replace(/\\n/g, "\n") : "";
+  const hasRealtimeAveragePrice = averageRealtimePrice !== null && averageRealtimePrice > 0;
+
+  const formatYen = (amount: number): string => {
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "JPY",
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch {
+      return `${amount.toLocaleString()} JPY`;
+    }
+  };
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -391,6 +420,79 @@ export default function FigurineDetailPage() {
 
         {/* ── Right column: info ── */}
         <Grid size={{ xs: 12, md: 7 }}>
+          {hasRealtimeAveragePrice && (
+            <Box
+              sx={{
+                mb: 2,
+                p: 2,
+                borderRadius: 2,
+                border: "1px solid rgba(79,195,247,0.35)",
+                background:
+                  "linear-gradient(140deg, rgba(79,195,247,0.18) 0%, rgba(212,175,55,0.14) 60%, rgba(255,255,255,0.02) 100%)",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "radial-gradient(circle at 82% 18%, rgba(79,195,247,0.22), transparent 36%)",
+                  pointerEvents: "none",
+                }}
+              />
+
+              <Box sx={{ position: "relative", zIndex: 1, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1.5 }}>
+                <Box>
+                  <Typography
+                    variant="overline"
+                    sx={{ color: "#9fd7f4", letterSpacing: "0.11em", fontWeight: 700, fontSize: "0.65rem" }}
+                  >
+                    Live Average Price
+                  </Typography>
+
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      mt: 0.35,
+                      fontWeight: 800,
+                      lineHeight: 1.1,
+                      color: "#d4af37",
+                      textShadow: "0 0 18px rgba(212,175,55,0.25)",
+                    }}
+                  >
+                    {formatYen(averageRealtimePrice)}
+                  </Typography>
+
+                  <Typography variant="body2" sx={{ mt: 0.45, color: "text.secondary" }}>
+                    Average from multiple stores.
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.7, pt: 0.3, flexShrink: 0 }}>
+                  <Box
+                    sx={{
+                      width: 9,
+                      height: 9,
+                      borderRadius: "50%",
+                      bgcolor: "#4fc3f7",
+                      boxShadow: "0 0 0 rgba(79,195,247,0.75)",
+                      animation: "livePulsePrice 1.7s ease-in-out infinite",
+                      "@keyframes livePulsePrice": {
+                        "0%": { boxShadow: "0 0 0 0 rgba(79,195,247,0.7)" },
+                        "70%": { boxShadow: "0 0 0 10px rgba(79,195,247,0)" },
+                        "100%": { boxShadow: "0 0 0 0 rgba(79,195,247,0)" },
+                      },
+                    }}
+                  />
+                  <Typography variant="caption" sx={{ display: "block", mt: 0.25, color: "rgba(255,255,255,0.62)" }}>
+                    LIVE
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          )}
+
           {/* Core catalog info */}
           <Box
             sx={{
