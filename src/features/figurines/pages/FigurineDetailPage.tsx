@@ -358,6 +358,95 @@ export default function FigurineDetailPage() {
                 Revival
               </Box>
             )}
+
+            {hasRealtimeAveragePrice && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  zIndex: 3,
+                  minWidth: 188,
+                  maxWidth: 248,
+                  borderRadius: 2,
+                  px: 1.25,
+                  py: 1,
+                  border: "1px solid rgba(79,195,247,0.45)",
+                  background: "linear-gradient(160deg, rgba(14,28,41,0.86) 0%, rgba(12,18,30,0.78) 100%)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                  boxShadow: "0 10px 28px rgba(0,0,0,0.34)",
+                  transition: "transform 180ms ease, box-shadow 180ms ease",
+                  "&:hover": {
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 14px 34px rgba(0,0,0,0.42)",
+                  },
+                  "&:hover .market-extra": {
+                    opacity: 1,
+                    maxHeight: 42,
+                    mt: 0.6,
+                  },
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "#9fd7f4", letterSpacing: "0.09em", textTransform: "uppercase", fontWeight: 700 }}
+                  >
+                    Live Market Avg
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.55 }}>
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        bgcolor: "#4fc3f7",
+                        boxShadow: "0 0 0 rgba(79,195,247,0.75)",
+                        animation: "livePulseBadge 1.7s ease-in-out infinite",
+                        "@keyframes livePulseBadge": {
+                          "0%": { boxShadow: "0 0 0 0 rgba(79,195,247,0.7)" },
+                          "70%": { boxShadow: "0 0 0 9px rgba(79,195,247,0)" },
+                          "100%": { boxShadow: "0 0 0 0 rgba(79,195,247,0)" },
+                        },
+                      }}
+                    />
+                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.68)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                      LIVE
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mt: 0.35,
+                    color: "#d4af37",
+                    fontWeight: 800,
+                    lineHeight: 1.05,
+                    textShadow: "0 0 18px rgba(212,175,55,0.22)",
+                  }}
+                >
+                  {formatYen(averageRealtimePrice)}
+                </Typography>
+
+                <Typography
+                  className="market-extra"
+                  variant="caption"
+                  sx={{
+                    color: "rgba(255,255,255,0.72)",
+                    display: "block",
+                    opacity: 0,
+                    maxHeight: 0,
+                    overflow: "hidden",
+                    transition: "opacity 180ms ease, max-height 180ms ease, margin-top 180ms ease",
+                  }}
+                >
+                  Average from multiple stores.
+                </Typography>
+              </Box>
+            )}
+
             {mainImage ? (
               <Box
                 component="img"
@@ -420,79 +509,6 @@ export default function FigurineDetailPage() {
 
         {/* ── Right column: info ── */}
         <Grid size={{ xs: 12, md: 7 }}>
-          {hasRealtimeAveragePrice && (
-            <Box
-              sx={{
-                mb: 2,
-                p: 2,
-                borderRadius: 2,
-                border: "1px solid rgba(79,195,247,0.35)",
-                background:
-                  "linear-gradient(140deg, rgba(79,195,247,0.18) 0%, rgba(212,175,55,0.14) 60%, rgba(255,255,255,0.02) 100%)",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              <Box
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "radial-gradient(circle at 82% 18%, rgba(79,195,247,0.22), transparent 36%)",
-                  pointerEvents: "none",
-                }}
-              />
-
-              <Box sx={{ position: "relative", zIndex: 1, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1.5 }}>
-                <Box>
-                  <Typography
-                    variant="overline"
-                    sx={{ color: "#9fd7f4", letterSpacing: "0.11em", fontWeight: 700, fontSize: "0.65rem" }}
-                  >
-                    Live Average Price
-                  </Typography>
-
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      mt: 0.35,
-                      fontWeight: 800,
-                      lineHeight: 1.1,
-                      color: "#d4af37",
-                      textShadow: "0 0 18px rgba(212,175,55,0.25)",
-                    }}
-                  >
-                    {formatYen(averageRealtimePrice)}
-                  </Typography>
-
-                  <Typography variant="body2" sx={{ mt: 0.45, color: "text.secondary" }}>
-                    Average from multiple stores.
-                  </Typography>
-                </Box>
-
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.7, pt: 0.3, flexShrink: 0 }}>
-                  <Box
-                    sx={{
-                      width: 9,
-                      height: 9,
-                      borderRadius: "50%",
-                      bgcolor: "#4fc3f7",
-                      boxShadow: "0 0 0 rgba(79,195,247,0.75)",
-                      animation: "livePulsePrice 1.7s ease-in-out infinite",
-                      "@keyframes livePulsePrice": {
-                        "0%": { boxShadow: "0 0 0 0 rgba(79,195,247,0.7)" },
-                        "70%": { boxShadow: "0 0 0 10px rgba(79,195,247,0)" },
-                        "100%": { boxShadow: "0 0 0 0 rgba(79,195,247,0)" },
-                      },
-                    }}
-                  />
-                  <Typography variant="caption" sx={{ display: "block", mt: 0.25, color: "rgba(255,255,255,0.62)" }}>
-                    LIVE
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          )}
-
           {/* Core catalog info */}
           <Box
             sx={{
