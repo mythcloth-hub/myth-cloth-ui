@@ -10,6 +10,8 @@ import ChartsPage from "../features/charts/pages/ChartsPage";
 import ReleasesPage from "../features/charts/pages/ReleasesPage";
 import PricingPage from "../features/charts/pages/PricingPage";
 import FigurineMatchingPage from "../features/charts/pages/FigurineMatchingPage";
+import FigurineMatchedStoresPage from "../features/charts/pages/FigurineMatchedStoresPage";
+import FigurineMatchedStoreDetailPage from "../features/charts/pages/FigurineMatchedStoreDetailPage";
 import FigurineCollectionPage from "../features/figurines/pages/FigurineCollectionPage";
 import FigurineDetailPage from "../features/figurines/pages/FigurineDetailPage";
 import FigurineFormPage from "../features/figurines/pages/FigurineFormPage";
@@ -40,6 +42,8 @@ export default function AppRoutes() {
           <Route path="/releases" element={<ReleasesPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/figurine-matching" element={<FigurineMatchingPage />} />
+          <Route path="/figurine-matching/stores" element={<FigurineMatchedStoresPage />} />
+          <Route path="/figurine-matching/stores/:storeId" element={<FigurineMatchedStoreDetailPage />} />
           <Route path="/distributors" element={<DistributorListPage />} />
           <Route path="/distributors/new" element={<DistributorFormPage />} />
           <Route path="/distributors/edit/:id" element={<DistributorFormPage />} />
