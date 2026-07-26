@@ -10,8 +10,10 @@ import {
   CircularProgress,
   Divider,
   Grid,
+  IconButton,
   Link,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
@@ -19,11 +21,12 @@ import CompareArrowsOutlinedIcon from "@mui/icons-material/CompareArrowsOutlined
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 
-import AppPageHeader from "../../../components/AppPageHeader";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import {
   getMatchedListingsByStoreId,
+  getMatchedListingsSummary,
   type FigurineStoreMatched,
+  type FigurineStoreMatchedSummary,
 } from "../api/matchedListingsSummaryApi";
 
 function extractHostName(url: string): string {
@@ -83,22 +86,13 @@ function getNameSimilarityPercent(left: string, right: string): number {
   return Math.round((overlap / Math.max(unionSize, 1)) * 100);
 }
 
-function isLineupMentionedInStoreName(storeName: string, lineupLabel: string): boolean {
-  const normalizedStoreName = normalizeText(storeName);
-  const lineupTokens = Array.from(toTokenSet(lineupLabel));
-
-  if (lineupTokens.length === 0) {
-    return false;
-  }
-
-  return lineupTokens.some((token) => normalizedStoreName.includes(token));
-}
-
 export default function FigurineMatchedStoreDetailPage() {
   const navigate = useNavigate();
   const { storeId } = useParams<{ storeId: string }>();
 
   const [items, setItems] = useState<FigurineStoreMatched[]>([]);
+  const [storeSummary, setStoreSummary] = useState<FigurineStoreMatchedSummary | null>(null);
+  const [hideStoreLogo, setHideStoreLogo] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -127,17 +121,33 @@ export default function FigurineMatchedStoreDetailPage() {
       }
     };
 
+    const loadStoreSummary = async () => {
+      try {
+        const summaries = await getMatchedListingsSummary();
+        setStoreSummary(summaries.find((summary) => summary.storeId === parsedStoreId) ?? null);
+      } catch {
+        setStoreSummary(null);
+      }
+    };
+
     void loadDetails();
+    void loadStoreSummary();
   }, [parsedStoreId]);
 
   const storeHost = useMemo(() => {
     const candidate = items[0]?.storeProductUrl;
     if (!candidate) {
-      return parsedStoreId !== null ? `Store ${parsedStoreId}` : "Store";
+      return storeSummary?.storeName ?? (parsedStoreId !== null ? `Store ${parsedStoreId}` : "Store");
     }
 
-    return extractHostName(candidate);
-  }, [items, parsedStoreId]);
+    return storeSummary?.storeName ?? extractHostName(candidate);
+  }, [items, parsedStoreId, storeSummary?.storeName]);
+
+  const storeLogo = storeSummary?.storeLogo?.trim() || null;
+
+  useEffect(() => {
+    setHideStoreLogo(false);
+  }, [storeLogo]);
 
   if (loading) {
     return (
@@ -151,34 +161,62 @@ export default function FigurineMatchedStoreDetailPage() {
     <Box sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
       <Box
         sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          mb: 3,
           position: "sticky",
           top: 0,
-          zIndex: 9,
+          zIndex: 10,
           bgcolor: "background.default",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           mx: { xs: -1.5, sm: -2, md: -3 },
           px: { xs: 1.5, sm: 2, md: 3 },
-          pt: 0.25,
-          pb: 1,
-          mb: 2,
+          py: 1,
+          borderBottom: "1px solid rgba(212,175,55,0.1)",
         }}
       >
-        <AppPageHeader
-          eyebrow="Figurine Matching"
-          title={`${storeHost} · Match Details`}
-          subtitle="Compare each store listing against the matched catalog figurine side by side."
-          compact
-          actions={
-            <Button
-              variant="outlined"
-              startIcon={<ArrowBackOutlinedIcon />}
-              onClick={() => navigate("/figurine-matching/stores")}
-            >
-              Back to Stores
-            </Button>
-          }
-        />
+        <Tooltip title="Back to Stores">
+          <IconButton onClick={() => navigate("/figurine-matching/stores")} sx={{ mt: 0.5 }}>
+            <ArrowBackOutlinedIcon />
+          </IconButton>
+        </Tooltip>
+
+        <Box
+          sx={{
+            width: { xs: 44, md: 50 },
+            height: { xs: 44, md: 50 },
+            bgcolor: "#ffffff",
+            borderRadius: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+            flexShrink: 0,
+          }}
+        >
+          {storeLogo && !hideStoreLogo ? (
+            <Box
+              component="img"
+              src={storeLogo}
+              alt={storeHost}
+              onError={() => setHideStoreLogo(true)}
+              sx={{ width: "100%", height: "100%", objectFit: "contain", p: 0.4 }}
+            />
+          ) : (
+            <CompareArrowsOutlinedIcon sx={{ color: "rgba(56,73,90,0.8)" }} />
+          )}
+        </Box>
+
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="h4" sx={{ fontSize: { xs: "1.2rem", md: "1.8rem" }, lineHeight: 1.2 }}>
+            {`${storeHost} · Match Details`}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.35 }}>
+            Compare each store listing against the matched catalog figurine side by side.
+          </Typography>
+        </Box>
       </Box>
 
       {errorMessage && (
@@ -198,7 +236,6 @@ export default function FigurineMatchedStoreDetailPage() {
           <CardContent>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
               <Chip label={`${items.length} matched figurine${items.length === 1 ? "" : "s"}`} sx={{ fontWeight: 700 }} />
-              {parsedStoreId !== null && <Chip label={`Store id: ${parsedStoreId}`} variant="outlined" />}
             </Stack>
           </CardContent>
         </Card>
@@ -228,7 +265,6 @@ export default function FigurineMatchedStoreDetailPage() {
           const figurineImage = getSafeImage(item.figurineOfficialImageUrl);
           const lineupLabel = getLineupLabel(item.figurineLineUp);
           const nameSimilarity = getNameSimilarityPercent(item.storeOriginalName, item.figurineDisplayableName);
-          const lineupMentioned = isLineupMentionedInStoreName(item.storeOriginalName, lineupLabel);
           const similaritySeverity = nameSimilarity >= 60 ? "success" : nameSimilarity >= 35 ? "warning" : "default";
 
           return (
@@ -397,12 +433,6 @@ export default function FigurineMatchedStoreDetailPage() {
                     color={similaritySeverity}
                     variant={similaritySeverity === "default" ? "outlined" : "filled"}
                     label={`Name Similarity ${nameSimilarity}%`}
-                  />
-                  <Chip
-                    size="small"
-                    color={lineupMentioned ? "success" : "default"}
-                    variant={lineupMentioned ? "filled" : "outlined"}
-                    label={lineupMentioned ? "Lineup Mentioned" : "Lineup Not Mentioned"}
                   />
                 </Stack>
 
