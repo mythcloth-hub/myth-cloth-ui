@@ -8,6 +8,7 @@ export type UnmatchedStoreListing = {
   originalName: string;
   imageUrl?: string | null;
   productUrl: string;
+  ignored?: boolean;
 };
 
 const BASE = "/figurine-stores/unmatched-listings";
@@ -28,6 +29,21 @@ export const matchUnmatchedStoreListing = async (
 ): Promise<void> => {
   await httpClient.post(
     `${BASE}/${listingId}/figurines/${figurineId}/match`,
+    undefined,
+    {
+      headers: {
+        accept: "application/json",
+      },
+    },
+  );
+};
+
+export const setUnmatchedStoreListingIgnored = async (
+  unmatchedListingId: number,
+  ignored: boolean,
+): Promise<void> => {
+  await httpClient.patch(
+    `${BASE}/${unmatchedListingId}/ignored/${ignored}`,
     undefined,
     {
       headers: {
