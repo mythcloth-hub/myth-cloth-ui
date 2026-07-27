@@ -53,6 +53,11 @@ function getFigurineImage(figurine?: FigurineSummary | null): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function getLineUpLabel(figurine?: FigurineSummary | null): string {
+  const label = figurine?.lineUp?.description?.trim();
+  return label && label.length > 0 ? label : "Unknown lineup";
+}
+
 export default function FigurineMatchingPage() {
   const [items, setItems] = useState<UnmatchedStoreListing[]>([]);
   const [figurineOptions, setFigurineOptions] = useState<FigurineSummary[]>([]);
@@ -440,7 +445,7 @@ export default function FigurineMatchingPage() {
                     onChange={(_, value) => handleSelectFigurine(item.id, value)}
                     size="small"
                     fullWidth
-                    getOptionLabel={(option) => option.displayableName}
+                    getOptionLabel={(option) => option.displayableName ?? ""}
                     isOptionEqualToValue={(option, value) => option.id === value.id}
                     filterOptions={(options, state) => {
                       const query = state.inputValue.trim().toLowerCase();
@@ -450,8 +455,8 @@ export default function FigurineMatchingPage() {
 
                       return options
                         .filter((option) => {
-                          const label = option.displayableName.toLowerCase();
-                          const lineup = option.lineUp.description.toLowerCase();
+                          const label = (option.displayableName ?? "").toLowerCase();
+                          const lineup = getLineUpLabel(option).toLowerCase();
                           const id = String(option.id);
                           return label.includes(query) || lineup.includes(query) || id.includes(query);
                         })
@@ -506,7 +511,7 @@ export default function FigurineMatchingPage() {
                                   </Box>
                                 )}
                                 <Typography variant="caption" sx={{ color: "common.white" }}>
-                                  {option.displayableName} · {option.lineUp.description} · #{option.id}
+                                  {option.displayableName} · {getLineUpLabel(option)} · #{option.id}
                                 </Typography>
                               </Stack>
                             )}
@@ -542,7 +547,7 @@ export default function FigurineMatchingPage() {
                                   {option.displayableName}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary" noWrap>
-                                  {option.lineUp.description} · #{option.id}
+                                  {getLineUpLabel(option)} · #{option.id}
                                 </Typography>
                               </Box>
                             </Stack>
@@ -592,7 +597,7 @@ export default function FigurineMatchingPage() {
                             {selectionByListingId[item.id]?.displayableName}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {selectionByListingId[item.id]?.lineUp.description}
+                            {getLineUpLabel(selectionByListingId[item.id])}
                           </Typography>
                         </Box>
                       </Stack>
@@ -686,7 +691,7 @@ export default function FigurineMatchingPage() {
                       {selectionByListingId[confirmDialogItem.id]?.displayableName}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {selectionByListingId[confirmDialogItem.id]?.lineUp.description}
+                      {getLineUpLabel(selectionByListingId[confirmDialogItem.id])}
                     </Typography>
                   </Box>
                 </Box>

@@ -1,22 +1,19 @@
-import axios from "axios";
+import httpClient from "../../../api/httpClient";
 
 export type FigurineSummary = {
   id: number;
   displayableName: string;
-  lineUp: {
+  lineUp?: {
     id: number;
     description: string;
-  };
+  } | null;
   officialImageUrl?: string | null;
 };
 
-const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
-const apiBaseUrl = configuredApiBaseUrl
-  ? configuredApiBaseUrl.replace(/\/+$/, "")
-  : "http://localhost:9090/api/v1";
+const BASE = "/figurines/summary";
 
 export const getFigurineSummary = async (): Promise<FigurineSummary[]> => {
-  const response = await axios.get<FigurineSummary[]>(`${apiBaseUrl}/figurines/summary`, {
+  const response = await httpClient.get<FigurineSummary[]>(BASE, {
     headers: {
       accept: "application/json",
     },

@@ -328,7 +328,15 @@ export default function FigurineMatchedStoreDetailPage() {
                             component="img"
                             src={storeImage}
                             alt={item.storeOriginalName}
-                            sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                            sx={{
+                              position: "absolute",
+                              inset: 0,
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "contain",
+                              p: 0.75,
+                              bgcolor: "#0b0c16",
+                            }}
                           />
                         ) : (
                           <Box
@@ -399,7 +407,15 @@ export default function FigurineMatchedStoreDetailPage() {
                             component="img"
                             src={figurineImage}
                             alt={item.figurineDisplayableName}
-                            sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                            sx={{
+                              position: "absolute",
+                              inset: 0,
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "contain",
+                              p: 0.75,
+                              bgcolor: "#0b0c16",
+                            }}
                           />
                         ) : (
                           <Box
@@ -513,7 +529,7 @@ export default function FigurineMatchedStoreDetailPage() {
                         component="img"
                         src={getSafeImage(manualMatchTarget.storeProductImageUrl) ?? ""}
                         alt={manualMatchTarget.storeOriginalName}
-                        sx={{ width: "100%", maxHeight: 190, objectFit: "cover", borderRadius: 1, mb: 1 }}
+                        sx={{ width: "100%", maxHeight: 190, objectFit: "contain", borderRadius: 1, mb: 1, bgcolor: "#0b0c16" }}
                       />
                     ) : null}
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -532,7 +548,7 @@ export default function FigurineMatchedStoreDetailPage() {
                         component="img"
                         src={getSafeImage(manualMatchTarget.figurineOfficialImageUrl) ?? ""}
                         alt={manualMatchTarget.figurineDisplayableName}
-                        sx={{ width: "100%", maxHeight: 190, objectFit: "cover", borderRadius: 1, mb: 1 }}
+                        sx={{ width: "100%", maxHeight: 190, objectFit: "contain", borderRadius: 1, mb: 1, bgcolor: "#0b0c16" }}
                       />
                     ) : null}
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
