@@ -66,8 +66,16 @@ export default function FigurineMatchingPage() {
   const [hiddenLogos, setHiddenLogos] = useState<Record<number, boolean>>({});
 
   const loadUnmatchedListings = async () => {
-    const unmatchedData = await getUnmatchedStoreListings();
-    setItems(unmatchedData);
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const unmatchedData = await getUnmatchedStoreListings();
+      setItems(unmatchedData);
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "unmatched store listings" }));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -92,15 +100,37 @@ export default function FigurineMatchingPage() {
     void loadData();
   }, []);
 
-  const storeSummary = useMemo(() => {
-    const counts = new Map<string, number>();
+  const groupedListings = useMemo(() => {
+    const groups = new Map<number, {
+      storeId: number;
+      storeHost: string;
+      storeWebsite: string;
+      storeLogo?: string | null;
+      items: UnmatchedStoreListing[];
+    }>();
+
     items.forEach((item) => {
-      const store = extractHostName(item.storeWebsite);
-      counts.set(store, (counts.get(store) ?? 0) + 1);
+      const existingGroup = groups.get(item.storeId);
+      if (existingGroup) {
+        existingGroup.items.push(item);
+        return;
+      }
+
+      groups.set(item.storeId, {
+        storeId: item.storeId,
+        storeHost: extractHostName(item.storeWebsite),
+        storeWebsite: item.storeWebsite,
+        storeLogo: item.storeLogo,
+        items: [item],
+      });
     });
 
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    return [...groups.values()].sort((left, right) => right.items.length - left.items.length);
   }, [items]);
+
+  const storeSummary = useMemo(() => {
+    return groupedListings.map((group) => [group.storeHost, group.items.length] as const);
+  }, [groupedListings]);
 
   const handleSelectFigurine = (listingId: number, figurine: FigurineSummary | null) => {
     setSelectionByListingId((currentSelection) => ({
@@ -238,35 +268,126 @@ export default function FigurineMatchingPage() {
         </Box>
       )}
 
-      <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-        {items.map((item, itemIndex) => {
-          const storeHost = extractHostName(item.storeWebsite);
-          return (
-            <Grid
-              key={item.id}
-              size={{ xs: 6, sm: 4, md: 3, lg: 2 }}
+      <Stack spacing={2.25}>
+        {groupedListings.map((group, groupIndex) => (
+          <Card
+            key={group.storeId}
+            sx={{
+              border: "1px solid rgba(79,195,247,0.18)",
+              borderRadius: 1.5,
+              background: "linear-gradient(180deg, rgba(79,195,247,0.07) 0%, rgba(255,255,255,0.02) 34%)",
+              overflow: "hidden",
+              opacity: 0,
+              animation: `storeGroupReveal 440ms cubic-bezier(0.2, 0.9, 0.2, 1) ${Math.min(120 + groupIndex * 55, 500)}ms forwards`,
+              "@keyframes storeGroupReveal": {
+                "0%": { opacity: 0, transform: "translateY(8px)" },
+                "100%": { opacity: 1, transform: "translateY(0)" },
+              },
+            }}
+          >
+            <Box
               sx={{
-                opacity: 0,
-                animation: `figurineCardReveal 620ms cubic-bezier(0.2, 0.9, 0.2, 1) ${Math.min(180 + itemIndex * 30, 720)}ms forwards`,
-                "@keyframes figurineCardReveal": {
-                  "0%": { opacity: 0, transform: "translateY(18px) scale(0.985)" },
-                  "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
-                },
+                p: { xs: 1.4, sm: 1.75 },
+                borderBottom: "1px solid rgba(255,255,255,0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 1,
+                flexWrap: "wrap",
+                background: "linear-gradient(90deg, rgba(79,195,247,0.16) 0%, rgba(79,195,247,0.06) 60%, rgba(255,255,255,0) 100%)",
               }}
             >
-              <Card
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  borderTop: "2px solid rgba(79,195,247,0.25)",
-                  transition: "transform 0.2s, box-shadow 0.2s",
-                  "&:hover": {
-                    transform: "translateY(-3px)",
-                    boxShadow: "0 12px 36px rgba(79,195,247,0.16)",
-                  },
-                }}
-              >
+              <Stack direction="row" spacing={1.2} alignItems="center" sx={{ minWidth: 0 }}>
+                <Box
+                  sx={{
+                    width: { xs: 42, sm: 52 },
+                    height: { xs: 42, sm: 52 },
+                    borderRadius: 1,
+                    bgcolor: "#ffffff",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    flexShrink: 0,
+                  }}
+                >
+                      {group.storeLogo && !hiddenLogos[group.storeId] ? (
+                    <Box
+                      component="img"
+                      src={group.storeLogo}
+                      alt={group.storeHost}
+                      onError={() => {
+                        setHiddenLogos((current) => ({ ...current, [group.storeId]: true }));
+                      }}
+                          sx={{ width: "100%", height: "100%", objectFit: "contain", p: 0.4 }}
+                    />
+                  ) : (
+                        <StorefrontOutlinedIcon sx={{ fontSize: 28, color: "rgba(56,73,90,0.8)" }} />
+                  )}
+                </Box>
+
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 900,
+                      fontSize: { xs: "1rem", sm: "1.18rem" },
+                      lineHeight: 1.1,
+                    }}
+                    noWrap
+                    title={group.storeHost}
+                  >
+                    {group.storeHost}
+                  </Typography>
+                  <Link
+                    href={group.storeWebsite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    underline="hover"
+                    sx={{ fontSize: 12, display: "inline-flex", alignItems: "center", gap: 0.5, mt: 0.2 }}
+                  >
+                    Visit Store
+                    <OpenInNewOutlinedIcon sx={{ fontSize: 13 }} />
+                  </Link>
+                </Box>
+              </Stack>
+
+              <Chip
+                size="medium"
+                label={`${group.items.length} unmatched listing${group.items.length === 1 ? "" : "s"}`}
+                sx={{ fontWeight: 800 }}
+              />
+            </Box>
+
+            <CardContent sx={{ p: 1.2 }}>
+              <Grid container spacing={{ xs: 1.25, sm: 1.5 }}>
+                {group.items.map((item, itemIndex) => (
+                  <Grid
+                    key={item.id}
+                    size={{ xs: 6, sm: 4, md: 3, lg: 2 }}
+                    sx={{
+                      opacity: 0,
+                      animation: `figurineCardReveal 620ms cubic-bezier(0.2, 0.9, 0.2, 1) ${Math.min(170 + itemIndex * 30, 660)}ms forwards`,
+                      "@keyframes figurineCardReveal": {
+                        "0%": { opacity: 0, transform: "translateY(18px) scale(0.985)" },
+                        "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
+                      },
+                    }}
+                  >
+                    <Card
+                      sx={{
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        borderTop: "2px solid rgba(79,195,247,0.25)",
+                        transition: "transform 0.2s, box-shadow 0.2s",
+                        "&:hover": {
+                          transform: "translateY(-3px)",
+                          boxShadow: "0 12px 36px rgba(79,195,247,0.16)",
+                        },
+                      }}
+                    >
                 <Box sx={{ position: "relative", pt: "72%", bgcolor: "#0a0b14" }}>
                   {item.imageUrl ? (
                     <CardMedia
@@ -301,43 +422,6 @@ export default function FigurineMatchingPage() {
                 </Box>
 
                 <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.25, flex: 1 }}>
-                  <Stack direction="row" spacing={0.8} alignItems="center" sx={{ minWidth: 0 }}>
-                    <Box
-                      sx={{
-                        width: 26,
-                        height: 26,
-                        borderRadius: 0.8,
-                        bgcolor: "#ffffff",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        overflow: "hidden",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {item.storeLogo && !hiddenLogos[item.storeId] ? (
-                        <Box
-                          component="img"
-                          src={item.storeLogo}
-                          alt={storeHost}
-                          onError={() => {
-                            setHiddenLogos((current) => ({ ...current, [item.storeId]: true }));
-                          }}
-                          sx={{ width: "100%", height: "100%", objectFit: "contain", p: 0.25 }}
-                        />
-                      ) : (
-                        <StorefrontOutlinedIcon sx={{ fontSize: 16, color: "rgba(56,73,90,0.8)" }} />
-                      )}
-                    </Box>
-                    <Chip
-                      label={storeHost}
-                      size="small"
-                      variant="outlined"
-                      sx={{ alignSelf: "flex-start", minWidth: 0, maxWidth: "100%" }}
-                    />
-                  </Stack>
-
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.5, minWidth: 0 }}>
                     <Typography
                       variant="subtitle2"
@@ -538,11 +622,14 @@ export default function FigurineMatchingPage() {
                     </Button>
                   </Stack>
                 </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        ))}
+      </Stack>
 
       <Dialog
         open={Boolean(confirmDialogItem)}
