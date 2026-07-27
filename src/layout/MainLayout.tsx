@@ -33,6 +33,8 @@ import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
+import CompareArrowsOutlinedIcon from "@mui/icons-material/CompareArrowsOutlined";
+import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -72,6 +74,13 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Charts",        path: "/charts",         icon: <InsightsOutlinedIcon /> },
       { label: "Releases",      path: "/releases",       icon: <CalendarMonthOutlinedIcon /> },
       { label: "Pricing",       path: "/pricing",        icon: <PaidOutlinedIcon /> },
+    ],
+  },
+  {
+    heading: "Figurine Matching",
+    items: [
+      { label: "Matching by Store", path: "/figurine-matching/stores", icon: <StorefrontOutlinedIcon /> },
+      { label: "Manual Matching", path: "/figurine-matching", icon: <CompareArrowsOutlinedIcon /> },
     ],
   },
   {
@@ -166,7 +175,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     transition: "all 0.18s ease",
   };
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
+  const isActive = (path: string) => {
+    if (path === "/figurine-matching") {
+      return location.pathname === "/figurine-matching";
+    }
+
+    if (path === "/figurine-matching/stores") {
+      return location.pathname.startsWith("/figurine-matching/stores");
+    }
+
+    return location.pathname.startsWith(path);
+  };
 
   const visibleSections = NAV_SECTIONS
     .map((section) => ({
@@ -186,6 +205,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         }
         if (item.path === "/pricing") {
           return hasPermission("stats:read");
+        }
+        if (item.path === "/figurine-matching") {
+          return hasPermission("stats:read");
+        }
+        if (item.path === "/figurine-matching/stores") {
+          return hasPermission("figurines:stores:read");
         }
         if (item.path === "/anniversaries") {
           return hasPermission("anniversaries:read");

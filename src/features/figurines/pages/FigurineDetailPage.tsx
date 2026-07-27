@@ -25,7 +25,7 @@ import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
-import { getFigurineById } from "../api/figurineApi";
+import { getFigurineAverageRealtimePrice, getFigurineById } from "../api/figurineApi";
 import type { Figurine, ReleaseStatus } from "../types/figurine";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 import AnniversaryIcon from "./AnniversaryIcon";
@@ -81,6 +81,9 @@ export default function FigurineDetailPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
+  const [averageRealtimePrice, setAverageRealtimePrice] = useState<number | null>(null);
+  const [, setAverageRealtimePriceLoading] = useState(false);
+  const [, setAverageRealtimePriceError] = useState<string | null>(null);
   const [selectedCollectionContext, setSelectedCollectionContext] = useState<SelectedCollectionContext | null>(() => {
     const stateCollection = (location.state as { selectedCollection?: SelectedCollectionContext } | null)?.selectedCollection;
     if (stateCollection) {
@@ -135,6 +138,9 @@ export default function FigurineDetailPage() {
 
   useEffect(() => {
     setLoading(true);
+    setAverageRealtimePriceLoading(true);
+    setAverageRealtimePriceError(null);
+
     getFigurineById(Number(id))
       .then((data) => {
         setFigurine(data);
@@ -145,6 +151,16 @@ export default function FigurineDetailPage() {
         setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurine details" }));
       })
       .finally(() => setLoading(false));
+
+    getFigurineAverageRealtimePrice(Number(id))
+      .then((price) => {
+        setAverageRealtimePrice(price);
+      })
+      .catch(() => {
+        setAverageRealtimePrice(null);
+        setAverageRealtimePriceError("Live average price is not available right now.");
+      })
+      .finally(() => setAverageRealtimePriceLoading(false));
   }, [id]);
 
   if (loading) {
@@ -172,6 +188,19 @@ export default function FigurineDetailPage() {
     { label: "Distribution", value: figurine.distribution?.description },
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
   const notesText = figurine.notes ? figurine.notes.replace(/\\n/g, "\n") : "";
+  const hasRealtimeAveragePrice = averageRealtimePrice !== null && averageRealtimePrice > 0;
+
+  const formatYen = (amount: number): string => {
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "JPY",
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch {
+      return `${amount.toLocaleString()} JPY`;
+    }
+  };
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -329,6 +358,95 @@ export default function FigurineDetailPage() {
                 Revival
               </Box>
             )}
+
+            {hasRealtimeAveragePrice && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  zIndex: 3,
+                  minWidth: 188,
+                  maxWidth: 248,
+                  borderRadius: 2,
+                  px: 1.25,
+                  py: 1,
+                  border: "1px solid rgba(79,195,247,0.45)",
+                  background: "linear-gradient(160deg, rgba(14,28,41,0.86) 0%, rgba(12,18,30,0.78) 100%)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                  boxShadow: "0 10px 28px rgba(0,0,0,0.34)",
+                  transition: "transform 180ms ease, box-shadow 180ms ease",
+                  "&:hover": {
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 14px 34px rgba(0,0,0,0.42)",
+                  },
+                  "&:hover .market-extra": {
+                    opacity: 1,
+                    maxHeight: 42,
+                    mt: 0.6,
+                  },
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "#9fd7f4", letterSpacing: "0.09em", textTransform: "uppercase", fontWeight: 700 }}
+                  >
+                    Live Market Avg
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.55 }}>
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        bgcolor: "#4fc3f7",
+                        boxShadow: "0 0 0 rgba(79,195,247,0.75)",
+                        animation: "livePulseBadge 1.7s ease-in-out infinite",
+                        "@keyframes livePulseBadge": {
+                          "0%": { boxShadow: "0 0 0 0 rgba(79,195,247,0.7)" },
+                          "70%": { boxShadow: "0 0 0 9px rgba(79,195,247,0)" },
+                          "100%": { boxShadow: "0 0 0 0 rgba(79,195,247,0)" },
+                        },
+                      }}
+                    />
+                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.68)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                      LIVE
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mt: 0.35,
+                    color: "#d4af37",
+                    fontWeight: 800,
+                    lineHeight: 1.05,
+                    textShadow: "0 0 18px rgba(212,175,55,0.22)",
+                  }}
+                >
+                  {formatYen(averageRealtimePrice)}
+                </Typography>
+
+                <Typography
+                  className="market-extra"
+                  variant="caption"
+                  sx={{
+                    color: "rgba(255,255,255,0.72)",
+                    display: "block",
+                    opacity: 0,
+                    maxHeight: 0,
+                    overflow: "hidden",
+                    transition: "opacity 180ms ease, max-height 180ms ease, margin-top 180ms ease",
+                  }}
+                >
+                  Average from multiple stores.
+                </Typography>
+              </Box>
+            )}
+
             {mainImage ? (
               <Box
                 component="img"

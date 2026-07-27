@@ -9,6 +9,11 @@ import type {
 } from "../types/figurine";
 
 const BASE = "/figurines";
+const FIGURINE_STORES_BASE = "/figurine-stores";
+
+type FigurineStorePricingResp = {
+  realTimePrice?: number | string | null;
+};
 
 const buildFigurineQueryParams = (
   page?: number,
@@ -96,6 +101,25 @@ export const getSelectableFigurineIds = async (params?: FigurineFilters): Promis
 export const getFigurineById = async (id: number): Promise<Figurine> => {
   const res = await httpClient.get(`${BASE}/${id}`);
   return res.data;
+};
+
+export const getFigurineAverageRealtimePrice = async (figurineId: number): Promise<number | null> => {
+  const res = await httpClient.get<FigurineStorePricingResp>(
+    `${FIGURINE_STORES_BASE}/figurines/${figurineId}/average-realtime-price`,
+    {
+      headers: {
+        accept: "application/json",
+      },
+    },
+  );
+
+  const rawPrice = res.data?.realTimePrice;
+  if (rawPrice === null || rawPrice === undefined || rawPrice === "") {
+    return null;
+  }
+
+  const parsed = typeof rawPrice === "number" ? rawPrice : Number(rawPrice);
+  return Number.isFinite(parsed) ? parsed : null;
 };
 
 export const createFigurine = async (data: unknown): Promise<Figurine> => {
