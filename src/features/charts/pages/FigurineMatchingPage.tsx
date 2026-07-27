@@ -22,6 +22,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import RestoreOutlinedIcon from "@mui/icons-material/RestoreOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
@@ -31,6 +33,7 @@ import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import {
   getUnmatchedStoreListings,
   matchUnmatchedStoreListing,
+  setUnmatchedStoreListingIgnored,
   type UnmatchedStoreListing,
 } from "../api/unmatchedListingsApi";
 import { getFigurineSummary, type FigurineSummary } from "../api/figurineSummaryApi";
@@ -66,6 +69,7 @@ export default function FigurineMatchingPage() {
   const [selectionByListingId, setSelectionByListingId] = useState<Record<number, FigurineSummary | null>>({});
   const [confirmDialogItem, setConfirmDialogItem] = useState<UnmatchedStoreListing | null>(null);
   const [savingMatch, setSavingMatch] = useState(false);
+  const [updatingIgnoredId, setUpdatingIgnoredId] = useState<number | null>(null);
   const [matchedCount, setMatchedCount] = useState(0);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [hiddenLogos, setHiddenLogos] = useState<Record<number, boolean>>({});
@@ -173,6 +177,23 @@ export default function FigurineMatchingPage() {
       setErrorMessage(getApiErrorMessage(error, { action: "update", resource: "figurine match" }));
     } finally {
       setSavingMatch(false);
+    }
+  };
+
+  const handleToggleIgnored = async (item: UnmatchedStoreListing) => {
+    setUpdatingIgnoredId(item.id);
+    setErrorMessage(null);
+
+    try {
+      await setUnmatchedStoreListingIgnored(item.id, !item.ignored);
+      await loadUnmatchedListings();
+      setSuccessMessage(
+        item.ignored ? `Restored "${item.originalName}" for manual matching.` : `Marked "${item.originalName}" as ignored.`,
+      );
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, { action: "update", resource: "ignored figurine status" }));
+    } finally {
+      setUpdatingIgnoredId(null);
     }
   };
 
@@ -370,7 +391,7 @@ export default function FigurineMatchingPage() {
                 {group.items.map((item, itemIndex) => (
                   <Grid
                     key={item.id}
-                    size={{ xs: 6, sm: 4, md: 3, lg: 2 }}
+                    size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
                     sx={{
                       opacity: 0,
                       animation: `figurineCardReveal 620ms cubic-bezier(0.2, 0.9, 0.2, 1) ${Math.min(170 + itemIndex * 30, 660)}ms forwards`,
@@ -386,11 +407,22 @@ export default function FigurineMatchingPage() {
                         display: "flex",
                         flexDirection: "column",
                         borderTop: "2px solid rgba(79,195,247,0.25)",
+                        opacity: item.ignored ? 0.78 : 1,
+                        filter: item.ignored ? "grayscale(1) contrast(1.1) brightness(0.95)" : "none",
                         transition: "transform 0.2s, box-shadow 0.2s",
-                        "&:hover": {
-                          transform: "translateY(-3px)",
-                          boxShadow: "0 12px 36px rgba(79,195,247,0.16)",
-                        },
+                        ...(item.ignored
+                          ? {
+                              "&:hover": {
+                                transform: "none",
+                                boxShadow: "none",
+                              },
+                            }
+                          : {
+                              "&:hover": {
+                                transform: "translateY(-3px)",
+                                boxShadow: "0 12px 36px rgba(79,195,247,0.16)",
+                              },
+                            }),
                       }}
                     >
                 <Box sx={{ position: "relative", pt: "72%", bgcolor: "#0a0b14" }}>
@@ -407,6 +439,7 @@ export default function FigurineMatchingPage() {
                         objectFit: "contain",
                         p: 0.75,
                         bgcolor: "#0b0c16",
+                        filter: item.ignored ? "grayscale(1) brightness(1.05) contrast(1.15)" : "none",
                       }}
                     />
                   ) : (
@@ -420,6 +453,7 @@ export default function FigurineMatchingPage() {
                         color: "text.secondary",
                         flexDirection: "column",
                         gap: 1,
+                        filter: item.ignored ? "grayscale(1) brightness(1.05) contrast(1.15)" : "none",
                       }}
                     >
                       <ImageNotSupportedOutlinedIcon sx={{ opacity: 0.4 }} />
@@ -429,16 +463,41 @@ export default function FigurineMatchingPage() {
                 </Box>
 
                 <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.25, flex: 1 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.5, minWidth: 0 }}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={700}
-                      noWrap
-                      title={item.originalName}
-                      sx={{ color: "text.primary", lineHeight: 1.3, minWidth: 0, flex: 1 }}
-                    >
-                      {item.originalName}
-                    </Typography>
+                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.75, mb: 0.5, minWidth: 0 }}>
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight={700}
+                        noWrap
+                        title={item.originalName}
+                        sx={{ color: "text.primary", lineHeight: 1.3, minWidth: 0 }}
+                      >
+                        {item.originalName}
+                      </Typography>
+                      {item.ignored && (
+                        <Chip size="small" color="warning" variant="filled" label="Ignored" sx={{ mt: 0.6 }} />
+                      )}
+                    </Box>
+
+                    <Tooltip title={item.ignored ? "Restore for matching" : "Ignore this listing"}>
+                      <Button
+                        size="small"
+                        variant="text"
+                        color={item.ignored ? "info" : "warning"}
+                        onClick={() => void handleToggleIgnored(item)}
+                        disabled={updatingIgnoredId === item.id || savingMatch}
+                        aria-label={item.ignored ? "Restore for matching" : "Ignore this listing"}
+                        sx={{
+                          flexShrink: 0,
+                          mt: -0.25,
+                          minWidth: 0,
+                          px: 0.5,
+                          py: 0.25,
+                        }}
+                      >
+                        {item.ignored ? <RestoreOutlinedIcon fontSize="small" /> : <CancelOutlinedIcon fontSize="small" />}
+                      </Button>
+                    </Tooltip>
                   </Box>
 
                   <Autocomplete
@@ -447,6 +506,7 @@ export default function FigurineMatchingPage() {
                     onChange={(_, value) => handleSelectFigurine(item.id, value)}
                     size="small"
                     fullWidth
+                    disabled={Boolean(item.ignored)}
                     getOptionLabel={(option) => option.displayableName ?? ""}
                     isOptionEqualToValue={(option, value) => option.id === value.id}
                     filterOptions={(options, state) => {
@@ -612,7 +672,7 @@ export default function FigurineMatchingPage() {
                       size="small"
                       variant="outlined"
                       color="success"
-                      disabled={!selectionByListingId[item.id] || savingMatch}
+                      disabled={item.ignored || !selectionByListingId[item.id] || savingMatch}
                       onClick={() => setConfirmDialogItem(item)}
                     >
                       Confirm Match
@@ -626,7 +686,6 @@ export default function FigurineMatchingPage() {
                       rel="noopener noreferrer"
                       startIcon={<OpenInNewOutlinedIcon />}
                     >
-                      Listing
                     </Button>
                   </Stack>
                 </CardContent>
