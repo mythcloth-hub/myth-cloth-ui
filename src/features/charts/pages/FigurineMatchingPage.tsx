@@ -24,6 +24,7 @@ import {
 } from "@mui/material";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
+import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 
 import AppPageHeader from "../../../components/AppPageHeader";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
@@ -62,6 +63,7 @@ export default function FigurineMatchingPage() {
   const [savingMatch, setSavingMatch] = useState(false);
   const [matchedCount, setMatchedCount] = useState(0);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [hiddenLogos, setHiddenLogos] = useState<Record<number, boolean>>({});
 
   const loadUnmatchedListings = async () => {
     const unmatchedData = await getUnmatchedStoreListings();
@@ -150,7 +152,7 @@ export default function FigurineMatchingPage() {
   }
 
   return (
-    <Box sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
+    <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
       <Box
         sx={{
           position: "sticky",
@@ -164,14 +166,22 @@ export default function FigurineMatchingPage() {
           pt: 0.25,
           pb: 1,
           mb: 2,
+          borderBottom: "1px solid rgba(212,175,55,0.08)",
+          animation: "manualMatchingHeaderReveal 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both",
+          "@keyframes manualMatchingHeaderReveal": {
+            "0%": { opacity: 0, transform: "translateY(-10px)" },
+            "100%": { opacity: 1, transform: "translateY(0)" },
+          },
         }}
       >
-        <AppPageHeader
-          eyebrow="Stats & Charts"
-          title="Figurine Matching"
-          subtitle="Select exactly one catalog figurine for each unmatched store listing, compare both images, and confirm the match."
-          compact
-        />
+        <Box sx={{ mt: 1.5, mb: 1.5 }}>
+          <AppPageHeader
+            eyebrow="Figurine Matching"
+            title="Manual Matching"
+            subtitle="Select exactly one catalog figurine for each unmatched store listing, compare both images, and confirm the match."
+            compact
+          />
+        </Box>
       </Box>
 
       {errorMessage && (
@@ -291,7 +301,42 @@ export default function FigurineMatchingPage() {
                 </Box>
 
                 <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.25, flex: 1 }}>
-                  <Chip label={storeHost} size="small" variant="outlined" sx={{ alignSelf: "flex-start" }} />
+                  <Stack direction="row" spacing={0.8} alignItems="center" sx={{ minWidth: 0 }}>
+                    <Box
+                      sx={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: 0.8,
+                        bgcolor: "#ffffff",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {item.storeLogo && !hiddenLogos[item.storeId] ? (
+                        <Box
+                          component="img"
+                          src={item.storeLogo}
+                          alt={storeHost}
+                          onError={() => {
+                            setHiddenLogos((current) => ({ ...current, [item.storeId]: true }));
+                          }}
+                          sx={{ width: "100%", height: "100%", objectFit: "contain", p: 0.25 }}
+                        />
+                      ) : (
+                        <StorefrontOutlinedIcon sx={{ fontSize: 16, color: "rgba(56,73,90,0.8)" }} />
+                      )}
+                    </Box>
+                    <Chip
+                      label={storeHost}
+                      size="small"
+                      variant="outlined"
+                      sx={{ alignSelf: "flex-start", minWidth: 0, maxWidth: "100%" }}
+                    />
+                  </Stack>
 
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.5, minWidth: 0 }}>
                     <Typography

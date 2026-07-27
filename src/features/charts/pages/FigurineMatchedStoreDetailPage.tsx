@@ -9,22 +9,29 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Grid,
   IconButton,
   Link,
   Stack,
   Tooltip,
   Typography,
+  Snackbar,
 } from "@mui/material";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import CompareArrowsOutlinedIcon from "@mui/icons-material/CompareArrowsOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 
+import { useAuth } from "../../../auth/AuthContext";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import {
   getMatchedListingsByStoreId,
   getMatchedListingsSummary,
+  manuallyMatchFigurineListing,
   type FigurineStoreMatched,
   type FigurineStoreMatchedSummary,
 } from "../api/matchedListingsSummaryApi";
@@ -89,38 +96,64 @@ function getNameSimilarityPercent(left: string, right: string): number {
 export default function FigurineMatchedStoreDetailPage() {
   const navigate = useNavigate();
   const { storeId } = useParams<{ storeId: string }>();
+  const { hasPermission } = useAuth();
 
   const [items, setItems] = useState<FigurineStoreMatched[]>([]);
   const [storeSummary, setStoreSummary] = useState<FigurineStoreMatchedSummary | null>(null);
   const [hideStoreLogo, setHideStoreLogo] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [manualMatchTarget, setManualMatchTarget] = useState<FigurineStoreMatched | null>(null);
+  const [savingManualMatch, setSavingManualMatch] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const parsedStoreId = useMemo(() => {
     const parsed = Number(storeId);
     return Number.isFinite(parsed) ? parsed : null;
   }, [storeId]);
 
-  useEffect(() => {
+  const loadDetails = async () => {
     if (parsedStoreId === null) {
       setLoading(false);
       setErrorMessage("Invalid store id.");
       return;
     }
 
-    const loadDetails = async () => {
-      setLoading(true);
-      setErrorMessage(null);
-      try {
-        const data = await getMatchedListingsByStoreId(parsedStoreId);
-        setItems(data);
-      } catch (error) {
-        setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "matched store figurines" }));
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const data = await getMatchedListingsByStoreId(parsedStoreId);
+      setItems(data);
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "matched store figurines" }));
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleManualMatchClick = (item: FigurineStoreMatched) => {
+    setManualMatchTarget(item);
+  };
+
+  const handleConfirmManualMatch = async () => {
+    if (!manualMatchTarget) {
+      return;
+    }
+
+    setSavingManualMatch(true);
+    try {
+      await manuallyMatchFigurineListing(manualMatchTarget.id);
+      await loadDetails();
+      setSuccessMessage(`Marked "${manualMatchTarget.figurineDisplayableName}" for manual matching.`);
+      setManualMatchTarget(null);
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, { action: "update", resource: "manual figurine match" }));
+    } finally {
+      setSavingManualMatch(false);
+    }
+  };
+
+  useEffect(() => {
     const loadStoreSummary = async () => {
       try {
         const summaries = await getMatchedListingsSummary();
@@ -218,12 +251,6 @@ export default function FigurineMatchedStoreDetailPage() {
           </Typography>
         </Box>
       </Box>
-
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {errorMessage}
-        </Alert>
-      )}
 
       {!errorMessage && (
         <Card
@@ -419,6 +446,17 @@ export default function FigurineMatchedStoreDetailPage() {
                               Official
                             </Button>
                           )}
+                          {hasPermission("figurines:stores:assign") && (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="warning"
+                              startIcon={<CompareArrowsOutlinedIcon />}
+                              onClick={() => handleManualMatchClick(item)}
+                            >
+                              Manual Match
+                            </Button>
+                          )}
                         </Stack>
                       </Box>
                     </Box>
@@ -445,6 +483,107 @@ export default function FigurineMatchedStoreDetailPage() {
           );
         })}
       </Stack>
+
+      <Dialog
+        open={Boolean(manualMatchTarget)}
+        onClose={() => {
+          if (!savingManualMatch) {
+            setManualMatchTarget(null);
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Confirm manual match</DialogTitle>
+        <DialogContent>
+          {manualMatchTarget && (
+            <Stack spacing={1.5} sx={{ pt: 0.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                This action will remove the current automatic match so it can be handled manually on the manual matching page.
+              </Typography>
+
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="overline" color="text.secondary">
+                    Store Listing
+                  </Typography>
+                  <Box sx={{ mt: 0.5, p: 1, borderRadius: 1.5, border: "1px solid rgba(255,255,255,0.12)" }}>
+                    {getSafeImage(manualMatchTarget.storeProductImageUrl) ? (
+                      <Box
+                        component="img"
+                        src={getSafeImage(manualMatchTarget.storeProductImageUrl) ?? ""}
+                        alt={manualMatchTarget.storeOriginalName}
+                        sx={{ width: "100%", maxHeight: 190, objectFit: "cover", borderRadius: 1, mb: 1 }}
+                      />
+                    ) : null}
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {manualMatchTarget.storeOriginalName}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="overline" color="text.secondary">
+                    Catalog Figurine
+                  </Typography>
+                  <Box sx={{ mt: 0.5, p: 1, borderRadius: 1.5, border: "1px solid rgba(255,255,255,0.12)" }}>
+                    {getSafeImage(manualMatchTarget.figurineOfficialImageUrl) ? (
+                      <Box
+                        component="img"
+                        src={getSafeImage(manualMatchTarget.figurineOfficialImageUrl) ?? ""}
+                        alt={manualMatchTarget.figurineDisplayableName}
+                        sx={{ width: "100%", maxHeight: 190, objectFit: "cover", borderRadius: 1, mb: 1 }}
+                      />
+                    ) : null}
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {manualMatchTarget.figurineDisplayableName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {getLineupLabel(manualMatchTarget.figurineLineUp)}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Stack>
+
+              <Divider />
+
+              <Typography variant="caption" color="text.secondary">
+                After confirmation, this match will disappear from the list.
+              </Typography>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setManualMatchTarget(null)} disabled={savingManualMatch}>
+            Cancel
+          </Button>
+          <Button variant="contained" color="warning" onClick={handleConfirmManualMatch} disabled={savingManualMatch}>
+            Yes, send to manual matching
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={Boolean(successMessage)}
+        autoHideDuration={3200}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="success" onClose={() => setSuccessMessage(null)}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={Boolean(errorMessage)}
+        autoHideDuration={6000}
+        onClose={() => setErrorMessage(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="error" onClose={() => setErrorMessage(null)}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

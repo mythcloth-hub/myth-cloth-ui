@@ -4,6 +4,7 @@ export type UnmatchedStoreListing = {
   id: number;
   storeId: number;
   storeWebsite: string;
+  storeLogo?: string | null;
   originalName: string;
   imageUrl?: string | null;
   productUrl: string;

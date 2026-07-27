@@ -24,6 +24,7 @@ export type FigurineStoreMatched = {
 };
 
 const BASE = "/figurine-stores/matched-listings";
+const MANUAL_MATCH_BASE = "/figurine-stores/matched-listings/figurine-store";
 
 export const getMatchedListingsSummary = async (): Promise<FigurineStoreMatchedSummary[]> => {
   const response = await httpClient.get<FigurineStoreMatchedSummary[]>(`${BASE}/summary`, {
@@ -43,4 +44,12 @@ export const getMatchedListingsByStoreId = async (storeId: number): Promise<Figu
   });
 
   return response.data;
+};
+
+export const manuallyMatchFigurineListing = async (figurineStoreId: number): Promise<void> => {
+  await httpClient.post(`${MANUAL_MATCH_BASE}/${figurineStoreId}`, undefined, {
+    headers: {
+      accept: "application/json",
+    },
+  });
 };

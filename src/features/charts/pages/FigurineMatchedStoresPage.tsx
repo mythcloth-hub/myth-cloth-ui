@@ -99,7 +99,7 @@ export default function FigurineMatchedStoresPage() {
         <Box sx={{ mt: 1.5, mb: 1.5 }}>
           <AppPageHeader
             eyebrow="Figurine Matching"
-            title="Matched Stores"
+            title="Matching by Stores"
             subtitle="Choose a store to compare its listings against your catalog figurines. Each card shows identity, market, and current match progress."
             compact
           />

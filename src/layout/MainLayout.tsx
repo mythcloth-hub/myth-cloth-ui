@@ -79,8 +79,8 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: "Figurine Matching",
     items: [
-      { label: "Figurine Matching", path: "/figurine-matching", icon: <CompareArrowsOutlinedIcon /> },
-      { label: "Matched Stores", path: "/figurine-matching/stores", icon: <StorefrontOutlinedIcon /> },
+      { label: "Matching by Store", path: "/figurine-matching/stores", icon: <StorefrontOutlinedIcon /> },
+      { label: "Manual Matching", path: "/figurine-matching", icon: <CompareArrowsOutlinedIcon /> },
     ],
   },
   {
