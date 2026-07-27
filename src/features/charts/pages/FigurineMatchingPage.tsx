@@ -404,7 +404,9 @@ export default function FigurineMatchingPage() {
                         inset: 0,
                         width: "100%",
                         height: "100%",
-                        objectFit: "cover",
+                        objectFit: "contain",
+                        p: 0.75,
+                        bgcolor: "#0b0c16",
                       }}
                     />
                   ) : (
@@ -487,9 +489,10 @@ export default function FigurineMatchingPage() {
                                     sx={{
                                       width: 240,
                                       height: 240,
-                                      objectFit: "cover",
+                                      objectFit: "contain",
                                       borderRadius: 1,
                                       bgcolor: "common.black",
+                                      p: 0.75,
                                     }}
                                   />
                                 ) : (
@@ -665,7 +668,7 @@ export default function FigurineMatchingPage() {
                         component="img"
                         src={confirmDialogItem.imageUrl}
                         alt={confirmDialogItem.originalName}
-                        sx={{ width: "100%", maxHeight: 190, objectFit: "cover", borderRadius: 1, mb: 1 }}
+                        sx={{ width: "100%", maxHeight: 190, objectFit: "contain", borderRadius: 1, mb: 1, bgcolor: "#0b0c16" }}
                       />
                     ) : null}
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -684,7 +687,7 @@ export default function FigurineMatchingPage() {
                         component="img"
                         src={getFigurineImage(selectionByListingId[confirmDialogItem.id]) ?? ""}
                         alt={selectionByListingId[confirmDialogItem.id]?.displayableName ?? "Selected figurine"}
-                        sx={{ width: "100%", maxHeight: 190, objectFit: "cover", borderRadius: 1, mb: 1 }}
+                        sx={{ width: "100%", maxHeight: 190, objectFit: "contain", borderRadius: 1, mb: 1, bgcolor: "#0b0c16" }}
                       />
                     ) : null}
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
