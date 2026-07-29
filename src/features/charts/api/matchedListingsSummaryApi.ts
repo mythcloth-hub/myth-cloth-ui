@@ -18,9 +18,20 @@ export type FigurineStoreMatched = {
   figurineOfficialImageUrl?: string | null;
   figurineTamashiiUrl?: string | null;
   storeId: number;
+  storeCurrency?: string | null;
   storeOriginalName: string;
   storeProductImageUrl?: string | null;
   storeProductUrl?: string | null;
+  storeStatus?: string | null;
+  storePrices?: FigurineStoreMatchedPrice[] | null;
+};
+
+export type FigurineStoreMatchedPrice = {
+  currency?: string | null;
+  realTimePrice?: number | null;
+  discount?: number | null;
+  discountedPrice?: number | null;
+  lastUpdated?: string | null;
 };
 
 const BASE = "/figurine-stores/matched-listings";
