@@ -1,4 +1,5 @@
 import httpClient from "../../../api/httpClient";
+import { toCurrencyParam, type SupportedCurrency } from "../../../currency/currency";
 
 export type PriceExtremumFigurine = {
   id: number;
@@ -18,8 +19,15 @@ export type ReleaseYearPriceStats = {
 
 const BASE = "/stats/prices/releases";
 
-export const getReleaseYearPriceStats = async (): Promise<ReleaseYearPriceStats[]> => {
+type PriceStatsRequestParams = {
+  currency?: SupportedCurrency;
+};
+
+export const getReleaseYearPriceStats = async (
+  params?: PriceStatsRequestParams,
+): Promise<ReleaseYearPriceStats[]> => {
   const res = await httpClient.get(`${BASE}/years`, {
+    params: toCurrencyParam(params?.currency),
     headers: {
       accept: "application/json",
     },

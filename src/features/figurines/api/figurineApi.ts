@@ -1,4 +1,5 @@
 import httpClient from "../../../api/httpClient";
+import { isSupportedCurrency, toCurrencyParam, type SupportedCurrency } from "../../../currency/currency";
 import type {
   Figurine,
   FigurineEvent,
@@ -13,6 +14,46 @@ const FIGURINE_STORES_BASE = "/figurine-stores";
 
 type FigurineStorePricingResp = {
   realTimePrice?: number | string | null;
+  currency?: string | null;
+};
+
+export type FigurineAverageRealtimePrice = {
+  realTimePrice: number | null;
+  currency: SupportedCurrency | null;
+};
+
+export type StoreSummary = {
+  id: number;
+  name: string;
+  storeName: string;
+  website?: string;
+  logoUrl?: string;
+  currency?: string;
+  country?: string;
+  active?: boolean;
+};
+
+export type FigurineHistoricalPricePoint = {
+  storeName: string;
+  storeLogoUrl?: string | null;
+  storeProductUrl?: string | null;
+  price: number;
+  checkedAt: string;
+};
+
+export type FigurineHistoricalPricesResponse = {
+  name?: string;
+  currency: string;
+  prices: FigurineHistoricalPricePoint[];
+};
+
+type FigurineStorePricingRequestParams = {
+  currency?: SupportedCurrency;
+};
+
+type FigurineHistoricalPricingRequestParams = {
+  currency?: SupportedCurrency;
+  storeId?: number;
 };
 
 const buildFigurineQueryParams = (
@@ -103,10 +144,14 @@ export const getFigurineById = async (id: number): Promise<Figurine> => {
   return res.data;
 };
 
-export const getFigurineAverageRealtimePrice = async (figurineId: number): Promise<number | null> => {
+export const getFigurineAverageRealtimePrice = async (
+  figurineId: number,
+  params?: FigurineStorePricingRequestParams,
+): Promise<FigurineAverageRealtimePrice> => {
   const res = await httpClient.get<FigurineStorePricingResp>(
-    `${FIGURINE_STORES_BASE}/figurines/${figurineId}/average-realtime-price`,
+    `${FIGURINE_STORES_BASE}/figurines/${figurineId}/prices/current`,
     {
+      params: toCurrencyParam(params?.currency),
       headers: {
         accept: "application/json",
       },
@@ -114,12 +159,56 @@ export const getFigurineAverageRealtimePrice = async (figurineId: number): Promi
   );
 
   const rawPrice = res.data?.realTimePrice;
+  const rawCurrency = res.data?.currency?.trim().toUpperCase();
+  const parsedCurrency = isSupportedCurrency(rawCurrency) ? rawCurrency : null;
+
   if (rawPrice === null || rawPrice === undefined || rawPrice === "") {
-    return null;
+    return {
+      realTimePrice: null,
+      currency: parsedCurrency,
+    };
   }
 
   const parsed = typeof rawPrice === "number" ? rawPrice : Number(rawPrice);
-  return Number.isFinite(parsed) ? parsed : null;
+  return {
+    realTimePrice: Number.isFinite(parsed) ? parsed : null,
+    currency: parsedCurrency,
+  };
+};
+
+export const getStores = async (): Promise<StoreSummary[]> => {
+  const res = await httpClient.get<StoreSummary[]>("/stores", {
+    headers: {
+      accept: "application/json",
+    },
+  });
+
+  return res.data;
+};
+
+export const getFigurineHistoricalPrices = async (
+  figurineId: number,
+  params?: FigurineHistoricalPricingRequestParams,
+): Promise<FigurineHistoricalPricesResponse> => {
+  const queryParams: Record<string, string | number> = {
+    ...toCurrencyParam(params?.currency),
+  };
+
+  if (typeof params?.storeId === "number") {
+    queryParams.storeId = params.storeId;
+  }
+
+  const res = await httpClient.get<FigurineHistoricalPricesResponse>(
+    `${FIGURINE_STORES_BASE}/figurines/${figurineId}/prices/history`,
+    {
+      params: queryParams,
+      headers: {
+        accept: "application/json",
+      },
+    },
+  );
+
+  return res.data;
 };
 
 export const createFigurine = async (data: unknown): Promise<Figurine> => {
