@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../auth/AuthContext";
+import { useDisplayCurrency } from "../../../currency/CurrencyContext";
+import type { SupportedCurrency } from "../../../currency/currency";
 import {
   Alert,
   Box,
@@ -74,6 +76,7 @@ export default function FigurineDetailPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { hasPermission, isAuthenticated } = useAuth();
+  const { selectedCurrency } = useDisplayCurrency();
 
   const [figurine, setFigurine] = useState<Figurine | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,6 +85,7 @@ export default function FigurineDetailPage() {
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
   const [averageRealtimePrice, setAverageRealtimePrice] = useState<number | null>(null);
+  const [averageRealtimePriceCurrency, setAverageRealtimePriceCurrency] = useState<SupportedCurrency | null>(null);
   const [, setAverageRealtimePriceLoading] = useState(false);
   const [, setAverageRealtimePriceError] = useState<string | null>(null);
   const [selectedCollectionContext, setSelectedCollectionContext] = useState<SelectedCollectionContext | null>(() => {
@@ -152,16 +156,18 @@ export default function FigurineDetailPage() {
       })
       .finally(() => setLoading(false));
 
-    getFigurineAverageRealtimePrice(Number(id))
-      .then((price) => {
-        setAverageRealtimePrice(price);
+    getFigurineAverageRealtimePrice(Number(id), { currency: selectedCurrency ?? undefined })
+      .then((result) => {
+        setAverageRealtimePrice(result.realTimePrice);
+        setAverageRealtimePriceCurrency(result.currency);
       })
       .catch(() => {
         setAverageRealtimePrice(null);
+        setAverageRealtimePriceCurrency(null);
         setAverageRealtimePriceError("Live average price is not available right now.");
       })
       .finally(() => setAverageRealtimePriceLoading(false));
-  }, [id]);
+  }, [id, selectedCurrency]);
 
   if (loading) {
     return (
@@ -190,15 +196,35 @@ export default function FigurineDetailPage() {
   const notesText = figurine.notes ? figurine.notes.replace(/\\n/g, "\n") : "";
   const hasRealtimeAveragePrice = averageRealtimePrice !== null && averageRealtimePrice > 0;
 
-  const formatYen = (amount: number): string => {
+  const resolvedRealtimeCurrency = (() => {
+    if (averageRealtimePriceCurrency) {
+      return averageRealtimePriceCurrency;
+    }
+
+    return selectedCurrency ?? "JPY";
+  })();
+
+  const formatRealtimePrice = (amount: number, currency: SupportedCurrency): string => {
+    const symbolMap: Record<SupportedCurrency, string> = {
+      JPY: "¥",
+      MXN: "$",
+      EUR: "€",
+      USD: "$",
+      CNY: "¥",
+      CAD: "$",
+    };
+
+    const digits = currency === "JPY" ? 0 : 2;
+
     try {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "JPY",
-        maximumFractionDigits: 0,
+      const formattedAmount = new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
       }).format(amount);
+
+      return `${symbolMap[currency]}${formattedAmount} ${currency}`;
     } catch {
-      return `${amount.toLocaleString()} JPY`;
+      return `${amount.toFixed(digits)} ${currency}`;
     }
   };
 
@@ -366,84 +392,68 @@ export default function FigurineDetailPage() {
                   top: 12,
                   right: 12,
                   zIndex: 3,
-                  minWidth: 188,
-                  maxWidth: 248,
-                  borderRadius: 2,
-                  px: 1.25,
-                  py: 1,
-                  border: "1px solid rgba(79,195,247,0.45)",
-                  background: "linear-gradient(160deg, rgba(14,28,41,0.86) 0%, rgba(12,18,30,0.78) 100%)",
+                  minWidth: 176,
+                  maxWidth: 228,
+                  borderRadius: 1,
+                  px: 1.3,
+                  py: 1.1,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  background: (theme) => theme.palette.background.paper,
                   backdropFilter: "blur(10px)",
                   WebkitBackdropFilter: "blur(10px)",
-                  boxShadow: "0 10px 28px rgba(0,0,0,0.34)",
+                  boxShadow: (theme) => theme.shadows[6],
                   transition: "transform 180ms ease, box-shadow 180ms ease",
                   "&:hover": {
                     transform: "translateY(-1px)",
-                    boxShadow: "0 14px 34px rgba(0,0,0,0.42)",
-                  },
-                  "&:hover .market-extra": {
-                    opacity: 1,
-                    maxHeight: 42,
-                    mt: 0.6,
+                    boxShadow: (theme) => theme.shadows[10],
                   },
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 0.8 }}>
                   <Typography
                     variant="caption"
-                    sx={{ color: "#9fd7f4", letterSpacing: "0.09em", textTransform: "uppercase", fontWeight: 700 }}
+                    sx={{ color: "text.secondary", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700, fontSize: "0.62rem" }}
                   >
-                    Live Market Avg
+                    Live Market Price
                   </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.55 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.45 }}>
                     <Box
                       sx={{
                         width: 8,
                         height: 8,
                         borderRadius: "50%",
-                        bgcolor: "#4fc3f7",
-                        boxShadow: "0 0 0 rgba(79,195,247,0.75)",
+                        color: "info.main",
+                        bgcolor: "info.main",
+                        boxShadow: "0 0 0 0 currentColor",
                         animation: "livePulseBadge 1.7s ease-in-out infinite",
                         "@keyframes livePulseBadge": {
-                          "0%": { boxShadow: "0 0 0 0 rgba(79,195,247,0.7)" },
-                          "70%": { boxShadow: "0 0 0 9px rgba(79,195,247,0)" },
-                          "100%": { boxShadow: "0 0 0 0 rgba(79,195,247,0)" },
+                          "0%": { boxShadow: "0 0 0 0 currentColor" },
+                          "70%": { boxShadow: "0 0 0 9px transparent" },
+                          "100%": { boxShadow: "0 0 0 0 transparent" },
                         },
                       }}
                     />
-                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.68)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                    <Typography variant="caption" sx={{ color: "info.main", fontWeight: 700, letterSpacing: "0.05em", fontSize: "0.62rem" }}>
                       LIVE
                     </Typography>
                   </Box>
                 </Box>
 
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mt: 0.35,
-                    color: "#d4af37",
-                    fontWeight: 800,
-                    lineHeight: 1.05,
-                    textShadow: "0 0 18px rgba(212,175,55,0.22)",
-                  }}
-                >
-                  {formatYen(averageRealtimePrice)}
-                </Typography>
-
-                <Typography
-                  className="market-extra"
-                  variant="caption"
-                  sx={{
-                    color: "rgba(255,255,255,0.72)",
-                    display: "block",
-                    opacity: 0,
-                    maxHeight: 0,
-                    overflow: "hidden",
-                    transition: "opacity 180ms ease, max-height 180ms ease, margin-top 180ms ease",
-                  }}
-                >
-                  Average from multiple stores.
-                </Typography>
+                <Tooltip title="Real-time average from stores" placement="bottom-end">
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mt: 0.3,
+                      color: "primary.main",
+                      fontWeight: 800,
+                      fontSize: "0.9rem",
+                      lineHeight: 1.15,
+                      cursor: "help",
+                    }}
+                  >
+                    {formatRealtimePrice(averageRealtimePrice, resolvedRealtimeCurrency)}
+                  </Typography>
+                </Tooltip>
               </Box>
             )}
 

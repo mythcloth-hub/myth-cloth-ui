@@ -15,6 +15,8 @@ import {
 } from "../api/priceStatsApi";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
+import { useDisplayCurrency } from "../../../currency/CurrencyContext";
+import type { SupportedCurrency } from "../../../currency/currency";
 
 type PriceSummary = {
   totalReleases: number;
@@ -25,13 +27,23 @@ type PriceSummary = {
   lastYear: number;
 };
 
-function formatCurrency(value: number) {
-  const compactValue = new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
+function formatCurrency(value: number, currency?: SupportedCurrency | null) {
+  const code = currency ?? "JPY";
 
-  return `${compactValue} JPY`;
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: code,
+      maximumFractionDigits: 0,
+    }).format(value);
+  } catch {
+    const compactValue = new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(value);
+
+    return `${compactValue} ${code}`;
+  }
 }
 
 function formatCount(value: number) {
@@ -94,10 +106,12 @@ function PriceTrendChart({
   data,
   selectedYear,
   onSelectYear,
+  selectedCurrency,
 }: {
   data: ReleaseYearPriceStats[];
   selectedYear: number | null;
   onSelectYear: (year: number) => void;
+  selectedCurrency: SupportedCurrency | null;
 }) {
   if (data.length === 0) {
     return (
@@ -187,10 +201,10 @@ function PriceTrendChart({
               {hoveredYearData.year}
             </Typography>
             <Typography variant="caption" sx={{ color: "#b8e5ba" }}>
-              High: {hoveredYearData.highestPriceFigurines?.name ?? "N/A"} ({formatCurrency(hoveredYearData.highestReleasePrice)})
+              High: {hoveredYearData.highestPriceFigurines?.name ?? "N/A"} ({formatCurrency(hoveredYearData.highestReleasePrice, selectedCurrency)})
             </Typography>
             <Typography variant="caption" sx={{ color: "#ffd7a2" }}>
-              Low: {hoveredYearData.lowestPriceFigurines?.name ?? "N/A"} ({formatCurrency(hoveredYearData.lowestReleasePrice)})
+              Low: {hoveredYearData.lowestPriceFigurines?.name ?? "N/A"} ({formatCurrency(hoveredYearData.lowestReleasePrice, selectedCurrency)})
             </Typography>
           </Stack>
         ) : (
@@ -220,7 +234,7 @@ function PriceTrendChart({
                   fill="rgba(255,255,255,0.62)"
                   fontSize="11"
                 >
-                  {formatCurrency(tick.value)}
+                  {formatCurrency(tick.value, selectedCurrency)}
                 </text>
               </g>
             ))}
@@ -303,7 +317,7 @@ function PriceTrendChart({
                   onMouseLeave={() => setHoveredYear(null)}
                 />
                 <title>
-                  {`${point.year}\nHigh: ${point.highestPriceFigurines?.name ?? "N/A"} (${formatCurrency(point.highestReleasePrice)})\nLow: ${point.lowestPriceFigurines?.name ?? "N/A"} (${formatCurrency(point.lowestReleasePrice)})`}
+                  {`${point.year}\nHigh: ${point.highestPriceFigurines?.name ?? "N/A"} (${formatCurrency(point.highestReleasePrice, selectedCurrency)})\nLow: ${point.lowestPriceFigurines?.name ?? "N/A"} (${formatCurrency(point.lowestReleasePrice, selectedCurrency)})`}
                 </title>
               </g>
             ))}
@@ -319,11 +333,13 @@ function YearExtremeCard({
   figurine,
   price,
   accent,
+  selectedCurrency,
 }: {
   title: string;
   figurine?: ReleaseYearPriceStats["highestPriceFigurines"] | null;
   price: number;
   accent: string;
+  selectedCurrency: SupportedCurrency | null;
 }) {
   return (
     <Paper
@@ -372,7 +388,7 @@ function YearExtremeCard({
           </Typography>
           <Chip
             size="small"
-            label={formatCurrency(price)}
+            label={formatCurrency(price, selectedCurrency)}
             sx={{ mt: 1, bgcolor: `${accent}33`, color: "text.primary", border: `1px solid ${accent}55` }}
           />
         </Box>
@@ -435,6 +451,7 @@ function ReleaseCountBars({ data }: { data: ReleaseYearPriceStats[] }) {
 }
 
 export default function PricingPage() {
+  const { selectedCurrency } = useDisplayCurrency();
   const [priceData, setPriceData] = useState<ReleaseYearPriceStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -447,7 +464,7 @@ export default function PricingPage() {
       setLoading(true);
       setErrorMessage(null);
       try {
-        const response = await getReleaseYearPriceStats();
+        const response = await getReleaseYearPriceStats({ currency: selectedCurrency ?? undefined });
         if (!active) return;
         setPriceData(response);
         const sortedYears = [...response].sort((a, b) => a.year - b.year);
@@ -468,7 +485,7 @@ export default function PricingPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [selectedCurrency]);
 
   const summary = useMemo(() => buildSummary(priceData), [priceData]);
   const selectedYearData = useMemo(() => {
@@ -528,8 +545,16 @@ export default function PricingPage() {
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap" sx={{ mt: 2.25 }}>
               <Chip label={`${summary.firstYear} - ${summary.lastYear}`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
               <Chip label={`${formatCount(summary.totalReleases)} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
-              <Chip label={`${formatCurrency(summary.weightedAverage)} weighted avg`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
-              <Chip label={`${formatCurrency(summary.highestPrice)} peak price`} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
+              <Chip label={`${formatCurrency(summary.weightedAverage, selectedCurrency)} weighted avg`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
+              <Chip label={`${formatCurrency(summary.highestPrice, selectedCurrency)} peak price`} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
+              {selectedCurrency && (
+                <Chip
+                  label={`Converted to ${selectedCurrency}`}
+                  size="small"
+                  variant="outlined"
+                  sx={{ borderColor: "rgba(79,195,247,0.45)", color: "#9fd7f4", fontWeight: 700 }}
+                />
+              )}
             </Stack>
           )}
 
@@ -545,14 +570,14 @@ export default function PricingPage() {
               <Box sx={{ flex: 1 }}>
                 <PriceMetricCard
                   label="Weighted average"
-                  value={formatCurrency(summary.weightedAverage)}
+                  value={formatCurrency(summary.weightedAverage, selectedCurrency)}
                   accent="#4fc3f7"
                 />
               </Box>
               <Box sx={{ flex: 1 }}>
                 <PriceMetricCard
                   label="Absolute range"
-                  value={`${formatCurrency(summary.lowestPrice)} - ${formatCurrency(summary.highestPrice)}`}
+                  value={`${formatCurrency(summary.lowestPrice, selectedCurrency)} - ${formatCurrency(summary.highestPrice, selectedCurrency)}`}
                   accent="#81c784"
                 />
               </Box>
@@ -599,6 +624,7 @@ export default function PricingPage() {
               data={priceData}
               selectedYear={selectedYearData?.year ?? null}
               onSelectYear={setSelectedYear}
+              selectedCurrency={selectedCurrency}
             />
             {selectedYearData && (
               <Box
@@ -633,7 +659,7 @@ export default function PricingPage() {
                   >
                     <PriceMetricCard
                       label="Average price"
-                      value={formatCurrency(selectedYearData.averageReleasePrice)}
+                      value={formatCurrency(selectedYearData.averageReleasePrice, selectedCurrency)}
                       accent="#4fc3f7"
                     />
                     <PriceMetricCard
@@ -643,12 +669,12 @@ export default function PricingPage() {
                     />
                     <PriceMetricCard
                       label="Highest"
-                      value={formatCurrency(selectedYearData.highestReleasePrice)}
+                      value={formatCurrency(selectedYearData.highestReleasePrice, selectedCurrency)}
                       accent="#81c784"
                     />
                     <PriceMetricCard
                       label="Spread (high-low)"
-                      value={formatCurrency(selectedYearData.highestReleasePrice - selectedYearData.lowestReleasePrice)}
+                      value={formatCurrency(selectedYearData.highestReleasePrice - selectedYearData.lowestReleasePrice, selectedCurrency)}
                       accent="#ffb74d"
                     />
                   </Box>
@@ -683,12 +709,14 @@ export default function PricingPage() {
                       figurine={selectedYearData.highestPriceFigurines}
                       price={selectedYearData.highestReleasePrice}
                       accent="#81c784"
+                      selectedCurrency={selectedCurrency}
                     />
                     <YearExtremeCard
                       title="Lowest price figurine"
                       figurine={selectedYearData.lowestPriceFigurines}
                       price={selectedYearData.lowestReleasePrice}
                       accent="#ffb74d"
+                      selectedCurrency={selectedCurrency}
                     />
                   </Stack>
                 </Paper>

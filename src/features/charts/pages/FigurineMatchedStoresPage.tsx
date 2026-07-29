@@ -19,6 +19,7 @@ import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutli
 import PendingOutlinedIcon from "@mui/icons-material/PendingOutlined";
 
 import AppPageHeader from "../../../components/AppPageHeader";
+import { useDisplayCurrency } from "../../../currency/CurrencyContext";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 import {
@@ -28,6 +29,7 @@ import {
 
 export default function FigurineMatchedStoresPage() {
   const navigate = useNavigate();
+  const { selectedCurrency } = useDisplayCurrency();
   const [items, setItems] = useState<FigurineStoreMatchedSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -38,7 +40,7 @@ export default function FigurineMatchedStoresPage() {
       setLoading(true);
       setErrorMessage(null);
       try {
-        const data = await getMatchedListingsSummary();
+        const data = await getMatchedListingsSummary({ currency: selectedCurrency ?? undefined });
         setItems(data);
       } catch (error) {
         setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "matched stores summary" }));
@@ -48,7 +50,7 @@ export default function FigurineMatchedStoresPage() {
     };
 
     void loadSummary();
-  }, []);
+  }, [selectedCurrency]);
 
   const totalMatchedAcrossStores = useMemo(
     () => items.reduce((sum, item) => sum + item.matchedFigurineCount, 0),
@@ -139,6 +141,14 @@ export default function FigurineMatchedStoresPage() {
               <Typography variant="caption" color="text.secondary" sx={{ alignSelf: "center" }}>
                 {currenciesCount} currenc{currenciesCount === 1 ? "y" : "ies"}
               </Typography>
+              {selectedCurrency && (
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`Converted to ${selectedCurrency}`}
+                  sx={{ borderColor: "rgba(79,195,247,0.45)", color: "#9fd7f4", fontWeight: 700 }}
+                />
+              )}
             </Stack>
           </CardContent>
         </Card>

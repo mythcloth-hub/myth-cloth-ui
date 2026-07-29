@@ -27,6 +27,7 @@ import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupported
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 
 import { useAuth } from "../../../auth/AuthContext";
+import { useDisplayCurrency } from "../../../currency/CurrencyContext";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import {
   getMatchedListingsByStoreId,
@@ -210,6 +211,7 @@ export default function FigurineMatchedStoreDetailPage() {
   const navigate = useNavigate();
   const { storeId } = useParams<{ storeId: string }>();
   const { hasPermission } = useAuth();
+  const { selectedCurrency } = useDisplayCurrency();
 
   const [items, setItems] = useState<FigurineStoreMatched[]>([]);
   const [storeSummary, setStoreSummary] = useState<FigurineStoreMatchedSummary | null>(null);
@@ -235,7 +237,9 @@ export default function FigurineMatchedStoreDetailPage() {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const data = await getMatchedListingsByStoreId(parsedStoreId);
+      const data = await getMatchedListingsByStoreId(parsedStoreId, {
+        currency: selectedCurrency ?? undefined,
+      });
       setItems(data);
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "matched store figurines" }));
@@ -269,7 +273,7 @@ export default function FigurineMatchedStoreDetailPage() {
   useEffect(() => {
     const loadStoreSummary = async () => {
       try {
-        const summaries = await getMatchedListingsSummary();
+        const summaries = await getMatchedListingsSummary({ currency: selectedCurrency ?? undefined });
         setStoreSummary(summaries.find((summary) => summary.storeId === parsedStoreId) ?? null);
       } catch {
         setStoreSummary(null);
@@ -278,7 +282,7 @@ export default function FigurineMatchedStoreDetailPage() {
 
     void loadDetails();
     void loadStoreSummary();
-  }, [parsedStoreId]);
+  }, [parsedStoreId, selectedCurrency]);
 
   const storeHost = useMemo(() => {
     const candidate = items[0]?.storeProductUrl;
@@ -376,6 +380,14 @@ export default function FigurineMatchedStoreDetailPage() {
           <CardContent>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
               <Chip label={`${items.length} matched figurine${items.length === 1 ? "" : "s"}`} sx={{ fontWeight: 700 }} />
+              {selectedCurrency && (
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`Converted to ${selectedCurrency}`}
+                  sx={{ borderColor: "rgba(79,195,247,0.45)", color: "#9fd7f4", fontWeight: 700 }}
+                />
+              )}
             </Stack>
           </CardContent>
         </Card>

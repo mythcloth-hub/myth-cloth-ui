@@ -1,4 +1,9 @@
 import httpClient from "../../../api/httpClient";
+import { toCurrencyParam, type SupportedCurrency } from "../../../currency/currency";
+
+type CurrencyRequestParams = {
+  currency?: SupportedCurrency;
+};
 
 export type FigurineStoreMatchedSummary = {
   storeId: number;
@@ -37,8 +42,11 @@ export type FigurineStoreMatchedPrice = {
 const BASE = "/figurine-stores/matched-listings";
 const MANUAL_MATCH_BASE = "/figurine-stores/matched-listings/figurine-store";
 
-export const getMatchedListingsSummary = async (): Promise<FigurineStoreMatchedSummary[]> => {
+export const getMatchedListingsSummary = async (
+  params?: CurrencyRequestParams,
+): Promise<FigurineStoreMatchedSummary[]> => {
   const response = await httpClient.get<FigurineStoreMatchedSummary[]>(`${BASE}/summary`, {
+    params: toCurrencyParam(params?.currency),
     headers: {
       accept: "application/json",
     },
@@ -47,8 +55,12 @@ export const getMatchedListingsSummary = async (): Promise<FigurineStoreMatchedS
   return response.data;
 };
 
-export const getMatchedListingsByStoreId = async (storeId: number): Promise<FigurineStoreMatched[]> => {
+export const getMatchedListingsByStoreId = async (
+  storeId: number,
+  params?: CurrencyRequestParams,
+): Promise<FigurineStoreMatched[]> => {
   const response = await httpClient.get<FigurineStoreMatched[]>(`${BASE}/stores/${storeId}`, {
+    params: toCurrencyParam(params?.currency),
     headers: {
       accept: "application/json",
     },
