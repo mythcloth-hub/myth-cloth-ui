@@ -33,6 +33,7 @@ import {
   getMatchedListingsSummary,
   manuallyMatchFigurineListing,
   type FigurineStoreMatched,
+  type FigurineStoreMatchedPrice,
   type FigurineStoreMatchedSummary,
 } from "../api/matchedListingsSummaryApi";
 
@@ -91,6 +92,118 @@ function getNameSimilarityPercent(left: string, right: string): number {
 
   const unionSize = new Set([...leftTokens, ...rightTokens]).size;
   return Math.round((overlap / Math.max(unionSize, 1)) * 100);
+}
+
+function getStatusLabel(value?: string | null): string {
+  const normalized = value?.trim().toUpperCase();
+  if (!normalized) return "Unknown";
+  return normalized.replace(/_/g, " ");
+}
+
+function getStatusColor(value?: string | null): "default" | "success" | "warning" | "error" | "info" {
+  const normalized = value?.trim().toUpperCase();
+  if (!normalized) return "default";
+
+  if (normalized === "IN_STOCK") return "success";
+  if (normalized === "OUT_OF_STOCK") return "error";
+  if (normalized === "PREORDER") return "info";
+  if (normalized === "SOLD_OUT") return "warning";
+  if (normalized === "UNKNOWN") return "default";
+
+  return "default";
+}
+
+function formatStorePrice(amount?: number | null, currency?: string | null): string {
+  if (amount === null || amount === undefined || !Number.isFinite(amount)) {
+    return "N/A";
+  }
+
+  const code = currency?.trim().toUpperCase() || "USD";
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: code,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `${code} ${amount.toFixed(2)}`;
+  }
+}
+
+function getUpdatedAtParts(value?: string | null): { date: string; time: string } | null {
+  const normalized = value?.trim();
+  if (!normalized) return null;
+
+  const parsed = new Date(normalized);
+  if (Number.isNaN(parsed.getTime())) {
+    return { date: normalized, time: "" };
+  }
+
+  return {
+    date: parsed.toLocaleDateString(),
+    time: parsed.toLocaleTimeString(),
+  };
+}
+
+function toTimestamp(value?: string | null): number | null {
+  const normalized = value?.trim();
+  if (!normalized) return null;
+
+  const parsed = new Date(normalized);
+  const timestamp = parsed.getTime();
+  return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+function getEffectivePrice(price: FigurineStoreMatchedPrice): number | null {
+  const amount = price.discountedPrice ?? price.realTimePrice;
+  return typeof amount === "number" && Number.isFinite(amount) ? amount : null;
+}
+
+function getPriceChange(current: FigurineStoreMatchedPrice, previous?: FigurineStoreMatchedPrice): number | null {
+  if (!previous) return null;
+
+  const currentAmount = getEffectivePrice(current);
+  const previousAmount = getEffectivePrice(previous);
+
+  if (currentAmount === null || previousAmount === null) {
+    return null;
+  }
+
+  return currentAmount - previousAmount;
+}
+
+function getPriceChangeColor(change: number | null): "default" | "success" | "error" {
+  if (change === null || change === 0) return "default";
+  return change < 0 ? "success" : "error";
+}
+
+function getPriceChangeLabel(change: number | null, currency?: string | null): string | null {
+  if (change === null) return null;
+  if (change === 0) return "No change";
+
+  const direction = change < 0 ? "Down" : "Up";
+  return `${direction} ${formatStorePrice(Math.abs(change), currency)}`;
+}
+
+function buildSparklinePath(values: number[], width: number, height: number): string {
+  if (values.length === 0) return "";
+  if (values.length === 1) {
+    const y = height / 2;
+    return `M 0 ${y} L ${width} ${y}`;
+  }
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+
+  return values
+    .map((value, index) => {
+      const x = (index / (values.length - 1)) * width;
+      const y = height - ((value - min) / range) * height;
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
 }
 
 export default function FigurineMatchedStoreDetailPage() {
@@ -293,6 +406,26 @@ export default function FigurineMatchedStoreDetailPage() {
           const lineupLabel = getLineupLabel(item.figurineLineUp);
           const nameSimilarity = getNameSimilarityPercent(item.storeOriginalName, item.figurineDisplayableName);
           const similaritySeverity = nameSimilarity >= 60 ? "success" : nameSimilarity >= 35 ? "warning" : "default";
+          const fallbackCurrency = item.storeCurrency?.trim() || storeSummary?.currency || null;
+          const storeStatus = item.storeStatus?.trim() || null;
+          const storePrices = ((item.storePrices ?? []) as FigurineStoreMatchedPrice[])
+            .slice()
+            .sort((left, right) => {
+              const leftTimestamp = toTimestamp(left.lastUpdated);
+              const rightTimestamp = toTimestamp(right.lastUpdated);
+
+              if (leftTimestamp === null && rightTimestamp === null) return 0;
+              if (leftTimestamp === null) return 1;
+              if (rightTimestamp === null) return -1;
+
+              return rightTimestamp - leftTimestamp;
+            });
+          const effectiveCurrencies = Array.from(
+            new Set(storePrices.map((price) => price.currency?.trim() || fallbackCurrency || "UNKNOWN")),
+          );
+          const canRenderTrend = effectiveCurrencies.length <= 1;
+          const trendValues = canRenderTrend ? storePrices.map((price) => getEffectivePrice(price)).filter((value): value is number => value !== null) : [];
+          const sparklinePath = trendValues.length > 0 ? buildSparklinePath(trendValues.slice().reverse(), 220, 44) : "";
 
           return (
             <Card
@@ -322,7 +455,7 @@ export default function FigurineMatchedStoreDetailPage() {
                         bgcolor: "rgba(255,255,255,0.02)",
                       }}
                     >
-                      <Box sx={{ position: "relative", pt: "72%", bgcolor: "#0a0b14" }}>
+                      <Box sx={{ position: "relative", pt: { xs: "58%", md: "52%" }, bgcolor: "#0a0b14" }}>
                         {storeImage ? (
                           <Box
                             component="img"
@@ -334,7 +467,7 @@ export default function FigurineMatchedStoreDetailPage() {
                               width: "100%",
                               height: "100%",
                               objectFit: "contain",
-                              p: 0.75,
+                              p: 0.45,
                               bgcolor: "#0b0c16",
                             }}
                           />
@@ -356,7 +489,7 @@ export default function FigurineMatchedStoreDetailPage() {
                           </Box>
                         )}
                       </Box>
-                      <Box sx={{ p: 1.25 }}>
+                      <Box sx={{ p: 1 }}>
                         <Typography variant="body2" sx={{ fontWeight: 700 }}>
                           {item.storeOriginalName}
                         </Typography>
@@ -374,6 +507,212 @@ export default function FigurineMatchedStoreDetailPage() {
                           </Button>
                         )}
                       </Box>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        mt: 1,
+                        p: 1.25,
+                        borderRadius: 1.5,
+                        border: "1px solid rgba(79,195,247,0.16)",
+                        bgcolor: "rgba(79,195,247,0.06)",
+                      }}
+                    >
+                      <Typography variant="overline" sx={{ color: "#9fd7f4", letterSpacing: "0.08em" }}>
+                        Store Market Snapshot
+                      </Typography>
+
+                      <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 0.65, mb: 0.9 }}>
+                        <Chip size="small" color={getStatusColor(storeStatus)} label={`${getStatusLabel(storeStatus)}`} />
+                        <Chip size="small" variant="outlined" label={`${storePrices.length} price update${storePrices.length === 1 ? "" : "s"}`} />
+                      </Stack>
+
+                      {storePrices.length > 1 && (
+                        <Box
+                          sx={{
+                            mb: 1,
+                            p: 1,
+                            borderRadius: 1.25,
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            bgcolor: "rgba(255,255,255,0.025)",
+                          }}
+                        >
+                          <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.6 }}>
+                            Price trend over time
+                          </Typography>
+
+                          {canRenderTrend && sparklinePath ? (
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+                              <Box
+                                component="svg"
+                                viewBox="0 0 220 44"
+                                preserveAspectRatio="none"
+                                sx={{ width: "100%", maxWidth: 220, height: 44, overflow: "visible", flexShrink: 0 }}
+                              >
+                                <path d="M 0 38 L 220 38" stroke="rgba(255,255,255,0.12)" strokeWidth="1" fill="none" />
+                                <path d={sparklinePath} stroke="#4fc3f7" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                {trendValues.slice().reverse().map((value, pointIndex, points) => {
+                                  const min = Math.min(...points);
+                                  const max = Math.max(...points);
+                                  const range = max - min || 1;
+                                  const x = points.length === 1 ? 110 : (pointIndex / (points.length - 1)) * 220;
+                                  const y = 44 - ((value - min) / range) * 44;
+
+                                  return (
+                                    <circle
+                                      key={`${item.id}-trend-${pointIndex}`}
+                                      cx={x}
+                                      cy={y}
+                                      r={pointIndex === points.length - 1 ? 4 : 3}
+                                      fill={pointIndex === points.length - 1 ? "#d4af37" : "#4fc3f7"}
+                                    />
+                                  );
+                                })}
+                              </Box>
+
+                              <Stack spacing={0.3} sx={{ minWidth: 0 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                  Oldest
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  Newest
+                                </Typography>
+                              </Stack>
+                            </Box>
+                          ) : (
+                            <Typography variant="caption" color="text.secondary">
+                              Trend chart hidden because this history contains multiple currencies.
+                            </Typography>
+                          )}
+                        </Box>
+                      )}
+
+                      {storePrices.length > 0 ? (
+                        <Stack spacing={0.9}>
+                          {storePrices.map((price, priceIndex) => {
+                            const hasDiscount = (price.discount ?? 0) > 0;
+                            const effectiveCurrency = price.currency?.trim() || fallbackCurrency || null;
+                            const olderSnapshot = storePrices[priceIndex + 1];
+                            const priceChange = getPriceChange(price, olderSnapshot);
+                            const priceChangeLabel = getPriceChangeLabel(priceChange, effectiveCurrency);
+                            const isLatest = priceIndex === 0;
+                            const isOldest = priceIndex === storePrices.length - 1;
+                            const updatedAtParts = getUpdatedAtParts(price.lastUpdated);
+
+                            return (
+                              <Stack
+                                key={`${item.id}-price-${priceIndex}`}
+                                direction="row"
+                                spacing={1}
+                                alignItems="stretch"
+                              >
+                                <Box
+                                  sx={{
+                                    width: 16,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <Tooltip
+                                    placement="left"
+                                    title={
+                                      updatedAtParts ? (
+                                        <Stack spacing={0.15} sx={{ py: 0.1 }}>
+                                          <Typography variant="caption" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
+                                            {updatedAtParts.date}
+                                          </Typography>
+                                          {updatedAtParts.time ? (
+                                            <Typography variant="caption" sx={{ lineHeight: 1.1, opacity: 0.88 }}>
+                                              {updatedAtParts.time}
+                                            </Typography>
+                                          ) : null}
+                                        </Stack>
+                                      ) : (
+                                        "Timestamp unavailable"
+                                      )
+                                    }
+                                  >
+                                    <Box
+                                      sx={{
+                                        width: 10,
+                                        height: 10,
+                                        borderRadius: "50%",
+                                        mt: 0.8,
+                                        cursor: "help",
+                                        bgcolor: isLatest ? "#d4af37" : "#4fc3f7",
+                                        boxShadow: isLatest
+                                          ? "0 0 0 rgba(79,195,247,0.75)"
+                                          : "0 0 0 3px rgba(79,195,247,0.12)",
+                                        animation: isLatest ? "livePulseBadge 1.7s ease-in-out infinite" : undefined,
+                                        "@keyframes livePulseBadge": {
+                                          "0%": { boxShadow: "0 0 0 0 rgba(79,195,247,0.7)" },
+                                          "70%": { boxShadow: "0 0 0 9px rgba(79,195,247,0)" },
+                                          "100%": { boxShadow: "0 0 0 0 rgba(79,195,247,0)" },
+                                        },
+                                      }}
+                                    />
+                                  </Tooltip>
+                                  {priceIndex < storePrices.length - 1 && (
+                                    <Box sx={{ width: 2, flex: 1, my: 0.35, borderRadius: 999, bgcolor: "rgba(255,255,255,0.12)" }} />
+                                  )}
+                                </Box>
+
+                                <Box
+                                  sx={{
+                                    flex: 1,
+                                    p: 0.95,
+                                    borderRadius: 1,
+                                    border: "1px solid rgba(255,255,255,0.08)",
+                                    bgcolor: "rgba(0,0,0,0.18)",
+                                  }}
+                                >
+                                  <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-start" useFlexGap flexWrap="wrap">
+                                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                                      {isLatest ? "Current price" : isOldest ? "Oldest snapshot" : "Recorded snapshot"}
+                                    </Typography>
+                                  </Stack>
+
+                                  <Stack direction="row" spacing={1} alignItems="baseline" justifyContent="space-between" useFlexGap flexWrap="wrap" sx={{ mt: 0.35 }}>
+                                    <Typography variant="body2" sx={{ fontWeight: 800, fontSize: "1rem" }}>
+                                      {formatStorePrice(price.discountedPrice ?? price.realTimePrice, effectiveCurrency)}
+                                    </Typography>
+                                    {priceChangeLabel && (
+                                      <Chip
+                                        size="small"
+                                        color={getPriceChangeColor(priceChange)}
+                                        variant={priceChange === 0 ? "outlined" : "filled"}
+                                        label={priceChangeLabel}
+                                        sx={{ height: 22, fontSize: "0.7rem" }}
+                                      />
+                                    )}
+                                  </Stack>
+
+                                  <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 0.45 }}>
+                                    <Typography variant="caption" color="text.secondary">
+                                      Base: {formatStorePrice(price.realTimePrice, effectiveCurrency)}
+                                    </Typography>
+                                    {hasDiscount && (
+                                      <Chip
+                                        size="small"
+                                        color="warning"
+                                        variant="filled"
+                                        label={`-${Math.round(price.discount ?? 0)}%`}
+                                        sx={{ height: 20, fontSize: "0.68rem" }}
+                                      />
+                                    )}
+                                  </Stack>
+                                </Box>
+                              </Stack>
+                            );
+                          })}
+                        </Stack>
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">
+                          No price history available for this store listing yet.
+                        </Typography>
+                      )}
                     </Box>
                   </Grid>
 
@@ -401,7 +740,7 @@ export default function FigurineMatchedStoreDetailPage() {
                         bgcolor: "rgba(255,255,255,0.02)",
                       }}
                     >
-                      <Box sx={{ position: "relative", pt: "72%", bgcolor: "#0a0b14" }}>
+                      <Box sx={{ position: "relative", pt: { xs: "58%", md: "52%" }, bgcolor: "#0a0b14" }}>
                         {figurineImage ? (
                           <Box
                             component="img"
@@ -413,7 +752,7 @@ export default function FigurineMatchedStoreDetailPage() {
                               width: "100%",
                               height: "100%",
                               objectFit: "contain",
-                              p: 0.75,
+                              p: 0.45,
                               bgcolor: "#0b0c16",
                             }}
                           />
@@ -435,7 +774,7 @@ export default function FigurineMatchedStoreDetailPage() {
                           </Box>
                         )}
                       </Box>
-                      <Box sx={{ p: 1.25 }}>
+                      <Box sx={{ p: 1 }}>
                         <Typography variant="body2" sx={{ fontWeight: 700 }}>
                           {item.figurineDisplayableName}
                         </Typography>
@@ -488,11 +827,6 @@ export default function FigurineMatchedStoreDetailPage() {
                     variant={similaritySeverity === "default" ? "outlined" : "filled"}
                     label={`Name Similarity ${nameSimilarity}%`}
                   />
-                </Stack>
-
-                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                  <Chip size="small" variant="outlined" label={`Store item #${item.id}`} />
-                  <Chip size="small" variant="outlined" label={`Catalog figurine #${item.figurineId}`} />
                 </Stack>
               </CardContent>
             </Card>
