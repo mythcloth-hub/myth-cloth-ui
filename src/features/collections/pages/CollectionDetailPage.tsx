@@ -56,6 +56,7 @@ import {
   type PurchaseRecord,
   type PurchaseRecordInput,
 } from "../../purchases/types/purchase";
+import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 
 type AlbumFigurine = CollectionFigurine & {
   purchasePrice?: number;
@@ -287,21 +288,11 @@ export default function CollectionDetailPage() {
   };
 
   const formatPriceWithTax = (amount: number, currency?: string): string => {
-    const normalizedCurrency = currency?.trim().toUpperCase();
-
-    if (normalizedCurrency) {
-      try {
-        return new Intl.NumberFormat(undefined, {
-          style: "currency",
-          currency: normalizedCurrency,
-          maximumFractionDigits: 2,
-        }).format(amount);
-      } catch {
-        return `${amount.toFixed(2)} ${normalizedCurrency}`;
-      }
-    }
-
-    return amount.toFixed(2);
+    return formatCurrencyAmount(amount, currency ?? null, {
+      style: "currency",
+      maximumFractionDigits: 2,
+      fallbackCurrency: "USD",
+    });
   };
 
   const getReleaseStatusLabel = (status: CollectionFigurine["releaseStatus"]): string =>

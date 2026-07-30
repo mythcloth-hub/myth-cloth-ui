@@ -28,6 +28,7 @@ export type FigurineStoreMatched = {
   storeProductImageUrl?: string | null;
   storeProductUrl?: string | null;
   storeStatus?: string | null;
+  storePreorder?: boolean | null;
   storePrices?: FigurineStoreMatchedPrice[] | null;
 };
 

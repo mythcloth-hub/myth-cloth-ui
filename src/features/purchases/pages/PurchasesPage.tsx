@@ -46,6 +46,8 @@ import {
 } from "../api/purchaseApi";
 import type { PurchaseRecord, PurchaseRecordInput, ShippingStatus } from "../types/purchase";
 import AppPageHeader from "../../../components/AppPageHeader";
+import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
+import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
 
 const SHIPPING_STATUS_STEPS: { value: ShippingStatus; label: string; Icon: SvgIconComponent }[] = [
   { value: "ORDERED", label: "Ordered", Icon: ShoppingCartOutlinedIcon },
@@ -61,21 +63,13 @@ const SHIPPING_STATUS_INDEX: Record<ShippingStatus, number> = {
   DELIVERED: 3,
 };
 
-const formatCurrencyAmount = (amount: number, currency: string): string => {
-  if (!Number.isFinite(amount)) {
-    return `- ${currency}`;
-  }
-
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    return `${amount.toFixed(2)} ${currency}`;
-  }
+const formatPurchaseAmount = (amount: number, currency: string): string => {
+  return formatCurrencyAmount(amount, currency, {
+    style: "currency",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    fallbackCurrency: "USD",
+  });
 };
 
 const formatCount = (value: number): string => new Intl.NumberFormat().format(value);
@@ -596,7 +590,7 @@ export default function PurchasesPage() {
               <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 0.35, sm: 1.2 }} sx={{ mt: 0.3 }}>
                 {totalsByCurrency.map((item) => (
                   <Typography key={item.currency} variant="subtitle2" sx={{ fontWeight: 800 }}>
-                    {formatCurrencyAmount(item.totalAmount, item.currency)}
+                    {formatPurchaseAmount(item.totalAmount, item.currency)}
                   </Typography>
                 ))}
               </Stack>
@@ -637,7 +631,7 @@ export default function PurchasesPage() {
                     {purchase.store?.trim() ? purchase.store : "Store not specified"}
                   </Typography>
                   <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Order date: {purchase.orderDate?.trim() ? purchase.orderDate : "No order date"}
+                    Order date: {purchase.orderDate?.trim() ? formatIsoDateLabel(purchase.orderDate, { includeDay: true }) : "No order date"}
                   </Typography>
                   <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
                     Order number: {purchase.orderNumber?.trim() ? purchase.orderNumber : "Not specified"}
@@ -650,10 +644,10 @@ export default function PurchasesPage() {
                     {purchase.carrier?.trim() ? ` · Carrier: ${purchase.carrier}` : ""}
                   </Typography>
                   <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Shipped date: {purchase.shippedDate?.trim() ? purchase.shippedDate : "Not shipped yet"}
+                    Shipped date: {purchase.shippedDate?.trim() ? formatIsoDateLabel(purchase.shippedDate, { includeDay: true }) : "Not shipped yet"}
                   </Typography>
                   <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Delivered date: {purchase.deliveredDate?.trim() ? purchase.deliveredDate : "Not delivered yet"}
+                    Delivered date: {purchase.deliveredDate?.trim() ? formatIsoDateLabel(purchase.deliveredDate, { includeDay: true }) : "Not delivered yet"}
                   </Typography>
                 </Box>
 
@@ -662,7 +656,7 @@ export default function PurchasesPage() {
                     Total amount
                   </Typography>
                   <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                    {formatCurrencyAmount(purchase.totalAmount, purchase.currency)}
+                    {formatPurchaseAmount(purchase.totalAmount, purchase.currency)}
                   </Typography>
                   <br/>
                   <Box sx={{ mt: 1.5 }}>
@@ -800,7 +794,7 @@ export default function PurchasesPage() {
                       </Typography>
                     </Stack>
                     <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                      Qty: {formatCount(line.quantity)} · Price: {formatCurrencyAmount(line.pricePaid, purchase.currency)} · Type: {line.purchaseType}
+                      Qty: {formatCount(line.quantity)} · Price: {formatPurchaseAmount(line.pricePaid, purchase.currency)} · Type: {line.purchaseType}
                     </Typography>
                   </Box>
                 ))}
@@ -885,7 +879,7 @@ export default function PurchasesPage() {
                 Collection: {selectedCollection.name}
               </Typography>
               <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                Total amount: {formatCurrencyAmount(deletePurchaseTarget.totalAmount, deletePurchaseTarget.currency)}
+                Total amount: {formatPurchaseAmount(deletePurchaseTarget.totalAmount, deletePurchaseTarget.currency)}
               </Typography>
               <Typography variant="caption" sx={{ color: "text.secondary" }}>
                 Figurines: {formatCount(deletePurchaseTarget.totalFigurines)}

@@ -15,6 +15,7 @@ import {
 } from "../api/priceStatsApi";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
+import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import { useDisplayCurrency } from "../../../currency/CurrencyContext";
 import type { SupportedCurrency } from "../../../currency/currency";
 
@@ -28,22 +29,12 @@ type PriceSummary = {
 };
 
 function formatCurrency(value: number, currency?: SupportedCurrency | null) {
-  const code = currency ?? "JPY";
-
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: code,
-      maximumFractionDigits: 0,
-    }).format(value);
-  } catch {
-    const compactValue = new Intl.NumberFormat("en-US", {
-      notation: "compact",
-      maximumFractionDigits: 1,
-    }).format(value);
-
-    return `${compactValue} ${code}`;
-  }
+  return formatCurrencyAmount(value, currency ?? "JPY", {
+    style: "currency",
+    locale: "en-US",
+    maximumFractionDigits: 0,
+    fallbackCurrency: "JPY",
+  });
 }
 
 function formatCount(value: number) {
@@ -547,14 +538,6 @@ export default function PricingPage() {
               <Chip label={`${formatCount(summary.totalReleases)} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
               <Chip label={`${formatCurrency(summary.weightedAverage, selectedCurrency)} weighted avg`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
               <Chip label={`${formatCurrency(summary.highestPrice, selectedCurrency)} peak price`} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
-              {selectedCurrency && (
-                <Chip
-                  label={`Converted to ${selectedCurrency}`}
-                  size="small"
-                  variant="outlined"
-                  sx={{ borderColor: "rgba(79,195,247,0.45)", color: "#9fd7f4", fontWeight: 700 }}
-                />
-              )}
             </Stack>
           )}
 

@@ -59,6 +59,7 @@ import type {
   FigurineEventRegion,
 } from "../types/figurine";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
 import AppPageHeader from "../../../components/AppPageHeader";
 // Event form helpers
 const EVENT_TYPES: { value: FigurineEventType; label: string }[] = [
@@ -1027,7 +1028,7 @@ export default function FigurineFormPage() {
                           {ev.description}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ pr: 8, display: "block", overflowWrap: "anywhere" }}>
-                          {ev.date} | {EVENT_TYPES.find((t) => t.value === ev.type)?.label ?? ev.type} | {EVENT_REGIONS.find((r) => r.value === ev.region)?.label ?? ev.region}
+                          {formatIsoDateLabel(ev.date, { includeDay: ev.dateConfirmed })} | {EVENT_TYPES.find((t) => t.value === ev.type)?.label ?? ev.type} | {EVENT_REGIONS.find((r) => r.value === ev.region)?.label ?? ev.region}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" display="block">
                           Date {ev.dateConfirmed ? "confirmed" : "unconfirmed"}

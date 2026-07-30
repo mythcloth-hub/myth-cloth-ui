@@ -50,6 +50,7 @@ import BulkAddToCollectionModal from "../../collections/components/BulkAddToColl
 import { getCollections } from "../../collections/api/collectionApi";
 import type { Collection } from "../../collections/types/collection";
 import AppPageHeader from "../../../components/AppPageHeader";
+import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
 
 const PAGE_SIZE = 24;
 
@@ -82,17 +83,6 @@ function getBadges(f: Figurine): Badge[] {
   return badges;
 }
 
-function formatCompactDate(dateStr: string, includeDay = true): string {
-  const [year, month, day] = dateStr.split("-");
-  const monthIndex = Number(month) - 1;
-  if (!year || Number.isNaN(monthIndex) || monthIndex < 0 || monthIndex > 11) {
-    return dateStr;
-  }
-
-  const monthShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
-  return includeDay && day ? `${monthShort} ${day}, ${year}` : `${monthShort} ${year}`;
-}
-
 function getStatusDateLabel(figurine: Figurine): string | null {
   if (figurine.releaseStatus === "ANNOUNCED" || figurine.releaseStatus === "RELEASED") {
     const distributorWithDate = figurine.distributors
@@ -103,7 +93,7 @@ function getStatusDateLabel(figurine: Figurine): string | null {
       return null;
     }
 
-    return formatCompactDate(distributorWithDate.releaseDate, distributorWithDate.releaseDateConfirmed);
+    return formatIsoDateLabel(distributorWithDate.releaseDate, { includeDay: distributorWithDate.releaseDateConfirmed });
   }
 
   if (figurine.releaseStatus === "PROTOTYPE" || figurine.releaseStatus === "UNRELEASED") {
@@ -116,10 +106,9 @@ function getStatusDateLabel(figurine: Figurine): string | null {
     }
 
     const announcedParts = distributorWithAnnouncement.announcedAt.split("-");
-    return formatCompactDate(
-      distributorWithAnnouncement.announcedAt,
-      announcedParts.length >= 3 && Boolean(announcedParts[2])
-    );
+    return formatIsoDateLabel(distributorWithAnnouncement.announcedAt, {
+      includeDay: announcedParts.length >= 3 && Boolean(announcedParts[2]),
+    });
   }
 
   return null;
