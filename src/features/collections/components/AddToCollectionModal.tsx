@@ -46,6 +46,7 @@ export default function AddToCollectionModal({
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
+  const [newCollectionImageUrl, setNewCollectionImageUrl] = useState("");
   const [newCollectionDesc, setNewCollectionDesc] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -56,6 +57,7 @@ export default function AddToCollectionModal({
       setError(null);
       setSuccessMessage(null);
       setNewCollectionName("");
+      setNewCollectionImageUrl("");
       setNewCollectionDesc("");
       setSelectedCollections(new Set());
       loadCollections();
@@ -107,12 +109,14 @@ export default function AddToCollectionModal({
         collectionMode: "CREATE",
         collection: {
           name: collectionName,
+          imageUrl: newCollectionImageUrl.trim() || undefined,
           description: newCollectionDesc.trim() || undefined,
         },
       });
 
       setSuccessMessage(`✨ Created "${collectionName}" and added "${figurineName}"!`);
       setNewCollectionName("");
+      setNewCollectionImageUrl("");
       setNewCollectionDesc("");
 
       setTimeout(() => {
@@ -344,6 +348,34 @@ export default function AddToCollectionModal({
                 label="Collection name"
                 value={newCollectionName}
                 onChange={(e) => setNewCollectionName(e.target.value)}
+                size="small"
+                disabled={creating}
+                sx={{
+                  mb: 1,
+                  "& .MuiOutlinedInput-root": {
+                    color: "text.primary",
+                    "& fieldset": {
+                      borderColor: "rgba(212,175,55,0.2)",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(212,175,55,0.4)",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#d4af37",
+                    },
+                  },
+                  "& .MuiInputBase-input::placeholder": {
+                    color: "rgba(255,255,255,0.3)",
+                    opacity: 1,
+                  },
+                }}
+              />
+
+              <TextField
+                fullWidth
+                label="Your collection image URL (optional)"
+                value={newCollectionImageUrl}
+                onChange={(e) => setNewCollectionImageUrl(e.target.value)}
                 size="small"
                 disabled={creating}
                 sx={{

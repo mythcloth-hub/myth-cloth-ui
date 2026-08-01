@@ -39,6 +39,7 @@ export default function CollectionsListPage() {
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editName, setEditName] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -98,6 +99,7 @@ export default function CollectionsListPage() {
   const handleEdit = () => {
     if (selectedCollection) {
       setEditName(selectedCollection.name);
+      setEditImageUrl(selectedCollection.imageUrl ?? "");
       setEditDescription(selectedCollection.description ?? "");
       setEditDialogOpen(true);
     }
@@ -161,6 +163,7 @@ export default function CollectionsListPage() {
     try {
       const updated = await updateCollection(selectedCollection.id, {
         name: nextName,
+        imageUrl: editImageUrl.trim() || undefined,
         description: editDescription.trim() || undefined,
       });
 
@@ -207,7 +210,7 @@ export default function CollectionsListPage() {
       >
         <Box sx={{ width: "100%" }}>
           <AppPageHeader
-            eyebrow="Myth Collection"
+            eyebrow="Saint Collections"
             title="My Collections"
             subtitle="Manage groups, compare sizes, and track unique entries across your collection library."
             compact
@@ -498,46 +501,60 @@ export default function CollectionsListPage() {
                 onClick={() => navigate(`/collections/${collection.id}`, { state: { collection } })}
               >
                 {/* Collection cover gradient */}
-                <CardMedia
-                  sx={{
-                    height: 140,
-                    background: `linear-gradient(135deg, 
+                {collection.imageUrl ? (
+                  <Box
+                    component="img"
+                    src={collection.imageUrl}
+                    alt={collection.name}
+                    sx={{
+                      height: 140,
+                      width: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                ) : (
+                  <CardMedia
+                    sx={{
+                      height: 140,
+                      background: `linear-gradient(135deg, 
                       ${["#d4af37", "#4fc3f7", "#81d4fa", "#42a5f5", "#ff9800"][collection.id % 5]} 0%, 
                       ${["#4fc3f7", "#81d4fa", "#ff9800", "#d4af37", "#42a5f5"][collection.id % 5]} 100%)`,
-                    position: "relative",
-                    overflow: "hidden",
-                    "&::after": {
-                      content: '""',
-                      position: "absolute",
-                      inset: 0,
-                      background:
-                        "linear-gradient(45deg, rgba(212,175,55,0.1) 25%, transparent 25%, transparent 50%, rgba(212,175,55,0.1) 50%, rgba(212,175,55,0.1) 75%, transparent 75%, transparent)",
-                      backgroundSize: "20px 20px",
-                      animation: "shimmer 3s infinite",
-                    },
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    "@keyframes shimmer": {
-                      "0%": { backgroundPosition: "0 0" },
-                      "100%": { backgroundPosition: "20px 20px" },
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      color: "rgba(255,255,255,0.9)",
-                      fontWeight: 700,
-                      textShadow: "0 2px 8px rgba(0,0,0,0.4)",
-                      zIndex: 1,
-                      textAlign: "center",
-                      px: 2,
+                      position: "relative",
+                      overflow: "hidden",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      "&::after": {
+                        content: '""',
+                        position: "absolute",
+                        inset: 0,
+                        background:
+                          "linear-gradient(45deg, rgba(212,175,55,0.1) 25%, transparent 25%, transparent 50%, rgba(212,175,55,0.1) 50%, rgba(212,175,55,0.1) 75%, transparent 75%, transparent)",
+                        backgroundSize: "20px 20px",
+                        animation: "shimmer 3s infinite",
+                      },
+                      "@keyframes shimmer": {
+                        "0%": { backgroundPosition: "0 0" },
+                        "100%": { backgroundPosition: "20px 20px" },
+                      },
                     }}
                   >
-                    📦
-                  </Typography>
-                </CardMedia>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        color: "rgba(255,255,255,0.9)",
+                        fontWeight: 700,
+                        textShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                        zIndex: 1,
+                        textAlign: "center",
+                        px: 2,
+                      }}
+                    >
+                      📦
+                    </Typography>
+                  </CardMedia>
+                )}
 
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
@@ -620,7 +637,13 @@ export default function CollectionsListPage() {
         <DialogTitle>Delete Collection?</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete "{selectedCollection?.name}"? This action cannot be undone.
+            Are you sure you want to delete "{selectedCollection?.name}"?
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            This action cannot be undone. Deleting this collection will permanently remove it, along with all the figurines you've added to it.
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            If you want to organize those figurines again, you'll need to create a new collection and add them manually.
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -659,6 +682,16 @@ export default function CollectionsListPage() {
             label="Collection name"
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
+            fullWidth
+            size="medium"
+            autoFocus
+            InputLabelProps={{ shrink: true }}
+            sx={{ mt: 0.5 }}
+          />
+          <TextField
+            label="Your collection image URL (optional)"
+            value={editImageUrl}
+            onChange={(e) => setEditImageUrl(e.target.value)}
             fullWidth
             size="medium"
             autoFocus

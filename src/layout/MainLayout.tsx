@@ -78,7 +78,7 @@ type NavSection = {
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    heading: "Myth Collection",
+    heading: "Saint Collections",
     items: [
       { label: "Collection",    path: "/figurines",      icon: <CollectionsOutlinedIcon /> },
       { label: "My Collections", path: "/collections",   icon: <FavoriteBorderOutlinedIcon /> },
@@ -321,7 +321,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           MythCloth
         </Typography>
         <Typography variant="caption" sx={{ color: "text.secondary" }}>
-          Your Myth Cloth Collection
+          Every collection tells a story. Track yours.
         </Typography>
       </Box>
 

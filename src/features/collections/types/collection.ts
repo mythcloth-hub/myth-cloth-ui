@@ -1,6 +1,7 @@
 export interface Collection {
   id: number;
   name: string;
+  imageUrl?: string;
   description?: string;
   figurineIds: number[];
   totalFigurines: number;
@@ -12,12 +13,14 @@ export interface Collection {
 export interface CreateCollectionRequest {
   name: string;
   description?: string;
+  imageUrl?: string;
   figurineIds?: number[];
 }
 
 export interface UpdateCollectionRequest {
   name?: string;
   description?: string;
+  imageUrl?: string;
   figurineIds?: number[];
 }
 
@@ -32,6 +35,7 @@ export interface AssignFigurinesRequest {
   collection?: {
     name: string;
     description?: string;
+    imageUrl?: string;
   };
 }
 

@@ -141,14 +141,6 @@ export default function FigurineMatchedStoresPage() {
               <Typography variant="caption" color="text.secondary" sx={{ alignSelf: "center" }}>
                 {currenciesCount} currenc{currenciesCount === 1 ? "y" : "ies"}
               </Typography>
-              {selectedCurrency && (
-                <Chip
-                  size="small"
-                  variant="outlined"
-                  label={`Converted to ${selectedCurrency}`}
-                  sx={{ borderColor: "rgba(79,195,247,0.45)", color: "#9fd7f4", fontWeight: 700 }}
-                />
-              )}
             </Stack>
           </CardContent>
         </Card>

@@ -25,10 +25,12 @@ import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import CompareArrowsOutlinedIcon from "@mui/icons-material/CompareArrowsOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 
 import { useAuth } from "../../../auth/AuthContext";
 import { useDisplayCurrency } from "../../../currency/CurrencyContext";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import {
   getMatchedListingsByStoreId,
   getMatchedListingsSummary,
@@ -119,17 +121,13 @@ function formatStorePrice(amount?: number | null, currency?: string | null): str
     return "N/A";
   }
 
-  const code = currency?.trim().toUpperCase() || "USD";
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: code,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    return `${code} ${amount.toFixed(2)}`;
-  }
+  return formatCurrencyAmount(amount, currency, {
+    style: "currency",
+    locale: "en-US",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    fallbackCurrency: "USD",
+  });
 }
 
 function getUpdatedAtParts(value?: string | null): { date: string; time: string } | null {
@@ -380,14 +378,6 @@ export default function FigurineMatchedStoreDetailPage() {
           <CardContent>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
               <Chip label={`${items.length} matched figurine${items.length === 1 ? "" : "s"}`} sx={{ fontWeight: 700 }} />
-              {selectedCurrency && (
-                <Chip
-                  size="small"
-                  variant="outlined"
-                  label={`Converted to ${selectedCurrency}`}
-                  sx={{ borderColor: "rgba(79,195,247,0.45)", color: "#9fd7f4", fontWeight: 700 }}
-                />
-              )}
             </Stack>
           </CardContent>
         </Card>
@@ -420,6 +410,7 @@ export default function FigurineMatchedStoreDetailPage() {
           const similaritySeverity = nameSimilarity >= 60 ? "success" : nameSimilarity >= 35 ? "warning" : "default";
           const fallbackCurrency = item.storeCurrency?.trim() || storeSummary?.currency || null;
           const storeStatus = item.storeStatus?.trim() || null;
+          const isStorePreorder = item.storePreorder === true;
           const storePrices = ((item.storePrices ?? []) as FigurineStoreMatchedPrice[])
             .slice()
             .sort((left, right) => {
@@ -536,6 +527,26 @@ export default function FigurineMatchedStoreDetailPage() {
 
                       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 0.65, mb: 0.9 }}>
                         <Chip size="small" color={getStatusColor(storeStatus)} label={`${getStatusLabel(storeStatus)}`} />
+                        {isStorePreorder && (
+                          <Chip
+                            size="small"
+                            icon={<EventAvailableOutlinedIcon sx={{ fontSize: "0.88rem !important" }} />}
+                            label="Pre-order"
+                            sx={{
+                              height: 24,
+                              fontWeight: 800,
+                              letterSpacing: "0.03em",
+                              color: "#0b1020",
+                              bgcolor: "#7dd3fc",
+                              border: "1px solid rgba(125,211,252,0.75)",
+                              boxShadow: "0 0 0 2px rgba(125,211,252,0.16)",
+                              "& .MuiChip-icon": {
+                                color: "#0b1020",
+                                ml: 0.6,
+                              },
+                            }}
+                          />
+                        )}
                         <Chip size="small" variant="outlined" label={`${storePrices.length} price update${storePrices.length === 1 ? "" : "s"}`} />
                       </Stack>
 

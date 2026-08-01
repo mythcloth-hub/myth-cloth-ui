@@ -30,6 +30,7 @@ function normalizeCollection(collection: Partial<Collection>): Collection {
   return {
     id: collection.id ?? 0,
     name: collection.name ?? "",
+    imageUrl: typeof collection.imageUrl === "string" ? collection.imageUrl : undefined,
     description: collection.description,
     figurineIds: Array.isArray(collection.figurineIds) ? collection.figurineIds : [],
     totalFigurines:

@@ -44,8 +44,10 @@ import {
 } from "../api/figurineApi";
 import type { Figurine, ReleaseStatus } from "../types/figurine";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
+import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import AnniversaryIcon from "./AnniversaryIcon";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
 import AddToCollectionModal from "../../collections/components/AddToCollectionModal";
 import { getCollections } from "../../collections/api/collectionApi";
 
@@ -222,78 +224,22 @@ export default function FigurineDetailPage() {
     return selectedCurrency ?? "JPY";
   })();
 
-  const formatRealtimePrice = (amount: number, currency: SupportedCurrency): string => {
-    const symbolMap: Record<SupportedCurrency, string> = {
-      JPY: "¥",
-      MXN: "$",
-      EUR: "€",
-      USD: "$",
-      CNY: "¥",
-      CAD: "$",
-    };
-
-    const digits = currency === "JPY" ? 0 : 2;
-
-    try {
-      const formattedAmount = new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: digits,
-        maximumFractionDigits: digits,
-      }).format(amount);
-
-      return `${symbolMap[currency]}${formattedAmount} ${currency}`;
-    } catch {
-      return `${amount.toFixed(digits)} ${currency}`;
-    }
+  const formatAmount = (amount: number, currency?: string | null): string => {
+    return formatCurrencyAmount(amount, currency, {
+      style: "symbolCode",
+      locale: "en-US",
+      fallbackCurrency: "JPY",
+    });
   };
 
-  const formatHistoryPrice = (amount: number, currency: string): string => {
-    const symbolMap: Record<string, string> = {
-      JPY: "¥",
-      MXN: "$",
-      EUR: "€",
-      USD: "$",
-      CNY: "¥",
-      CAD: "$",
-    };
-
-    const normalizedCurrency = currency.trim().toUpperCase();
-    const digits = normalizedCurrency === "JPY" ? 0 : 2;
-
-    try {
-      const formattedAmount = new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: digits,
-        maximumFractionDigits: digits,
-      }).format(amount);
-
-      const symbol = symbolMap[normalizedCurrency] ?? "";
-      return symbol ? `${symbol}${formattedAmount} ${normalizedCurrency}` : `${formattedAmount} ${normalizedCurrency}`;
-    } catch {
-      return `${amount.toFixed(digits)} ${normalizedCurrency}`;
-    }
-  };
-
-  const formatCompactHistoryAxisPrice = (amount: number, currency: string): string => {
-    const normalizedCurrency = currency.trim().toUpperCase();
-    const symbolMap: Record<string, string> = {
-      JPY: "¥",
-      MXN: "$",
-      EUR: "€",
-      USD: "$",
-      CNY: "¥",
-      CAD: "$",
-    };
-    const symbol = symbolMap[normalizedCurrency] ?? "";
-
-    try {
-      const compact = new Intl.NumberFormat("en-US", {
-        notation: "compact",
-        maximumFractionDigits: 1,
-      }).format(amount);
-
-      return `${symbol}${compact} ${normalizedCurrency}`;
-    } catch {
-      return formatHistoryPrice(amount, normalizedCurrency);
-    }
+  const formatAmountCompact = (amount: number, currency?: string | null): string => {
+    return formatCurrencyAmount(amount, currency, {
+      style: "symbolCode",
+      locale: "en-US",
+      notation: "compact",
+      maximumFractionDigits: 1,
+      fallbackCurrency: "JPY",
+    });
   };
 
   useEffect(() => {
@@ -501,12 +447,14 @@ export default function FigurineDetailPage() {
   const images = figurine.officialImageUrls ?? [];
   const mainImage = images[selectedImage] ?? null;
   const catalogDetails = [
-    { label: "Series", value: figurine.series.description },
     { label: "Line Up", value: figurine.lineUp.description },
+    { label: "Series", value: figurine.series.description },
     { label: "Group", value: figurine.group?.description },
     { label: "Distribution", value: figurine.distribution?.description },
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
   const notesText = figurine.notes ? figurine.notes.replace(/\\n/g, "\n") : "";
+  const shouldShowAddToCollectionButton =
+    isAuthenticated && (figurine.releaseStatus === "ANNOUNCED" || figurine.releaseStatus === "RELEASED");
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -595,7 +543,7 @@ export default function FigurineDetailPage() {
             Edit
           </Button>
         )}
-        {isAuthenticated && (
+        {shouldShowAddToCollectionButton && (
           <Button
             variant="contained"
             startIcon={<FavoriteBorderIcon />}
@@ -731,7 +679,7 @@ export default function FigurineDetailPage() {
                       cursor: "help",
                     }}
                   >
-                    {formatRealtimePrice(averageRealtimePrice, resolvedRealtimeCurrency)}
+                    {formatAmount(averageRealtimePrice, resolvedRealtimeCurrency)}
                   </Typography>
                 </Tooltip>
               </Box>
@@ -967,17 +915,14 @@ export default function FigurineDetailPage() {
             <>
               <Divider sx={{ borderColor: "rgba(212,175,55,0.1)", mb: 1.5 }} />
               <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}>
-                Distributors
+                Official Worldwide Distributors
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25, mt: 0.75 }}>
                 {figurine.distributors.map((d, i) => {
-                  const formatDate = (dateStr: string, confirmed: boolean) => {
-                    const parts = dateStr.split("-");
-                    const year = parts[0] ?? "";
-                    const monthAbbr = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][parseInt(parts[1] ?? "0", 10) - 1] ?? "";
-                    const day = parts[2] ?? "";
-                    return confirmed ? `${monthAbbr} ${day}, ${year}` : `${monthAbbr} ${year}`;
-                  };
+                  const distributorCurrencyRaw = d.currency?.trim().toUpperCase();
+                  const distributorCurrency = isSupportedCurrency(distributorCurrencyRaw)
+                    ? distributorCurrencyRaw
+                    : "JPY";
                   return (
                   <Box
                     key={i}
@@ -1034,7 +979,7 @@ export default function FigurineDetailPage() {
                           Price
                         </Typography>
                         <Typography variant="body2" fontWeight={600} color="primary.main">
-                          {d.price != null ? `${d.price.toLocaleString()} ${d.currency}` : (
+                          {d.price != null ? formatAmount(d.price, distributorCurrency) : (
                             <Typography component="span" variant="body2" sx={{ color: "text.disabled", fontStyle: "italic" }}>
                               N/A
                             </Typography>
@@ -1042,7 +987,11 @@ export default function FigurineDetailPage() {
                         </Typography>
                         {d.priceWithTax != null && d.priceWithTax !== d.price && d.distributor.countryCode !== "MX" && (
                           <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.7rem" }}>
-                            {d.priceWithTax.toLocaleString()} {d.currency} w/ tax
+                            {formatCurrencyAmount(d.priceWithTax, d.currency, {
+                              style: "symbolCode",
+                              locale: "en-US",
+                              fallbackCurrency: "JPY",
+                            })} w/ tax
                           </Typography>
                         )}
                       </Box>
@@ -1054,7 +1003,7 @@ export default function FigurineDetailPage() {
                             Pre-order
                           </Typography>
                           <Typography variant="body2" fontWeight={500} color="text.primary">
-                            {formatDate(d.preorderOpensAt, true)}
+                            {formatIsoDateLabel(d.preorderOpensAt, { includeDay: true })}
                           </Typography>
                         </Box>
                       )}
@@ -1067,7 +1016,7 @@ export default function FigurineDetailPage() {
                         {d.releaseDate ? (
                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                             <Typography variant="body2" fontWeight={500} color="text.primary">
-                              {formatDate(d.releaseDate, d.releaseDateConfirmed)}
+                              {formatIsoDateLabel(d.releaseDate, { includeDay: d.releaseDateConfirmed })}
                             </Typography>
                             {!d.releaseDateConfirmed && (
                               <Typography variant="caption" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: "0.68rem" }}>
@@ -1195,8 +1144,8 @@ export default function FigurineDetailPage() {
                         });
                         const rawYTickLabels = rawYTickValues.map((value) => {
                           return isSmallScreen
-                            ? formatCompactHistoryAxisPrice(value, historicalCurrency)
-                            : formatHistoryPrice(value, historicalCurrency);
+                            ? formatAmountCompact(value, historicalCurrency)
+                            : formatAmount(value, historicalCurrency);
                         });
                         const estimatedCharWidthPx = 6.2;
                         const maxTickLabelChars = rawYTickLabels.reduce((max, label) => Math.max(max, label.length), 0);
@@ -1392,7 +1341,7 @@ export default function FigurineDetailPage() {
                                       }}
                                     >
                                       <title>
-                                        {`${series.storeName} • ${formatHistoryPrice(point.price, historicalCurrency)} • ${new Intl.DateTimeFormat("en-US", {
+                                        {`${series.storeName} • ${formatAmount(point.price, historicalCurrency)} • ${new Intl.DateTimeFormat("en-US", {
                                           month: "short",
                                           day: "2-digit",
                                           year: "numeric",
@@ -1469,7 +1418,7 @@ export default function FigurineDetailPage() {
                           </Typography>
                         </Box>
                         <Typography sx={{ mt: 0.35, color: "text.primary", fontWeight: 800, fontSize: "0.86rem", lineHeight: 1.15 }}>
-                          {formatHistoryPrice(activeHistoricalPoint.price, historicalCurrency)}
+                          {formatAmount(activeHistoricalPoint.price, historicalCurrency)}
                         </Typography>
                         <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.68rem", display: "block", mt: 0.15 }}>
                           {new Intl.DateTimeFormat("en-US", {
@@ -1573,7 +1522,21 @@ export default function FigurineDetailPage() {
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {figurine.events.map((ev) => {
-                    const isRelease = ev.type.toUpperCase().includes("RELEASE");
+                    const isRelease = (ev.type ?? "").toUpperCase().includes("RELEASE");
+                    const rawEventDate = typeof ev.date === "string" ? ev.date.trim() : "";
+                    const isIsoDate = /^\d{4}-\d{2}-\d{2}$/.test(rawEventDate);
+                    const formattedEventDateLabel = isIsoDate
+                      ? formatIsoDateLabel(rawEventDate, {
+                        includeDay: ev.dateConfirmed,
+                        monthCase: "upper",
+                      })
+                      : "TBD";
+                    const formattedDateParts = formattedEventDateLabel.replace(",", "").split(/\s+/);
+                    const eventMonthAbbr = formattedDateParts[0] ?? "TBD";
+                    const eventDay = ev.dateConfirmed ? (formattedDateParts[1] ?? "") : "";
+                    const eventYear = ev.dateConfirmed
+                      ? (formattedDateParts[2] ?? "TBD")
+                      : (formattedDateParts[1] ?? "TBD");
                     return (
                     <Box key={ev.id} sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
                       {/* Timeline dot */}
@@ -1609,41 +1572,33 @@ export default function FigurineDetailPage() {
                         }}
                       >
                         {/* Date badge column */}
-                        {(() => {
-                          const parts = ev.date.split("-");
-                          const year = parts[0] ?? "";
-                          const day = parts[2] ?? "";
-                          const monthAbbr = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][parseInt(parts[1] ?? "0", 10) - 1] ?? "";
-                          return (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                minWidth: 52,
-                                px: 1,
-                                py: 1.25,
-                                bgcolor: isRelease ? "rgba(212,175,55,0.12)" : "rgba(0,0,0,0.15)",
-                                borderRight: "1px solid",
-                                borderColor: isRelease ? "rgba(212,175,55,0.3)" : "rgba(255,255,255,0.07)",
-                                flexShrink: 0,
-                              }}
-                            >
-                              <Typography sx={{ fontSize: "0.58rem", fontWeight: 800, color: "primary.main", letterSpacing: "0.1em", lineHeight: 1 }}>
-                                {monthAbbr}
-                              </Typography>
-                              {ev.dateConfirmed ? (
-                                <Typography sx={{ fontSize: "1.45rem", fontWeight: 800, color: isRelease ? "primary.main" : "text.primary", lineHeight: 1.1, mt: 0.25 }}>
-                                  {day}
-                                </Typography>
-                              ) : null}
-                              <Typography sx={{ fontSize: "0.58rem", color: "text.secondary", letterSpacing: "0.04em", lineHeight: 1, mt: 0.25 }}>
-                                {year}
-                              </Typography>
-                            </Box>
-                          );
-                        })()}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minWidth: 52,
+                            px: 1,
+                            py: 1.25,
+                            bgcolor: isRelease ? "rgba(212,175,55,0.12)" : "rgba(0,0,0,0.15)",
+                            borderRight: "1px solid",
+                            borderColor: isRelease ? "rgba(212,175,55,0.3)" : "rgba(255,255,255,0.07)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Typography sx={{ fontSize: "0.58rem", fontWeight: 800, color: "primary.main", letterSpacing: "0.1em", lineHeight: 1 }}>
+                            {eventMonthAbbr}
+                          </Typography>
+                          {ev.dateConfirmed && eventDay ? (
+                            <Typography sx={{ fontSize: "1.45rem", fontWeight: 800, color: isRelease ? "primary.main" : "text.primary", lineHeight: 1.1, mt: 0.25 }}>
+                              {eventDay}
+                            </Typography>
+                          ) : null}
+                          <Typography sx={{ fontSize: "0.58rem", color: "text.secondary", letterSpacing: "0.04em", lineHeight: 1, mt: 0.25 }}>
+                            {eventYear}
+                          </Typography>
+                        </Box>
 
                         {/* Main content */}
                         <Box sx={{ flex: 1, px: 1.5, py: 1.25 }}>
