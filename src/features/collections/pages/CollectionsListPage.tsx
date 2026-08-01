@@ -210,7 +210,7 @@ export default function CollectionsListPage() {
       >
         <Box sx={{ width: "100%" }}>
           <AppPageHeader
-            eyebrow="Myth Collection"
+            eyebrow="Saint Collections"
             title="My Collections"
             subtitle="Manage groups, compare sizes, and track unique entries across your collection library."
             compact

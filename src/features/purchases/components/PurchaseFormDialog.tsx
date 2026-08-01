@@ -33,12 +33,24 @@ import {
   type PurchaseRecordInput,
   type ShippingStatus,
 } from "../types/purchase";
+import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
+import { countryCodeToFlag } from "../../../utils/countryFlag";
+import { type SupportedCurrency } from "../../../currency/currency";
 
 type FigurineOption = {
   id: number;
   displayableName: string;
   isCollected?: boolean;
   officialImageUrls?: string[];
+};
+
+const CURRENCY_META: Record<SupportedCurrency, { countryCode: string; symbol: string }> = {
+  JPY: { countryCode: "JP", symbol: "¥" },
+  MXN: { countryCode: "MX", symbol: "$" },
+  EUR: { countryCode: "DE", symbol: "€" },
+  USD: { countryCode: "US", symbol: "$" },
+  CNY: { countryCode: "CN", symbol: "¥" },
+  CAD: { countryCode: "CA", symbol: "$" },
 };
 
 type PurchaseFormDialogProps = {
@@ -428,24 +440,46 @@ export default function PurchaseFormDialog({
                 value={draft.currency}
                 label="Currency"
                 onChange={(event) => handleFieldChange("currency", event.target.value)}
+                renderValue={(value) => {
+                  const code = value as string;
+                  const meta = CURRENCY_META[code as SupportedCurrency] ?? CURRENCY_META.USD;
+                  return (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.7 }}>
+                      <Typography component="span" sx={{ fontSize: "0.95rem", lineHeight: 1 }}>
+                        {countryCodeToFlag(meta.countryCode)}
+                      </Typography>
+                      <Typography component="span" sx={{ fontSize: "0.82rem", fontWeight: 700 }}>
+                        {code}
+                      </Typography>
+                    </Box>
+                  );
+                }}
               >
-                {PURCHASE_CURRENCIES.map((currency) => (
-                  <MenuItem key={currency} value={currency}>{currency}</MenuItem>
-                ))}
+                {PURCHASE_CURRENCIES.map((currency) => {
+                  const meta = CURRENCY_META[currency as SupportedCurrency] ?? CURRENCY_META.USD;
+                  return (
+                    <MenuItem key={currency} value={currency} sx={{ minHeight: 34 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                          <Typography component="span" sx={{ fontSize: "0.95rem", lineHeight: 1 }}>
+                            {countryCodeToFlag(meta.countryCode)}
+                          </Typography>
+                          <Typography component="span" sx={{ fontSize: "0.82rem", fontWeight: 700 }}>
+                            {currency}
+                          </Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontSize: "0.72rem", color: "text.secondary" }}>
+                          {meta.symbol}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  );
+                })}
               </Select>
               {showValidationErrors && (getFieldError("currency") || !draft.currency) && (
                 <FormHelperText>{getFieldError("currency") ?? "Currency is required."}</FormHelperText>
               )}
             </FormControl>
-            <TextField
-              disabled
-              label="Total amount"
-              size="small"
-              value={autoTotalAmount.toFixed(2)}
-              inputProps={{ readOnly: true }}
-              helperText="Auto-calculated from quantity x price paid"
-              fullWidth
-            />
           </Stack>
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
@@ -484,6 +518,36 @@ export default function PurchaseFormDialog({
           </Stack>
 
           <Divider />
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 1.5,
+              p: 1.25,
+              borderRadius: 1.5,
+              bgcolor: "rgba(79,195,247,0.08)",
+              border: "1px solid rgba(79,195,247,0.18)",
+            }}
+          >
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                Total purchase amount
+              </Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                Auto-calculated from quantity × price paid
+              </Typography>
+            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "primary.main" }}>
+              {formatCurrencyAmount(autoTotalAmount, draft.currency || "USD", {
+                style: "currency",
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                fallbackCurrency: "USD",
+              })}
+            </Typography>
+          </Box>
+
           <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
             Purchased Figurines
           </Typography>
