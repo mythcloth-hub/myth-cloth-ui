@@ -46,7 +46,7 @@ import {
   deleteFigurineEvent,
 } from "../api/figurineApi";
 import { getAllAnniversaries } from "../../anniversaries/api/anniversaryApi";
-import { groupsApi, lineupsApi, seriesApi } from "../../catalogs/api/catalogApi";
+import { lineupsApi, seriesApi, groupsApi, distributionsApi } from "../../catalogs/api/catalogApi";
 import { getAllDistributors } from "../../distributors/api/distributorApi";
 import type { Anniversary } from "../../anniversaries/types/anniversary";
 import type { Catalog } from "../../catalogs/types/catalog";
@@ -96,7 +96,9 @@ type FormData = {
   lineUpId: string;
   seriesId: string;
   groupId: string;
+  distributionId: string;
   anniversaryId: string;
+  tamashiiUrl: string;
   isMetalBody: boolean;
   isOriginalColorEdition: boolean;
   isRevival: boolean;
@@ -137,6 +139,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 const PRICE_INPUT_PATTERN = /^\d*(\.\d{0,2})?$/;
 const MAX_PRICE_INTEGER_PART = 50000;
+const TAMASHII_URL_PATTERN = /^https:\/\/tamashiiweb\.com\/item\/[^\s/]+\/?$/;
 
 function isPriceIntegerPartWithinLimit(value: string): boolean {
   const integerPartRaw = value.split(".")[0] ?? "";
@@ -150,7 +153,9 @@ const emptyForm: FormData = {
   lineUpId:               "",
   seriesId:               "",
   groupId:                "",
+  distributionId:         "",
   anniversaryId:          "",
+  tamashiiUrl:            "",
   isMetalBody:            false,
   isOriginalColorEdition: false,
   isRevival:              false,
@@ -224,9 +229,10 @@ export default function FigurineFormPage() {
   const [deleting, setDeleting] = useState(false);
 
   // catalog options
-  const [lineups,      setLineups]      = useState<Catalog[]>([]);
-  const [seriesList,   setSeriesList]   = useState<Catalog[]>([]);
-  const [groups,       setGroups]       = useState<Catalog[]>([]);
+  const [lineups,       setLineups]       = useState<Catalog[]>([]);
+  const [seriesList,    setSeriesList]    = useState<Catalog[]>([]);
+  const [groups,        setGroups]        = useState<Catalog[]>([]);
+  const [distributions, setDistributions] = useState<Catalog[]>([]);
   const [anniversaries, setAnniversaries] = useState<Anniversary[]>([]);
   const [distributors, setDistributors] = useState<Distributor[]>([]);
 
@@ -354,6 +360,7 @@ export default function FigurineFormPage() {
       lineupsApi.getAll(),
       seriesApi.getAll(),
       groupsApi.getAll(),
+      distributionsApi.getAll(),
       getAllAnniversaries(),
       getAllDistributors(),
     ];
@@ -363,10 +370,11 @@ export default function FigurineFormPage() {
 
     Promise.all(requests)
       .then((results) => {
-        const [lu, sr, gr, ann, dist, fig] = results;
+        const [lu, sr, gr, dt, ann, dist, fig] = results;
         setLineups(lu as Catalog[]);
         setSeriesList(sr as Catalog[]);
         setGroups(gr as Catalog[]);
+        setDistributions(dt as Catalog[]);
         setAnniversaries(ann as Anniversary[]);
         setDistributors(dist as Distributor[]);
 
@@ -377,7 +385,9 @@ export default function FigurineFormPage() {
             lineUpId:              String(f.lineUp.id),
             seriesId:              String(f.series.id),
             groupId:               f.group ? String(f.group.id) : "",
+            distributionId:        f.distribution ? String(f.distribution.id) : "",
             anniversaryId:         f.anniversary ? String(f.anniversary.id) : "",
+            tamashiiUrl:           f.tamashiiUrl ?? "",
             isMetalBody:           f.isMetalBody,
             isOriginalColorEdition:f.isOriginalColorEdition,
             isRevival:             f.isRevival,
@@ -504,6 +514,11 @@ export default function FigurineFormPage() {
       }
     });
 
+    const tamashiiUrl = form.tamashiiUrl.trim();
+    if (tamashiiUrl && !TAMASHII_URL_PATTERN.test(tamashiiUrl)) {
+      newErrors.tamashiiUrl = "Use a valid Tamashii URL like https://tamashiiweb.com/item/{itemId}";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -547,7 +562,9 @@ export default function FigurineFormPage() {
       lineUpId:              Number(form.lineUpId),
       seriesId:              Number(form.seriesId),
       ...(form.groupId ? { groupId: Number(form.groupId) } : {}),
+      ...(form.distributionId ? { distributionId: Number(form.distributionId) } : {}),
       ...(form.anniversaryId ? { anniversaryId: Number(form.anniversaryId) } : {}),
+      tamashiiUrl:           form.tamashiiUrl.trim() || null,
       isMetalBody:           form.isMetalBody,
       isOriginalColorEdition:form.isOriginalColorEdition,
       isRevival:             form.isRevival,
@@ -653,14 +670,15 @@ export default function FigurineFormPage() {
 
           <Grid container spacing={2}>
             {([
-              { key: "lineUpId", label: "Line Up",  items: lineups      },
-              { key: "seriesId", label: "Series",   items: seriesList   },
-              { key: "groupId",  label: "Group",    items: groups       },
-            ] as { key: "lineUpId" | "seriesId" | "groupId"; label: string; items: Catalog[] }[]).map(({ key, label, items }) => (
+              { key: "lineUpId",        label: "Line Up",       items: lineups       },
+              { key: "seriesId",        label: "Series",        items: seriesList    },
+              { key: "groupId",         label: "Group",         items: groups        },
+              { key: "distributionId",  label: "Distribution",  items: distributions },
+            ] as { key: "lineUpId" | "seriesId" | "groupId" | "distributionId"; label: string; items: Catalog[] }[]).map(({ key, label, items }) => (
               <Grid key={key} size={{ xs: 12, sm: 6, md: 3 }}>
                 <TextField
                   select fullWidth
-                  required={key !== "groupId"}
+                  required={key !== "groupId" && key !== "distributionId"}
                   label={label}
                   value={form[key]}
                   onChange={(e) => setField(key, e.target.value)}
@@ -668,6 +686,7 @@ export default function FigurineFormPage() {
                   helperText={errors[key]}
                 >
                   {key === "groupId" && <MenuItem value=""><em>None</em></MenuItem>}
+                  {key === "distributionId" && <MenuItem value=""><em>None</em></MenuItem>}
                   {items.map((it) => (
                     <MenuItem key={it.id} value={String(it.id)}>{it.description}</MenuItem>
                   ))}
@@ -687,6 +706,18 @@ export default function FigurineFormPage() {
                   <MenuItem key={it.id} value={String(it.id)}>{it.description}</MenuItem>
                 ))}
               </TextField>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField
+                label="Tamashii Web URL"
+                value={form.tamashiiUrl}
+                type="url"
+                onChange={(e) => setField("tamashiiUrl", e.target.value)}
+                fullWidth
+                error={Boolean(errors.tamashiiUrl)}
+                helperText={errors.tamashiiUrl ?? "Example: https://tamashiiweb.com/item/{itemId}"}
+                slotProps={{ htmlInput: { maxLength: 50 } }}
+              />
             </Grid>
           </Grid>
 

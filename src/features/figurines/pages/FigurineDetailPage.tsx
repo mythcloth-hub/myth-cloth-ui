@@ -447,12 +447,14 @@ export default function FigurineDetailPage() {
   const images = figurine.officialImageUrls ?? [];
   const mainImage = images[selectedImage] ?? null;
   const catalogDetails = [
-    { label: "Series", value: figurine.series.description },
     { label: "Line Up", value: figurine.lineUp.description },
+    { label: "Series", value: figurine.series.description },
     { label: "Group", value: figurine.group?.description },
     { label: "Distribution", value: figurine.distribution?.description },
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
   const notesText = figurine.notes ? figurine.notes.replace(/\\n/g, "\n") : "";
+  const shouldShowAddToCollectionButton =
+    isAuthenticated && (figurine.releaseStatus === "ANNOUNCED" || figurine.releaseStatus === "RELEASED");
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -541,7 +543,7 @@ export default function FigurineDetailPage() {
             Edit
           </Button>
         )}
-        {isAuthenticated && (
+        {shouldShowAddToCollectionButton && (
           <Button
             variant="contained"
             startIcon={<FavoriteBorderIcon />}
@@ -1520,7 +1522,21 @@ export default function FigurineDetailPage() {
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {figurine.events.map((ev) => {
-                    const isRelease = ev.type.toUpperCase().includes("RELEASE");
+                    const isRelease = (ev.type ?? "").toUpperCase().includes("RELEASE");
+                    const rawEventDate = typeof ev.date === "string" ? ev.date.trim() : "";
+                    const isIsoDate = /^\d{4}-\d{2}-\d{2}$/.test(rawEventDate);
+                    const formattedEventDateLabel = isIsoDate
+                      ? formatIsoDateLabel(rawEventDate, {
+                        includeDay: ev.dateConfirmed,
+                        monthCase: "upper",
+                      })
+                      : "TBD";
+                    const formattedDateParts = formattedEventDateLabel.replace(",", "").split(/\s+/);
+                    const eventMonthAbbr = formattedDateParts[0] ?? "TBD";
+                    const eventDay = ev.dateConfirmed ? (formattedDateParts[1] ?? "") : "";
+                    const eventYear = ev.dateConfirmed
+                      ? (formattedDateParts[2] ?? "TBD")
+                      : (formattedDateParts[1] ?? "TBD");
                     return (
                     <Box key={ev.id} sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
                       {/* Timeline dot */}
@@ -1556,41 +1572,33 @@ export default function FigurineDetailPage() {
                         }}
                       >
                         {/* Date badge column */}
-                        {(() => {
-                          const parts = ev.date.split("-");
-                          const year = parts[0] ?? "";
-                          const day = parts[2] ?? "";
-                          const monthAbbr = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][parseInt(parts[1] ?? "0", 10) - 1] ?? "";
-                          return (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                minWidth: 52,
-                                px: 1,
-                                py: 1.25,
-                                bgcolor: isRelease ? "rgba(212,175,55,0.12)" : "rgba(0,0,0,0.15)",
-                                borderRight: "1px solid",
-                                borderColor: isRelease ? "rgba(212,175,55,0.3)" : "rgba(255,255,255,0.07)",
-                                flexShrink: 0,
-                              }}
-                            >
-                              <Typography sx={{ fontSize: "0.58rem", fontWeight: 800, color: "primary.main", letterSpacing: "0.1em", lineHeight: 1 }}>
-                                {monthAbbr}
-                              </Typography>
-                              {ev.dateConfirmed ? (
-                                <Typography sx={{ fontSize: "1.45rem", fontWeight: 800, color: isRelease ? "primary.main" : "text.primary", lineHeight: 1.1, mt: 0.25 }}>
-                                  {day}
-                                </Typography>
-                              ) : null}
-                              <Typography sx={{ fontSize: "0.58rem", color: "text.secondary", letterSpacing: "0.04em", lineHeight: 1, mt: 0.25 }}>
-                                {year}
-                              </Typography>
-                            </Box>
-                          );
-                        })()}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minWidth: 52,
+                            px: 1,
+                            py: 1.25,
+                            bgcolor: isRelease ? "rgba(212,175,55,0.12)" : "rgba(0,0,0,0.15)",
+                            borderRight: "1px solid",
+                            borderColor: isRelease ? "rgba(212,175,55,0.3)" : "rgba(255,255,255,0.07)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Typography sx={{ fontSize: "0.58rem", fontWeight: 800, color: "primary.main", letterSpacing: "0.1em", lineHeight: 1 }}>
+                            {eventMonthAbbr}
+                          </Typography>
+                          {ev.dateConfirmed && eventDay ? (
+                            <Typography sx={{ fontSize: "1.45rem", fontWeight: 800, color: isRelease ? "primary.main" : "text.primary", lineHeight: 1.1, mt: 0.25 }}>
+                              {eventDay}
+                            </Typography>
+                          ) : null}
+                          <Typography sx={{ fontSize: "0.58rem", color: "text.secondary", letterSpacing: "0.04em", lineHeight: 1, mt: 0.25 }}>
+                            {eventYear}
+                          </Typography>
+                        </Box>
 
                         {/* Main content */}
                         <Box sx={{ flex: 1, px: 1.5, py: 1.25 }}>
