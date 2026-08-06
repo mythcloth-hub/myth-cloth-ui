@@ -327,7 +327,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     setIsDemoSigningIn(true);
     try {
       await Promise.resolve(loginWithDemo());
-    } catch {
+    } finally {
       setIsDemoSigningIn(false);
     }
   };
