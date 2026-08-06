@@ -34,6 +34,7 @@ import ChecklistIcon from "@mui/icons-material/Checklist";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 
 import { getFigurines, getSelectableFigurineIds } from "../api/figurineApi";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
@@ -140,6 +141,16 @@ function FigurineCard({
   const isAnnounced = figurine.releaseStatus === "ANNOUNCED";
   const isReleased = figurine.releaseStatus === "RELEASED";
   const isUnreleased = figurine.releaseStatus === "UNRELEASED";
+  const restocks = figurine.restocks ?? [];
+  const hasRestocks = restocks.length > 0;
+  const latestRestockDate = hasRestocks
+    ? [...restocks]
+        .sort((a, b) => a.releaseDate.localeCompare(b.releaseDate))
+        .at(-1)?.releaseDate ?? null
+    : null;
+  const latestRestockLabel = latestRestockDate
+    ? formatIsoDateLabel(latestRestockDate, { includeDay: Boolean(latestRestockDate.split("-")[2]) })
+    : null;
 
   // Get all distributor flags (unique by country code)
   const distributorFlags = (figurine.distributors || [])
@@ -474,6 +485,36 @@ function FigurineCard({
                 ))}
               </Box>
             )}
+          </Box>
+        )}
+
+        {hasRestocks && (
+          <Box sx={{ mt: 0.75 }}>
+            <Tooltip
+              title={
+                latestRestockLabel
+                  ? `Restocked ${restocks.length} time${restocks.length > 1 ? "s" : ""}. Latest: ${latestRestockLabel}.`
+                  : `Restocked ${restocks.length} time${restocks.length > 1 ? "s" : ""}.`
+              }
+              arrow
+            >
+              <Chip
+                size="small"
+                icon={<AutorenewIcon sx={{ fontSize: "0.78rem !important" }} />}
+                label={latestRestockLabel ? `Restock from ${latestRestockLabel}` : "Restock"}
+                sx={{
+                  height: 20,
+                  fontSize: "0.64rem",
+                  fontWeight: 700,
+                  bgcolor: "rgba(79, 195, 247, 0.14)",
+                  color: "#80deea",
+                  border: "1px solid rgba(79, 195, 247, 0.35)",
+                  "& .MuiChip-icon": {
+                    color: "#80deea",
+                  },
+                }}
+              />
+            </Tooltip>
           </Box>
         )}
       </CardContent>
