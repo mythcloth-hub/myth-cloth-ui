@@ -117,6 +117,7 @@ export type FigurineFilters = {
   manga?: boolean | string;
   set?: boolean | string;
   articulable?: boolean | string;
+  restocks?: boolean | string;
   collectionId?: string;
 };
 
