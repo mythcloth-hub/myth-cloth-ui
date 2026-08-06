@@ -9,6 +9,7 @@ import {
   Avatar,
   AppBar,
   Box,
+  CircularProgress,
   Divider,
   Drawer,
   FormControl,
@@ -169,6 +170,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { themeId, setThemeId } = useAppTheme();
   const { selectedCurrency, setSelectedCurrency } = useDisplayCurrency();
   const theme = useTheme();
+  const [isDemoSigningIn, setIsDemoSigningIn] = useState(false);
   const navScrollRef = useRef<HTMLDivElement | null>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
 
@@ -281,6 +283,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     return () => window.removeEventListener("resize", handleResize);
   }, [updateScrollHint, visibleSections.length, isAuthenticated]);
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setIsDemoSigningIn(false);
+    }
+  }, [isAuthenticated]);
+
   const handleClick = (path: string) => {
     if (path === "/figurines") {
       // Remove page param from sessionStorage so Collection always goes to page 1
@@ -300,6 +308,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   const handleLogout = () => {
+    setIsDemoSigningIn(false);
     logout();
     navigate("/");
     onNavigate?.();
@@ -308,6 +317,19 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const handleCurrencyChange = (event: SelectChangeEvent<string>) => {
     const value = event.target.value;
     setSelectedCurrency(value ? (value as SupportedCurrency) : null);
+  };
+
+  const handleDemoLogin = async () => {
+    if (isDemoSigningIn) {
+      return;
+    }
+
+    setIsDemoSigningIn(true);
+    try {
+      await Promise.resolve(loginWithDemo());
+    } catch {
+      setIsDemoSigningIn(false);
+    }
   };
 
   return (
@@ -756,8 +778,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             )}
             {demoEnabled && (
               <Button
-                onClick={loginWithDemo}
-                startIcon={<PersonOutlineOutlinedIcon sx={{ fontSize: 20, color: "inherit" }} />}
+                onClick={handleDemoLogin}
+                disabled={isDemoSigningIn}
+                startIcon={
+                  isDemoSigningIn
+                    ? <CircularProgress size={18} color="inherit" />
+                    : <PersonOutlineOutlinedIcon sx={{ fontSize: 20, color: "inherit" }} />
+                }
                 variant="outlined"
                 sx={{
                   ...authButtonBaseSx,
@@ -771,7 +798,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   },
                 }}
               >
-                Demo
+                {isDemoSigningIn ? "Signing in..." : "Demo"}
               </Button>
             )}
             {!googleEnabled && (
