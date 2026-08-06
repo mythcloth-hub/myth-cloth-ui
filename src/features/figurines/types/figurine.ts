@@ -52,6 +52,11 @@ export type FigurineEventType =
 
 export type FigurineEventRegion = "JP" | "MX" | "ES" | "US" | "CN";
 
+export type FigurineRestock = {
+  id: number;
+  releaseDate: string;
+};
+
 export type Figurine = {
   id: number;
   name: string;
@@ -81,6 +86,7 @@ export type Figurine = {
   notes?: string;
   officialImageUrls: string[];
   events?: FigurineEvent[];
+  restocks?: FigurineRestock[];
   createdAt: string;
   updatedAt: string;
 };
@@ -111,6 +117,7 @@ export type FigurineFilters = {
   manga?: boolean | string;
   set?: boolean | string;
   articulable?: boolean | string;
+  restocks?: boolean | string;
   collectionId?: string;
 };
 

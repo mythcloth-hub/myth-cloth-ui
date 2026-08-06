@@ -34,6 +34,7 @@ import ChecklistIcon from "@mui/icons-material/Checklist";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 
 import { getFigurines, getSelectableFigurineIds } from "../api/figurineApi";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
@@ -140,6 +141,16 @@ function FigurineCard({
   const isAnnounced = figurine.releaseStatus === "ANNOUNCED";
   const isReleased = figurine.releaseStatus === "RELEASED";
   const isUnreleased = figurine.releaseStatus === "UNRELEASED";
+  const restocks = figurine.restocks ?? [];
+  const hasRestocks = restocks.length > 0;
+  const latestRestockDate = hasRestocks
+    ? [...restocks]
+        .sort((a, b) => a.releaseDate.localeCompare(b.releaseDate))
+        .at(-1)?.releaseDate ?? null
+    : null;
+  const latestRestockLabel = latestRestockDate
+    ? formatIsoDateLabel(latestRestockDate, { includeDay: Boolean(latestRestockDate.split("-")[2]) })
+    : null;
 
   // Get all distributor flags (unique by country code)
   const distributorFlags = (figurine.distributors || [])
@@ -476,6 +487,36 @@ function FigurineCard({
             )}
           </Box>
         )}
+
+        {hasRestocks && (
+          <Box sx={{ mt: 0.75 }}>
+            <Tooltip
+              title={
+                latestRestockLabel
+                  ? `Restocked ${restocks.length} time${restocks.length > 1 ? "s" : ""}. Latest: ${latestRestockLabel}.`
+                  : `Restocked ${restocks.length} time${restocks.length > 1 ? "s" : ""}.`
+              }
+              arrow
+            >
+              <Chip
+                size="small"
+                icon={<AutorenewIcon sx={{ fontSize: "0.78rem !important" }} />}
+                label={latestRestockLabel ? `Restock from ${latestRestockLabel}` : "Restock"}
+                sx={{
+                  height: 20,
+                  fontSize: "0.64rem",
+                  fontWeight: 700,
+                  bgcolor: "rgba(79, 195, 247, 0.14)",
+                  color: "#80deea",
+                  border: "1px solid rgba(79, 195, 247, 0.35)",
+                  "& .MuiChip-icon": {
+                    color: "#80deea",
+                  },
+                }}
+              />
+            </Tooltip>
+          </Box>
+        )}
       </CardContent>
     </Card>
   );
@@ -531,6 +572,7 @@ export default function FigurineCollectionPage() {
   const manga         = searchParams.get("manga")         ?? "";
   const multiPack     = searchParams.get("multiPack")     ?? "";
   const articulable   = searchParams.get("articulable")   ?? "";
+  const restocks      = searchParams.get("restocks")      ?? "";
   const page    = Number(searchParams.get("page") ?? "1");
 
   // State for paginated data from server
@@ -578,6 +620,7 @@ export default function FigurineCollectionPage() {
     if (manga) params.manga = manga;
     if (multiPack) params.set = multiPack;
     if (articulable) params.articulable = articulable;
+    if (restocks) params.restocks = restocks;
     if (showOwnedOnly && selectedCollectionId && isAuthenticated) {
       params.collectionId = selectedCollectionId;
     }
@@ -617,7 +660,7 @@ export default function FigurineCollectionPage() {
     }
   };
 
-  const activeFilterCount = [lineup, series, group, anniversary, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable].filter(Boolean).length;
+  const activeFilterCount = [lineup, series, group, anniversary, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, restocks].filter(Boolean).length;
 
   // Fetch dropdown options once on mount
   useEffect(() => {
@@ -660,7 +703,7 @@ export default function FigurineCollectionPage() {
         setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurines" }));
       })
       .finally(() => setLoading(false));
-  }, [page, query, lineup, series, group, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, showOwnedOnly, selectedCollectionId, isAuthenticated]);
+  }, [page, query, lineup, series, group, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, restocks, showOwnedOnly, selectedCollectionId, isAuthenticated]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -773,6 +816,7 @@ export default function FigurineCollectionPage() {
     if (manga)        p.manga        = manga;
     if (multiPack)    p.multiPack    = multiPack;
     if (articulable)  p.articulable  = articulable;
+    if (restocks)     p.restocks     = restocks;
 
     // If any override key is not 'page', reset page to 1
     const overrideKeys = Object.keys(overrides).filter((k) => k !== 'page');
@@ -1022,6 +1066,7 @@ export default function FigurineCollectionPage() {
               <MenuItem value="RELEASED">Released</MenuItem>
               <MenuItem value="PROTOTYPE">Prototype</MenuItem>
               <MenuItem value="RUMORED">Rumored</MenuItem>
+              <MenuItem value="UNRELEASED">Unreleased</MenuItem>
             </Select>
           </FormControl>
           {([
@@ -1035,6 +1080,7 @@ export default function FigurineCollectionPage() {
             { key: "manga",         label: "Manga Version"  },
             { key: "multiPack",     label: "Multi-Pack"     },
             { key: "articulable",   label: "Articulable"    },
+            { key: "restocks",      label: "Restocks"       },
           ] as { key: string; label: string }[]).map(({ key, label }) => (
             <FormControl key={key} size="small" sx={{ flex: "1 1 130px" }}>
               <InputLabel>{label}</InputLabel>
@@ -1085,6 +1131,7 @@ export default function FigurineCollectionPage() {
               { key: "manga",         label: "Manga",          value: manga         },
               { key: "multiPack",     label: "Multi-Pack",     value: multiPack     },
               { key: "articulable",   label: "Articulable",    value: articulable   },
+              { key: "restocks",      label: "Restocks",       value: restocks      },
             ] as { key: string; label: string; value: string }[])
               .filter(({ value }) => Boolean(value))
               .map(({ key, label, value }) => (

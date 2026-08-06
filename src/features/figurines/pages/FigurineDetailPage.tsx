@@ -33,6 +33,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 
 import {
   getFigurineAverageRealtimePrice,
@@ -86,6 +87,41 @@ type SelectedCollectionContext = {
   name: string;
   figurineIds: number[];
 };
+
+function getRestockOrdinalLabel(restockCount: number): string {
+  const ordinalWords: Record<number, string> = {
+    1: "First",
+    2: "Second",
+    3: "Third",
+    4: "Fourth",
+    5: "Fifth",
+    6: "Sixth",
+    7: "Seventh",
+    8: "Eighth",
+    9: "Ninth",
+    10: "Tenth",
+  };
+
+  if (restockCount <= 0) {
+    return "Restock";
+  }
+
+  if (ordinalWords[restockCount]) {
+    return `${ordinalWords[restockCount]} Restock`;
+  }
+
+  const mod100 = restockCount % 100;
+  const mod10 = restockCount % 10;
+  let suffix = "th";
+
+  if (mod100 < 11 || mod100 > 13) {
+    if (mod10 === 1) suffix = "st";
+    else if (mod10 === 2) suffix = "nd";
+    else if (mod10 === 3) suffix = "rd";
+  }
+
+  return `${restockCount}${suffix} Restock`;
+}
 
 export default function FigurineDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -455,6 +491,11 @@ export default function FigurineDetailPage() {
   const notesText = figurine.notes ? figurine.notes.replace(/\\n/g, "\n") : "";
   const shouldShowAddToCollectionButton =
     isAuthenticated && (figurine.releaseStatus === "ANNOUNCED" || figurine.releaseStatus === "RELEASED");
+  const restocks = (figurine.restocks ?? [])
+    .filter((restock) => Number.isFinite(restock.id))
+    .sort((a, b) => (b.releaseDate ?? "").localeCompare(a.releaseDate ?? ""));
+  const hasRestocks = restocks.length > 0;
+  const restockOrdinalLabel = getRestockOrdinalLabel(restocks.length);
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -784,6 +825,19 @@ export default function FigurineDetailPage() {
                   </Grid>
                 );
               })()}
+              {hasRestocks && (
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "0.65rem" }}>
+                    Restock
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5 }}>
+                    <AutorenewIcon sx={{ fontSize: 16, color: "info.main" }} />
+                    <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 600 }}>
+                      {restockOrdinalLabel}
+                    </Typography>
+                  </Box>
+                </Grid>
+              )}
               {figurine.anniversary && (
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "0.65rem" }}>
@@ -862,6 +916,79 @@ export default function FigurineDetailPage() {
               )}
             </Grid>
           </Box>
+
+          {hasRestocks && (
+            <Box
+              sx={{
+                bgcolor: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(212,175,55,0.12)",
+                borderRadius: 2,
+                p: 1.5,
+                mb: 2,
+              }}
+            >
+              <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}>
+                Restock References
+              </Typography>
+              <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.35, mb: 1.1, fontSize: "0.86rem" }}>
+                This figurine is a restock. Open a related previous release:
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                {restocks.map((restock) => {
+                  const isCurrentFigurine = restock.id === figurine.id;
+                  const hasDay = restock.releaseDate.split("-").length >= 3 && Boolean(restock.releaseDate.split("-")[2]);
+                  const releaseDateLabel = formatIsoDateLabel(restock.releaseDate, { includeDay: hasDay });
+
+                  return (
+                    <Chip
+                      key={`${restock.id}-${restock.releaseDate}`}
+                      label={`${releaseDateLabel}`}
+                      clickable={!isCurrentFigurine}
+                      disabled={isCurrentFigurine}
+                      onClick={() => {
+                        if (isCurrentFigurine) {
+                          return;
+                        }
+
+                        navigate(`/figurines/${restock.id}`, {
+                          state: selectedCollectionContext
+                            ? { selectedCollection: selectedCollectionContext }
+                            : undefined,
+                        });
+                      }}
+                      variant="outlined"
+                      icon={<RocketLaunchOutlinedIcon sx={{ fontSize: "0.9rem !important" }} />}
+                      sx={{
+                        height: 28,
+                        borderRadius: 999,
+                        fontWeight: 700,
+                        borderColor: "rgba(79,195,247,0.45)",
+                        color: "info.main",
+                        bgcolor: "rgba(79,195,247,0.08)",
+                        "& .MuiChip-icon": { color: "info.main", ml: 0.75 },
+                        "& .MuiChip-label": {
+                          fontSize: "0.75rem",
+                          letterSpacing: "0.01em",
+                          pr: 1,
+                        },
+                        "&:hover": {
+                          bgcolor: "rgba(79,195,247,0.14)",
+                        },
+                        "&.Mui-disabled": {
+                          borderColor: "rgba(255,255,255,0.16)",
+                          color: "text.disabled",
+                          bgcolor: "rgba(255,255,255,0.02)",
+                        },
+                        "&.Mui-disabled .MuiChip-icon": {
+                          color: "text.disabled",
+                        },
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+            </Box>
+          )}
 
           {/* Attributes */}
           <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem" }}>

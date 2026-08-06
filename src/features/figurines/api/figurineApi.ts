@@ -81,6 +81,7 @@ const buildFigurineQueryParams = (
   if (params?.manga !== undefined) queryParams.manga = params.manga;
   if (params?.set !== undefined) queryParams.set = params.set;
   if (params?.articulable !== undefined) queryParams.articulable = params.articulable;
+  if (params?.restocks !== undefined) queryParams.restocks = params.restocks;
   if (params?.collectionId) queryParams.collectionId = params.collectionId;
 
   return queryParams;
