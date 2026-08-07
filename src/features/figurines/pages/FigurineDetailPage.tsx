@@ -821,7 +821,7 @@ export default function FigurineDetailPage() {
                             height: 22,
                             fontSize: "0.72rem",
                             fontWeight: 700,
-                            bgcolor: "#ffffffff",
+                            bgcolor: "#ffffff",
                             color: "#c98a00",
                             border: "1px solid rgba(255, 193, 7, 0.34)",
                             "& .MuiChip-icon": {
