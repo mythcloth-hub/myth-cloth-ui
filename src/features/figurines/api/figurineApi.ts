@@ -69,6 +69,7 @@ const buildFigurineQueryParams = (
   if (params?.lineUpId) queryParams.lineUpId = params.lineUpId;
   if (params?.seriesId) queryParams.seriesId = params.seriesId;
   if (params?.groupId) queryParams.groupId = params.groupId;
+  if (params?.distributionId) queryParams.distributionId = params.distributionId;
   if (params?.anniversaryId) queryParams.anniversaryId = params.anniversaryId;
   if (params?.releaseStatus) queryParams.releaseStatus = params.releaseStatus;
   if (params?.metalBody !== undefined) queryParams.metalBody = params.metalBody;
