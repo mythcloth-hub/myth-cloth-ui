@@ -35,6 +35,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
+import CelebrationIcon from "@mui/icons-material/Celebration";
 
 import { getFigurines, getSelectableFigurineIds } from "../api/figurineApi";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
@@ -159,6 +160,8 @@ function FigurineCard({
     .map((code) => countryCodeToFlag(code));
 
   const hasAnniversary = Boolean((figurine as any).anniversary);
+  const hasTamashiiNationsDistribution =
+    figurine.distribution?.description?.trim().toLowerCase() === "tamashii nations";
 
   return (
     <Card
@@ -413,23 +416,41 @@ function FigurineCard({
           >
             {figurine.name}
           </Typography>
-          {hasAnniversary && (
-            <Tooltip title={(figurine as any).anniversary?.description || "Anniversary Edition"} arrow>
-              <span>
-                <AnniversaryIcon
-                  sx={{
-                    fontSize: 18,
-                    color: "#bfa100",
-                    bgcolor: "#fffde7",
-                    borderRadius: "50%",
-                    boxShadow: 1,
-                    p: 0.15,
-                    ml: "auto",
-                    flexShrink: 0,
-                  }}
-                />
-              </span>
-            </Tooltip>
+          {(hasAnniversary || hasTamashiiNationsDistribution) && (
+            <Box sx={{ ml: "auto", display: "inline-flex", alignItems: "center", gap: 0.45, flexShrink: 0 }}>
+              {hasTamashiiNationsDistribution && (
+                <Tooltip title="Tamashii Nations commemorative figurine" arrow>
+                  <span>
+                    <CelebrationIcon
+                      sx={{
+                        fontSize: 17,
+                        color: "#c98a00",
+                        bgcolor: "#ffffff",
+                        borderRadius: "50%",
+                        boxShadow: 1,
+                        p: 0.2,
+                      }}
+                    />
+                  </span>
+                </Tooltip>
+              )}
+              {hasAnniversary && (
+                <Tooltip title={(figurine as any).anniversary?.description || "Anniversary Edition"} arrow>
+                  <span>
+                    <AnniversaryIcon
+                      sx={{
+                        fontSize: 18,
+                        color: "#bfa100",
+                        bgcolor: "#fffde7",
+                        borderRadius: "50%",
+                        boxShadow: 1,
+                        p: 0.15,
+                      }}
+                    />
+                  </span>
+                </Tooltip>
+              )}
+            </Box>
           )}
         </Box>
 
@@ -1055,12 +1076,38 @@ export default function FigurineCollectionPage() {
               ))}
             </Select>
           </FormControl>
-          <FormControl size="small" sx={{ flex: "1 1 170px" }}>
+          <FormControl size="small" sx={{ flex: "1 1 200px" }}>
             <InputLabel>Distribution</InputLabel>
             <Select label="Distribution" value={distribution} onChange={(e) => handleDistributionChange(e.target.value)}>
               <MenuItem value=""><em>All</em></MenuItem>
               {distributionOptions.map((opt) => (
-                <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
+                <MenuItem key={opt.id} value={String(opt.id)}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: 1 }}>
+                    <span>{opt.description}</span>
+                    {opt.description.trim().toLowerCase() === "tamashii nations" && (
+                      <Tooltip title="TAMASHII NATIONS' Annual Figure Festival - Commemorative Merchandise" arrow placement="top">
+                        <CelebrationIcon
+                          sx={{
+                            fontSize: 17,
+                            color: "#c98a00",
+                            bgcolor: "#ffffff",
+                            border: "1px solid rgba(255, 193, 7, 0.38)",
+                            borderRadius: "50%",
+                            p: 0.4,
+                            boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.08) inset",
+                            flexShrink: 0,
+                            animation: "tamashiiFestivalSparkle 820ms cubic-bezier(0.2, 0.9, 0.2, 1) 1",
+                            "@keyframes tamashiiFestivalSparkle": {
+                              "0%": { transform: "scale(0.86) rotate(-8deg)", opacity: 0.6 },
+                              "38%": { transform: "scale(1.14) rotate(6deg)", opacity: 1 },
+                              "100%": { transform: "scale(1) rotate(0deg)", opacity: 1 },
+                            },
+                          }}
+                        />
+                      </Tooltip>
+                    )}
+                  </Box>
+                </MenuItem>
               ))}
             </Select>
           </FormControl>

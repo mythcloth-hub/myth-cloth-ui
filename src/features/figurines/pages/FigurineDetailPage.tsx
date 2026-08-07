@@ -34,6 +34,7 @@ import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
+import CelebrationIcon from "@mui/icons-material/Celebration";
 
 import {
   getFigurineAverageRealtimePrice,
@@ -496,6 +497,8 @@ export default function FigurineDetailPage() {
     .sort((a, b) => (b.releaseDate ?? "").localeCompare(a.releaseDate ?? ""));
   const hasRestocks = restocks.length > 0;
   const restockOrdinalLabel = getRestockOrdinalLabel(restocks.length);
+  const isTamashiiNationsDistribution =
+    figurine.distribution?.description?.trim().toLowerCase() === "tamashii nations";
 
   return (
     <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -804,9 +807,36 @@ export default function FigurineDetailPage() {
                   <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "0.65rem" }}>
                     {label}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "text.primary", mt: 0.25 }}>
-                    {value}
-                  </Typography>
+                  {label === "Distribution" && isTamashiiNationsDistribution ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.25, flexWrap: "wrap" }}>
+                      <Typography variant="body2" sx={{ color: "text.primary" }}>
+                        {value}
+                      </Typography>
+                      <Tooltip title="Commemorative event figurine." arrow>
+                        <Chip
+                          size="small"
+                          icon={<CelebrationIcon sx={{ fontSize: "0.84rem !important" }} />}
+                          label="Commemorative"
+                          sx={{
+                            height: 22,
+                            fontSize: "0.72rem",
+                            fontWeight: 700,
+                            bgcolor: "#ffffffff",
+                            color: "#c98a00",
+                            border: "1px solid rgba(255, 193, 7, 0.34)",
+                            "& .MuiChip-icon": {
+                              color: "#c98a00",
+                              ml: 0.55,
+                            },
+                          }}
+                        />
+                      </Tooltip>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" sx={{ color: "text.primary", mt: 0.25 }}>
+                      {value}
+                    </Typography>
+                  )}
                 </Grid>
               ))}
               {figurine.releaseStatus && (() => {
@@ -832,7 +862,7 @@ export default function FigurineDetailPage() {
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5 }}>
                     <AutorenewIcon sx={{ fontSize: 16, color: "info.main" }} />
-                    <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 600 }}>
+                    <Typography variant="body2" sx={{ color: "text.primary" }}>
                       {restockOrdinalLabel}
                     </Typography>
                   </Box>
