@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Alert,
@@ -32,6 +32,8 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
+import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
+import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import axios from "axios";
 import dayjs from "dayjs";
 
@@ -221,6 +223,9 @@ export default function FigurineFormPage() {
   });
   const [eventFormError, setEventFormError] = useState<string | null>(null);
   const [deletingEventId, setDeletingEventId] = useState<number | null>(null);
+  const eventsScrollRef = useRef<HTMLDivElement | null>(null);
+  const [showEventsScrollUpHint, setShowEventsScrollUpHint] = useState(false);
+  const [showEventsScrollDownHint, setShowEventsScrollDownHint] = useState(false);
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -354,6 +359,22 @@ export default function FigurineFormPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [successRedirectPath, setSuccessRedirectPath] = useState<string | null>(null);
 
+  const updateEventsScrollHints = () => {
+    const element = eventsScrollRef.current;
+    if (!element) {
+      setShowEventsScrollUpHint(false);
+      setShowEventsScrollDownHint(false);
+      return;
+    }
+
+    const hasOverflow = element.scrollHeight > element.clientHeight + 2;
+    const canScrollUp = element.scrollTop > 6;
+    const canScrollDown = element.scrollTop + element.clientHeight < element.scrollHeight - 6;
+
+    setShowEventsScrollUpHint(hasOverflow && canScrollUp);
+    setShowEventsScrollDownHint(hasOverflow && canScrollDown);
+  };
+
   // Load catalog options + (optionally) figurine data in parallel
   useEffect(() => {
     const catalogRequests: Promise<unknown>[] = [
@@ -430,6 +451,26 @@ export default function FigurineFormPage() {
       })
       .finally(() => setLoadingForm(false));
   }, [id, isEdit]);
+
+  useEffect(() => {
+    if (!eventsModalOpen) {
+      setShowEventsScrollUpHint(false);
+      setShowEventsScrollDownHint(false);
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      updateEventsScrollHints();
+    });
+    const handleResize = () => updateEventsScrollHints();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [eventsModalOpen, loadingEvents, events.length]);
 
   // ── Field helpers ───────────────────────────────────────────────────────────
 
@@ -1039,7 +1080,21 @@ export default function FigurineFormPage() {
             >
               Add Event
             </Button>
-            <Box sx={{ maxHeight: { xs: "45vh", md: "52vh" }, overflowY: "auto", pr: 0.5 }}>
+            <Box sx={{ position: "relative" }}>
+              <Box
+                ref={eventsScrollRef}
+                onScroll={updateEventsScrollHints}
+                sx={{
+                  maxHeight: { xs: "45vh", md: "52vh" },
+                  overflowY: "auto",
+                  pr: 0.5,
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                  "&::-webkit-scrollbar": {
+                    display: "none",
+                  },
+                }}
+              >
               {loadingEvents ? (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <CircularProgress size={20} />
@@ -1080,6 +1135,67 @@ export default function FigurineFormPage() {
                     </Grid>
                   ))}
                 </Grid>
+              )}
+              </Box>
+
+              {showEventsScrollUpHint && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 36,
+                    pointerEvents: "none",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "center",
+                    pt: 0.2,
+                    background: (theme) => `linear-gradient(180deg, ${theme.palette.background.paper} 0%, rgba(0,0,0,0) 100%)`,
+                  }}
+                >
+                  <KeyboardArrowUpOutlinedIcon
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: 20,
+                      animation: "eventsScrollHintUp 1.4s ease-in-out infinite",
+                      "@keyframes eventsScrollHintUp": {
+                        "0%, 100%": { transform: "translateY(0)", opacity: 0.65 },
+                        "50%": { transform: "translateY(-3px)", opacity: 1 },
+                      },
+                    }}
+                  />
+                </Box>
+              )}
+
+              {showEventsScrollDownHint && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: 40,
+                    pointerEvents: "none",
+                    display: "flex",
+                    alignItems: "flex-end",
+                    justifyContent: "center",
+                    pb: 0.2,
+                    background: (theme) => `linear-gradient(180deg, rgba(0,0,0,0) 0%, ${theme.palette.background.paper} 100%)`,
+                  }}
+                >
+                  <KeyboardArrowDownOutlinedIcon
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: 20,
+                      animation: "eventsScrollHintDown 1.4s ease-in-out infinite",
+                      "@keyframes eventsScrollHintDown": {
+                        "0%, 100%": { transform: "translateY(0)", opacity: 0.65 },
+                        "50%": { transform: "translateY(3px)", opacity: 1 },
+                      },
+                    }}
+                  />
+                </Box>
               )}
             </Box>
           </Box>
