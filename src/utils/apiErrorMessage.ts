@@ -11,6 +11,7 @@ const API_ERROR_CODE_MESSAGES: Record<string, string> = {
   COLLECTOR_NOT_FOUND: "We couldn't find this collector. It may have been removed or is no longer available.",
   FIGURINE_NOT_FOUND: "We couldn't find this figurine. It may have been removed or is no longer available.",
   CATALOG_NOT_FOUND: "We couldn't find this catalog item. It may have been removed or is no longer available.",
+  UNEXPECTED_ERROR: "An unexpected error occurred. Please try again later.",
 };
 
 const actionFallbackByType: Record<ApiAction, string> = {
