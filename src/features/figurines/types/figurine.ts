@@ -105,6 +105,7 @@ export type FigurineFilters = {
   lineUpId?: string;
   seriesId?: string;
   groupId?: string;
+  distributionId?: string;
   anniversaryId?: string;
   releaseStatus?: string;
   metalBody?: boolean | string;

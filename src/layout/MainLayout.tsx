@@ -47,6 +47,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
@@ -172,7 +173,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const theme = useTheme();
   const [isDemoSigningIn, setIsDemoSigningIn] = useState(false);
   const navScrollRef = useRef<HTMLDivElement | null>(null);
-  const [showScrollHint, setShowScrollHint] = useState(false);
+  const [showScrollUpHint, setShowScrollUpHint] = useState(false);
+  const [showScrollDownHint, setShowScrollDownHint] = useState(false);
 
   const authCardSx = {
     px: 1.25,
@@ -269,11 +271,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   const updateScrollHint = useCallback(() => {
     const el = navScrollRef.current;
-    if (!el) return;
+    if (!el) {
+      setShowScrollUpHint(false);
+      setShowScrollDownHint(false);
+      return;
+    }
 
     const hasOverflow = el.scrollHeight > el.clientHeight + 1;
+    const canScrollUp = el.scrollTop > 1;
     const canScrollDown = el.scrollTop + el.clientHeight < el.scrollHeight - 1;
-    setShowScrollHint(hasOverflow && canScrollDown);
+
+    setShowScrollUpHint(hasOverflow && canScrollUp);
+    setShowScrollDownHint(hasOverflow && canScrollDown);
   }, []);
 
   useEffect(() => {
@@ -437,7 +446,37 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           ))}
         </Box>
 
-        {showScrollHint && (
+        {showScrollUpHint && (
+          <Box
+            sx={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 40,
+              pointerEvents: "none",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "center",
+              pt: 0.2,
+              background: `linear-gradient(180deg, ${alpha(theme.palette.background.default, 0.88)} 0%, ${alpha(theme.palette.background.default, 0)} 100%)`,
+            }}
+          >
+            <KeyboardArrowUpOutlinedIcon
+              sx={{
+                color: "text.secondary",
+                fontSize: 20,
+                animation: "mythSidebarScrollHintUp 1.4s ease-in-out infinite",
+                "@keyframes mythSidebarScrollHintUp": {
+                  "0%, 100%": { transform: "translateY(0)", opacity: 0.65 },
+                  "50%": { transform: "translateY(-3px)", opacity: 1 },
+                },
+              }}
+            />
+          </Box>
+        )}
+
+        {showScrollDownHint && (
           <Box
             sx={{
               position: "absolute",
@@ -457,7 +496,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               sx={{
                 color: "text.secondary",
                 fontSize: 20,
-                animation: "mythSidebarScrollHint 1.4s ease-in-out infinite",
+                animation: "mythSidebarScrollHintDown 1.4s ease-in-out infinite",
+                "@keyframes mythSidebarScrollHintDown": {
+                  "0%, 100%": { transform: "translateY(0)", opacity: 0.65 },
+                  "50%": { transform: "translateY(3px)", opacity: 1 },
+                },
               }}
             />
           </Box>

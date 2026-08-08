@@ -7,6 +7,13 @@ type GetApiErrorMessageOptions = {
   resource: string;
 };
 
+const API_ERROR_CODE_MESSAGES: Record<string, string> = {
+  COLLECTOR_NOT_FOUND: "We couldn't find this collector. It may have been removed or is no longer available.",
+  FIGURINE_NOT_FOUND: "We couldn't find this figurine. It may have been removed or is no longer available.",
+  CATALOG_NOT_FOUND: "We couldn't find this catalog item. It may have been removed or is no longer available.",
+  UNEXPECTED_ERROR: "An unexpected error occurred. Please try again later.",
+};
+
 const actionFallbackByType: Record<ApiAction, string> = {
   load: "load",
   create: "create",
@@ -53,6 +60,27 @@ function extractApiProvidedMessage(error: unknown): string | undefined {
   return undefined;
 }
 
+function extractApiErrorCode(error: unknown): string | undefined {
+  if (!axios.isAxiosError(error)) {
+    return undefined;
+  }
+
+  const data = error.response?.data;
+
+  if (typeof data !== "object" || data === null) {
+    return undefined;
+  }
+
+  const maybeCode = (data as { errorCode?: unknown; code?: unknown }).errorCode
+    ?? (data as { errorCode?: unknown; code?: unknown }).code;
+  if (typeof maybeCode !== "string") {
+    return undefined;
+  }
+
+  const normalizedCode = maybeCode.trim().toUpperCase();
+  return normalizedCode.length > 0 ? normalizedCode : undefined;
+}
+
 function getStatusFromUnknownError(error: unknown): number | undefined {
   if (axios.isAxiosError(error)) {
     return error.response?.status;
@@ -81,6 +109,12 @@ function getStatusFromUnknownError(error: unknown): number | undefined {
 export function getApiErrorMessage(error: unknown, options: GetApiErrorMessageOptions): string {
   const resource = normalizeResource(options.resource);
   const action = actionFallbackByType[options.action];
+  const apiErrorCode = extractApiErrorCode(error);
+
+  if (apiErrorCode && API_ERROR_CODE_MESSAGES[apiErrorCode]) {
+    return API_ERROR_CODE_MESSAGES[apiErrorCode];
+  }
+
   const apiProvidedMessage = extractApiProvidedMessage(error);
 
   if (apiProvidedMessage) {

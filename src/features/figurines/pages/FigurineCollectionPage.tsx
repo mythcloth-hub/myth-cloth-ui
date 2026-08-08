@@ -35,10 +35,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
+import CelebrationIcon from "@mui/icons-material/Celebration";
 
 import { getFigurines, getSelectableFigurineIds } from "../api/figurineApi";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
-import { lineupsApi, seriesApi, groupsApi } from "../../catalogs/api/catalogApi";
+import { lineupsApi, seriesApi, groupsApi, distributionsApi } from "../../catalogs/api/catalogApi";
 import type { Catalog } from "../../catalogs/types/catalog";
 import type { Figurine, FigurineFilters, ReleaseStatus } from "../types/figurine";
 import { getAllAnniversaries } from "../../anniversaries/api/anniversaryApi";
@@ -159,6 +160,8 @@ function FigurineCard({
     .map((code) => countryCodeToFlag(code));
 
   const hasAnniversary = Boolean((figurine as any).anniversary);
+  const hasTamashiiNationsDistribution =
+    figurine.distribution?.description?.trim().toLowerCase() === "tamashii nations";
 
   return (
     <Card
@@ -413,23 +416,41 @@ function FigurineCard({
           >
             {figurine.name}
           </Typography>
-          {hasAnniversary && (
-            <Tooltip title={(figurine as any).anniversary?.description || "Anniversary Edition"} arrow>
-              <span>
-                <AnniversaryIcon
-                  sx={{
-                    fontSize: 18,
-                    color: "#bfa100",
-                    bgcolor: "#fffde7",
-                    borderRadius: "50%",
-                    boxShadow: 1,
-                    p: 0.15,
-                    ml: "auto",
-                    flexShrink: 0,
-                  }}
-                />
-              </span>
-            </Tooltip>
+          {(hasAnniversary || hasTamashiiNationsDistribution) && (
+            <Box sx={{ ml: "auto", display: "inline-flex", alignItems: "center", gap: 0.45, flexShrink: 0 }}>
+              {hasTamashiiNationsDistribution && (
+                <Tooltip title="Tamashii Nations commemorative figurine" arrow>
+                  <span>
+                    <CelebrationIcon
+                      sx={{
+                        fontSize: 17,
+                        color: "#c98a00",
+                        bgcolor: "#ffffff",
+                        borderRadius: "50%",
+                        boxShadow: 1,
+                        p: 0.2,
+                      }}
+                    />
+                  </span>
+                </Tooltip>
+              )}
+              {hasAnniversary && (
+                <Tooltip title={(figurine as any).anniversary?.description || "Anniversary Edition"} arrow>
+                  <span>
+                    <AnniversaryIcon
+                      sx={{
+                        fontSize: 18,
+                        color: "#bfa100",
+                        bgcolor: "#fffde7",
+                        borderRadius: "50%",
+                        boxShadow: 1,
+                        p: 0.15,
+                      }}
+                    />
+                  </span>
+                </Tooltip>
+              )}
+            </Box>
           )}
         </Box>
 
@@ -560,6 +581,7 @@ export default function FigurineCollectionPage() {
   const lineup  = searchParams.get("lineup") ?? "";
   const series  = searchParams.get("series") ?? "";
   const group   = searchParams.get("group")  ?? "";
+  const distribution = searchParams.get("distribution") ?? "";
   const anniversary = searchParams.get("anniversary") ?? "";
   const releaseStatus = searchParams.get("releaseStatus") ?? "";
   const revival       = searchParams.get("revival")       ?? "";
@@ -586,6 +608,7 @@ export default function FigurineCollectionPage() {
   const [lineupOptions, setLineupOptions] = useState<Catalog[]>([]);
   const [seriesOptions, setSeriesOptions] = useState<Catalog[]>([]);
   const [groupOptions,  setGroupOptions]  = useState<Catalog[]>([]);
+  const [distributionOptions, setDistributionOptions] = useState<Catalog[]>([]);
   const [anniversaryOptions, setAnniversaryOptions] = useState<Anniversary[]>([]);
 
   const [errorMessage,   setErrorMessage]   = useState<string | null>(null);
@@ -608,6 +631,7 @@ export default function FigurineCollectionPage() {
     if (lineup) params.lineUpId = lineup;
     if (series) params.seriesId = series;
     if (group) params.groupId = group;
+    if (distribution) params.distributionId = distribution;
     if (anniversary) params.anniversaryId = anniversary;
     if (releaseStatus) params.releaseStatus = releaseStatus;
     if (metalBody) params.metalBody = metalBody;
@@ -660,13 +684,14 @@ export default function FigurineCollectionPage() {
     }
   };
 
-  const activeFilterCount = [lineup, series, group, anniversary, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, restocks].filter(Boolean).length;
+  const activeFilterCount = [lineup, series, group, distribution, anniversary, releaseStatus, revival, metalBody, originalColor, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, restocks].filter(Boolean).length;
 
   // Fetch dropdown options once on mount
   useEffect(() => {
     lineupsApi.getAll().then(setLineupOptions).catch(console.error);
     seriesApi.getAll().then(setSeriesOptions).catch(console.error);
     groupsApi.getAll().then(setGroupOptions).catch(console.error);
+    distributionsApi.getAll().then(setDistributionOptions).catch(console.error);
     getAllAnniversaries().then(setAnniversaryOptions).catch(console.error);
   }, []);
 
@@ -703,7 +728,7 @@ export default function FigurineCollectionPage() {
         setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurines" }));
       })
       .finally(() => setLoading(false));
-  }, [page, query, lineup, series, group, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, restocks, showOwnedOnly, selectedCollectionId, isAuthenticated]);
+  }, [page, query, lineup, series, group, distribution, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, restocks, showOwnedOnly, selectedCollectionId, isAuthenticated]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -804,6 +829,7 @@ export default function FigurineCollectionPage() {
     if (lineup)       p.lineup       = lineup;
     if (series)       p.series       = series;
     if (group)        p.group        = group;
+    if (distribution) p.distribution = distribution;
     if (anniversary)  p.anniversary  = anniversary;
     if (releaseStatus) p.releaseStatus = releaseStatus;
     if (revival)      p.revival      = revival;
@@ -850,6 +876,7 @@ export default function FigurineCollectionPage() {
   const handleLineupChange  = (value: string) => setSearchParams(makeParams({ lineup:  value }));
   const handleSeriesChange  = (value: string) => setSearchParams(makeParams({ series:  value }));
   const handleGroupChange   = (value: string) => setSearchParams(makeParams({ group:   value }));
+  const handleDistributionChange = (value: string) => setSearchParams(makeParams({ distribution: value }));
   const handleAnniversaryChange = (value: string) => setSearchParams(makeParams({ anniversary: value }));
   const handleBoolChange    = (key: string, value: string) => setSearchParams(makeParams({ [key]: value }));
   const clearAllFilters     = () => setSearchParams(query ? { name: query, page: "1" } : { page: "1" });
@@ -1049,6 +1076,41 @@ export default function FigurineCollectionPage() {
               ))}
             </Select>
           </FormControl>
+          <FormControl size="small" sx={{ flex: "1 1 200px" }}>
+            <InputLabel>Distribution</InputLabel>
+            <Select label="Distribution" value={distribution} onChange={(e) => handleDistributionChange(e.target.value)}>
+              <MenuItem value=""><em>All</em></MenuItem>
+              {distributionOptions.map((opt) => (
+                <MenuItem key={opt.id} value={String(opt.id)}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: 1 }}>
+                    <span>{opt.description}</span>
+                    {opt.description.trim().toLowerCase() === "tamashii nations" && (
+                      <Tooltip title="TAMASHII NATIONS' Annual Figure Festival - Commemorative Merchandise" arrow placement="top">
+                        <CelebrationIcon
+                          sx={{
+                            fontSize: 17,
+                            color: "#c98a00",
+                            bgcolor: "#ffffff",
+                            border: "1px solid rgba(255, 193, 7, 0.38)",
+                            borderRadius: "50%",
+                            p: 0.4,
+                            boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.08) inset",
+                            flexShrink: 0,
+                            animation: "tamashiiFestivalSparkle 820ms cubic-bezier(0.2, 0.9, 0.2, 1) 1",
+                            "@keyframes tamashiiFestivalSparkle": {
+                              "0%": { transform: "scale(0.86) rotate(-8deg)", opacity: 0.6 },
+                              "38%": { transform: "scale(1.14) rotate(6deg)", opacity: 1 },
+                              "100%": { transform: "scale(1) rotate(0deg)", opacity: 1 },
+                            },
+                          }}
+                        />
+                      </Tooltip>
+                    )}
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <FormControl size="small" sx={{ flex: "1 1 170px" }}>
             <InputLabel>Anniversary</InputLabel>
             <Select label="Anniversary" value={anniversary} onChange={(e) => handleAnniversaryChange(e.target.value)}>
@@ -1109,6 +1171,13 @@ export default function FigurineCollectionPage() {
             )}
             {group && (
               <Chip size="small" label={`Group: ${groupOptions.find((o) => String(o.id) === group)?.description ?? group}`} onDelete={() => handleGroupChange("")} />
+            )}
+            {distribution && (
+              <Chip
+                size="small"
+                label={`Distribution: ${distributionOptions.find((o) => String(o.id) === distribution)?.description ?? distribution}`}
+                onDelete={() => handleDistributionChange("")}
+              />
             )}
             {anniversary && (
               <Chip
