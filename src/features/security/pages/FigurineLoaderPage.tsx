@@ -17,6 +17,8 @@ import {
   Typography,
 } from "@mui/material";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
 
 import AppPageHeader from "../../../components/AppPageHeader";
@@ -112,6 +114,27 @@ export default function FigurineLoaderPage() {
   };
 
   const importColumns: GridColDef<FigurineImportRecord>[] = [
+    {
+      field: "status",
+      headerName: "Status",
+      width: 100,
+      sortable: false,
+      filterable: false,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const hasError = Boolean(params.row.errorMessage);
+        return hasError ? (
+          <Tooltip title="Import completed with errors">
+            <ErrorOutlineOutlinedIcon color="error" fontSize="small" />
+          </Tooltip>
+        ) : (
+          <Tooltip title="Import completed successfully">
+            <CheckCircleOutlineOutlinedIcon sx={{ color: "success.main" }} fontSize="small" />
+          </Tooltip>
+        );
+      },
+    },
     {
       field: "imported",
       headerName: "Imported",
