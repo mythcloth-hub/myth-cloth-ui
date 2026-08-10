@@ -85,12 +85,12 @@ export default function FigurineLoaderPage() {
       const status = await loadAllFigurines(overwriteExisting);
       if (status === 202) {
         setSuccessMessage("All the figurines were imported.");
-        await loadImportRecords();
       }
     } catch (err) {
       console.error(err);
       setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "figurines from Google Sheets" }));
     } finally {
+      await loadImportRecords();
       setSubmitting(false);
     }
   };
@@ -123,6 +123,18 @@ export default function FigurineLoaderPage() {
       headerName: "Skipped",
       flex: 1,
       minWidth: 120,
+    },
+    {
+      field: "errorMessage",
+      headerName: "Error Message",
+      flex: 2,
+      minWidth: 220,
+      valueGetter: (value) => value || "-",
+      renderCell: (params) => (
+        <Tooltip title={params.row.errorMessage || "No errors"}>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
     },
     {
       field: "completedAt",

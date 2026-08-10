@@ -61,6 +61,7 @@ export type FigurineImportRecord = {
   id: number;
   imported: number;
   skipped: number;
+  errorMessage?: string | null;
   completedAt: string;
 };
 
