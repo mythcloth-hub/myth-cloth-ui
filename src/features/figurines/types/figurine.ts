@@ -57,6 +57,13 @@ export type FigurineRestock = {
   releaseDate: string;
 };
 
+export type FigurineImportRecord = {
+  id: number;
+  imported: number;
+  skipped: number;
+  completedAt: string;
+};
+
 export type Figurine = {
   id: number;
   name: string;

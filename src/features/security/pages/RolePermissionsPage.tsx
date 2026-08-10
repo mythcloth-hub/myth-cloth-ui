@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
 import {
   Alert,
   Box,
@@ -23,6 +22,7 @@ import type { Role } from "../types/role";
 import type { Permission } from "../types/permission";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
+import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
 
 function CustomNoRowsOverlay() {
   return (
@@ -205,15 +205,14 @@ export default function RolePermissionsPage() {
           <Typography color="text.secondary">Select a role to view and manage its permissions.</Typography>
         </Paper>
       ) : (
-        <div style={{ height: "calc(100vh - 360px)", minHeight: 260, width: "100%" }}>
-          <DataGrid
-            rows={assignedPermissions}
-            columns={columns}
-            loading={loadingAssigned}
-            getRowId={(row) => row.id}
-            slots={{ noRowsOverlay: CustomNoRowsOverlay }}
-          />
-        </div>
+        <ScrollableHintDataGrid
+          containerStyle={{ height: "calc(100vh - 360px)", minHeight: 260, width: "100%" }}
+          rows={assignedPermissions}
+          columns={columns}
+          loading={loadingAssigned}
+          getRowId={(row) => row.id}
+          slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+        />
       )}
 
       <Snackbar

@@ -4,6 +4,7 @@ import type {
   Figurine,
   FigurineEvent,
   FigurineEventReq,
+  FigurineImportRecord,
   PaginatedFigurines,
   FigurineFilters,
   SelectableFigurineIdsResponse,
@@ -227,7 +228,16 @@ export const deleteFigurine = async (id: number): Promise<void> => {
   await httpClient.delete(`${BASE}/${id}`);
 };
 
-export const loadAllFigurines = async (): Promise<number> => {
-  const res = await httpClient.post(`${BASE}/load`);
+export const getFigurineImportRecords = async (): Promise<FigurineImportRecord[]> => {
+  const res = await httpClient.get<FigurineImportRecord[]>(`${BASE}/imports`);
+  return res.data;
+};
+
+export const loadAllFigurines = async (overwriteExisting = false): Promise<number> => {
+  const res = await httpClient.post(`${BASE}/load`, null, {
+    params: {
+      overwriteExisting,
+    },
+  });
   return res.status;
 };

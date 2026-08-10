@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMediaQuery, useTheme } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
@@ -15,6 +14,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
+import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
 
 function CustomNoRowsOverlay() {
   return (
@@ -163,18 +163,17 @@ export default function DistributorListPage() {
         />
       </Box>
 
-      <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>
-        <DataGrid
-          rows={distributors}
-          columns={columns}
-          loading={loading}
-          getRowId={(row) => row.id}
-          columnVisibilityModel={{ website: !isMobile }}
-          onRowDoubleClick={(params) => navigate(`/distributors/edit/${params.row.id}`)}
-          slots={{ noRowsOverlay: CustomNoRowsOverlay }}
-          sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
-        />
-      </div>
+      <ScrollableHintDataGrid
+        containerStyle={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}
+        rows={distributors}
+        columns={columns}
+        loading={loading}
+        getRowId={(row) => row.id}
+        columnVisibilityModel={{ website: !isMobile }}
+        onRowDoubleClick={(params) => navigate(`/distributors/edit/${params.row.id}`)}
+        slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+        sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
+      />
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>Delete Distributor</DialogTitle>
         <DialogContent>
