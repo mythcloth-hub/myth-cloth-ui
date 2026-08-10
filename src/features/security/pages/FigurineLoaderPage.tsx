@@ -188,7 +188,7 @@ export default function FigurineLoaderPage() {
               onClick={handleLoadClick}
               disabled={!canLoadFigurines || submitting}
             >
-              {submitting ? "Starting Import..." : "Load All Figurines"}
+              {submitting ? "Importing..." : "Load All Figurines"}
             </Button>
           )}
         />
