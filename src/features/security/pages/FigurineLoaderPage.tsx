@@ -3,14 +3,12 @@ import {
   Alert,
   Box,
   Button,
-  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  FormControlLabel,
   Snackbar,
   Stack,
   Tooltip,
@@ -55,7 +53,6 @@ export default function FigurineLoaderPage() {
   const canLoadFigurines = hasPermission("figurines:load");
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [overwriteExisting, setOverwriteExisting] = useState(false);
   const [importRecords, setImportRecords] = useState<FigurineImportRecord[]>([]);
   const [importRecordsLoading, setImportRecordsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -84,7 +81,7 @@ export default function FigurineLoaderPage() {
 
     setSubmitting(true);
     try {
-      const status = await loadAllFigurines(overwriteExisting);
+      const status = await loadAllFigurines();
       if (status === 202) {
         setSuccessMessage("All the figurines were imported.");
       }
@@ -99,7 +96,6 @@ export default function FigurineLoaderPage() {
 
   const handleLoadClick = () => {
     if (!canLoadFigurines || submitting) return;
-    setOverwriteExisting(false);
     setConfirmOpen(true);
   };
 
@@ -110,7 +106,6 @@ export default function FigurineLoaderPage() {
 
   const handleCloseConfirm = () => {
     setConfirmOpen(false);
-    setOverwriteExisting(false);
   };
 
   const importColumns: GridColDef<FigurineImportRecord>[] = [
@@ -138,12 +133,6 @@ export default function FigurineLoaderPage() {
     {
       field: "imported",
       headerName: "Imported",
-      flex: 1,
-      minWidth: 120,
-    },
-    {
-      field: "skipped",
-      headerName: "Skipped",
       flex: 1,
       minWidth: 120,
     },
@@ -228,31 +217,9 @@ export default function FigurineLoaderPage() {
             This will start importing all figurines from the spreadsheet.
             You can run this process multiple times whenever you need to refresh data.
           </DialogContentText>
-          <FormControlLabel
-            sx={{ mt: 2, alignItems: "flex-start" }}
-            control={
-              <Checkbox
-                checked={overwriteExisting}
-                onChange={(event) => setOverwriteExisting(event.target.checked)}
-                disabled={submitting}
-              />
-            }
-            label={
-              <Stack spacing={0.5}>
-                <Typography variant="body2" fontWeight={600}>
-                  Overwrite existing figurines
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  When enabled, this will replace the figurines that already exist in the app.
-                </Typography>
-              </Stack>
-            }
-          />
-          {overwriteExisting && (
-            <Alert severity="warning" sx={{ mt: 2 }}>
-              Warning: this will override all existing figurines when the import runs.
-            </Alert>
-          )}
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            Warning: this process will override existing figurines when the import runs.
+          </Alert>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseConfirm} disabled={submitting}>

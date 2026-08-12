@@ -233,11 +233,7 @@ export const getFigurineImportRecords = async (): Promise<FigurineImportRecord[]
   return res.data;
 };
 
-export const loadAllFigurines = async (overwriteExisting = false): Promise<number> => {
-  const res = await httpClient.post(`${BASE}/load`, null, {
-    params: {
-      overwriteExisting,
-    },
-  });
+export const loadAllFigurines = async (): Promise<number> => {
+  const res = await httpClient.post(`${BASE}/load`);
   return res.status;
 };
