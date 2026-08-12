@@ -23,7 +23,7 @@ import RoleFormPage from "../features/security/pages/RoleFormPage";
 import PermissionListPage from "../features/security/pages/PermissionListPage";
 import PermissionFormPage from "../features/security/pages/PermissionFormPage";
 import RolePermissionsPage from "../features/security/pages/RolePermissionsPage";
-import FigurineLoaderPage from "../features/security/pages/FigurineLoaderPage";
+import FigurineLoaderPage from "../features/figurines/pages/FigurineLoaderPage";
 
 export default function AppRoutes() {
   return (
@@ -60,7 +60,7 @@ export default function AppRoutes() {
           <Route path="/security/permissions/new" element={<PermissionFormPage />} />
           <Route path="/security/permissions/edit/:id" element={<PermissionFormPage />} />
           <Route path="/security/role-permissions" element={<RolePermissionsPage />} />
-          <Route path="/security/figurines/load" element={<FigurineLoaderPage />} />
+          <Route path="/figurines/import" element={<FigurineLoaderPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

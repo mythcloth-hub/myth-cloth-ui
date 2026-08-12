@@ -124,9 +124,14 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Roles", path: "/security/roles", icon: <AdminPanelSettingsOutlinedIcon /> },
       { label: "Permissions", path: "/security/permissions", icon: <LockOutlinedIcon /> },
       { label: "Role Permissions", path: "/security/role-permissions", icon: <LinkOutlinedIcon /> },
-      { label: "Figurine Loader", path: "/security/figurines/load", icon: <UploadFileOutlinedIcon /> },
     ],
   },
+  {
+    heading: "Administration",
+    items: [
+      { label: "Figurine Import",    path: "/figurines/import",      icon: <UploadFileOutlinedIcon /> },
+    ]
+  }
 ];
 
 function useFacebookSDK() {
