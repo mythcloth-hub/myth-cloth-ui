@@ -157,6 +157,17 @@ Important:
 - `npm run preview`: preview production build locally
 - `npm run lint`: run ESLint
 
+## UI Conventions
+
+### DataGrid pages
+
+- Use [src/components/ScrollableHintDataGrid.tsx](src/components/ScrollableHintDataGrid.tsx) instead of using `DataGrid` directly in page components.
+- This keeps scroll behavior consistent across list pages:
+	- hides native/browsers scrollbars inside grids
+	- shows top and bottom scroll indicators when content overflows
+	- keeps behavior aligned with the existing Manage Events interaction pattern
+- Preserve page-level container sizing (`height`, `minHeight`, `width`) in each page, and pass it through `containerStyle`.
+
 ## Common Issues
 
 1. `npm install` fails

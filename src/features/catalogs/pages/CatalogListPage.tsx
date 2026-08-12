@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { DataGrid } from "@mui/x-data-grid";
 import {
   Box,
   Typography,
@@ -26,6 +25,7 @@ import { CATALOG_META } from "../types/catalog";
 import type { Catalog, CatalogType } from "../types/catalog";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
+import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
 
 export default function CatalogListPage() {
   const { catalogType } = useParams<{ catalogType: string }>();
@@ -139,17 +139,16 @@ export default function CatalogListPage() {
         />
       </Box>
 
-      <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>
-        <DataGrid
-          rows={items}
-          columns={columns}
-          loading={loading}
-          getRowId={(row) => row.id}
-          onRowDoubleClick={(params) => navigate(`/catalogs/${catalogType}/edit/${params.row.id}`)}
-          slots={{ noRowsOverlay: NoRowsOverlay }}
-          sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
-        />
-      </div>
+      <ScrollableHintDataGrid
+        containerStyle={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}
+        rows={items}
+        columns={columns}
+        loading={loading}
+        getRowId={(row) => row.id}
+        onRowDoubleClick={(params) => navigate(`/catalogs/${catalogType}/edit/${params.row.id}`)}
+        slots={{ noRowsOverlay: NoRowsOverlay }}
+        sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
+      />
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>Delete {singular}</DialogTitle>

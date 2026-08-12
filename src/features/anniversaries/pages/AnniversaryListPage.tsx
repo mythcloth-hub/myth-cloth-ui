@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DataGrid } from "@mui/x-data-grid";
 import {
   Box,
   Typography,
@@ -25,6 +24,7 @@ import { getAllAnniversaries, deleteAnniversary } from "../api/anniversaryApi";
 import type { Anniversary } from "../types/anniversary";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
+import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
 
 const anniversaryTypeLabels: Record<NonNullable<Anniversary["type"]>, string> = {
   TAMASHII_NATIONS_WORLD_TOUR: "Tamashii Nations World Tour",
@@ -152,17 +152,16 @@ export default function AnniversaryListPage() {
         />
       </Box>
 
-      <div style={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}>
-        <DataGrid
-          rows={items}
-          columns={columns}
-          loading={loading}
-          getRowId={(row) => row.id}
-          onRowDoubleClick={(params) => navigateToEdit(params.row as Anniversary)}
-          slots={{ noRowsOverlay: NoRowsOverlay }}
-          sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
-        />
-      </div>
+      <ScrollableHintDataGrid
+        containerStyle={{ height: "calc(100vh - 220px)", minHeight: 300, width: "100%" }}
+        rows={items}
+        columns={columns}
+        loading={loading}
+        getRowId={(row) => row.id}
+        onRowDoubleClick={(params) => navigateToEdit(params.row as Anniversary)}
+        slots={{ noRowsOverlay: NoRowsOverlay }}
+        sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
+      />
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>Delete Anniversary</DialogTitle>
