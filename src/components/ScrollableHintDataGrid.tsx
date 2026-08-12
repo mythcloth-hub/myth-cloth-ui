@@ -16,6 +16,27 @@ export default function ScrollableHintDataGrid<R extends GridValidRowModel>(prop
   const [showScrollDownHint, setShowScrollDownHint] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(56);
 
+  const rootContainerSx: SxProps<Theme> = containerSx
+    ? [{ position: "relative" }, ...(Array.isArray(containerSx) ? containerSx : [containerSx])]
+    : { position: "relative" };
+
+  const baseGridSx: SxProps<Theme> = {
+    "& .MuiDataGrid-virtualScroller": {
+      scrollbarWidth: "none",
+      msOverflowStyle: "none",
+      "&::-webkit-scrollbar": {
+        display: "none",
+      },
+    },
+    "& .MuiDataGrid-scrollbar, & .MuiDataGrid-scrollbar--vertical, & .MuiDataGrid-scrollbar--horizontal": {
+      display: "none",
+    },
+  };
+
+  const mergedGridSx: SxProps<Theme> = sx
+    ? [baseGridSx, ...(Array.isArray(sx) ? sx : [sx])]
+    : baseGridSx;
+
   const updateScrollHints = () => {
     const gridRoot = containerRef.current;
     const scroller = gridRoot?.querySelector<HTMLDivElement>(".MuiDataGrid-virtualScroller");
@@ -66,26 +87,12 @@ export default function ScrollableHintDataGrid<R extends GridValidRowModel>(prop
   }, [loading, rows]);
 
   return (
-    <Box ref={containerRef} style={containerStyle} sx={[{ position: "relative" }, containerSx]}>
+    <Box ref={containerRef} style={containerStyle} sx={rootContainerSx}>
       <DataGrid
         rows={rows}
         loading={loading}
         {...dataGridProps}
-        sx={[
-          {
-            "& .MuiDataGrid-virtualScroller": {
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-              "&::-webkit-scrollbar": {
-                display: "none",
-              },
-            },
-            "& .MuiDataGrid-scrollbar, & .MuiDataGrid-scrollbar--vertical, & .MuiDataGrid-scrollbar--horizontal": {
-              display: "none",
-            },
-          },
-          sx as SxProps<Theme>,
-        ]}
+        sx={mergedGridSx}
       />
 
       {showScrollUpHint && (
