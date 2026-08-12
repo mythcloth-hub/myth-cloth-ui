@@ -266,7 +266,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         if (item.path === "/security/role-permissions") {
           return hasPermission("roles:read");
         }
-        if (item.path === "/security/figurines/load") {
+        if (item.path === "/figurines/import") {
           return hasPermission("figurines:load");
         }
         return true;
