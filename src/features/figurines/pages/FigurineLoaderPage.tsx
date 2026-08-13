@@ -166,7 +166,7 @@ export default function FigurineLoaderPage() {
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow="Security"
+          eyebrow="Administration"
           title="Figurine Import"
           subtitle="Trigger figurine imports from Google Sheets and review previous import runs."
           actions={(

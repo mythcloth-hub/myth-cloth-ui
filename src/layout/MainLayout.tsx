@@ -119,17 +119,12 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    heading: "Security",
-    items: [
-      { label: "Roles", path: "/security/roles", icon: <AdminPanelSettingsOutlinedIcon /> },
-      { label: "Permissions", path: "/security/permissions", icon: <LockOutlinedIcon /> },
-      { label: "Role Permissions", path: "/security/role-permissions", icon: <LinkOutlinedIcon /> },
-    ],
-  },
-  {
     heading: "Administration",
     items: [
-      { label: "Figurine Import",    path: "/figurines/import",      icon: <UploadFileOutlinedIcon /> },
+      { label: "Figurine Import",    path: "/figurines/import",             icon: <UploadFileOutlinedIcon /> },
+      { label: "Roles",              path: "/security/roles",               icon: <AdminPanelSettingsOutlinedIcon /> },
+      { label: "Permissions",        path: "/security/permissions",         icon: <LockOutlinedIcon /> },
+      { label: "Role Permissions",   path: "/security/role-permissions",    icon: <LinkOutlinedIcon /> }
     ]
   }
 ];
