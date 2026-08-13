@@ -697,7 +697,7 @@ export default function ReleasesPage() {
       >
         <Box sx={{ mb: 2.5 }}>
           <AppPageHeader
-            eyebrow="Stats & Charts"
+            eyebrow="Explore"
             title="Releases"
             subtitle="Explore your release history by lineup and drill down from yearly trends into month-by-month figurine drops."
           />

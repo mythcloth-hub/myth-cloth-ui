@@ -29,6 +29,7 @@ import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlin
 
 import { useAuth } from "../../../auth/AuthContext";
 import { useDisplayCurrency } from "../../../currency/CurrencyContext";
+import AppPageHeader from "../../../components/AppPageHeader";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import {
@@ -310,7 +311,7 @@ export default function FigurineMatchedStoreDetailPage() {
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: 1,
           mb: 3,
           position: "sticky",
@@ -331,39 +332,42 @@ export default function FigurineMatchedStoreDetailPage() {
           </IconButton>
         </Tooltip>
 
-        <Box
-          sx={{
-            width: { xs: 44, md: 50 },
-            height: { xs: 44, md: 50 },
-            bgcolor: "#ffffff",
-            borderRadius: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-            flexShrink: 0,
-          }}
-        >
-          {storeLogo && !hideStoreLogo ? (
-            <Box
-              component="img"
-              src={storeLogo}
-              alt={storeHost}
-              onError={() => setHideStoreLogo(true)}
-              sx={{ width: "100%", height: "100%", objectFit: "contain", p: 0.4 }}
-            />
-          ) : (
-            <CompareArrowsOutlinedIcon sx={{ color: "rgba(56,73,90,0.8)" }} />
-          )}
-        </Box>
-
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="h4" sx={{ fontSize: { xs: "1.2rem", md: "1.8rem" }, lineHeight: 1.2 }}>
-            {`${storeHost} · Match Details`}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.35 }}>
-            Compare each store listing against the matched catalog figurine side by side.
-          </Typography>
+          <AppPageHeader
+            eyebrow="Figurine Matching"
+            title={`${storeHost} Match Details`}
+            subtitle="Compare each store listing against the matched catalog figurine side by side."
+            compact
+            actions={
+              <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+                <Box
+                  sx={{
+                    width: { xs: 44, md: 50 },
+                    height: { xs: 44, md: 50 },
+                    bgcolor: "#ffffff",
+                    borderRadius: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    flexShrink: 0,
+                  }}
+                >
+                  {storeLogo && !hideStoreLogo ? (
+                    <Box
+                      component="img"
+                      src={storeLogo}
+                      alt={storeHost}
+                      onError={() => setHideStoreLogo(true)}
+                      sx={{ width: "100%", height: "100%", objectFit: "contain", p: 0.4 }}
+                    />
+                  ) : (
+                    <CompareArrowsOutlinedIcon sx={{ color: "rgba(56,73,90,0.8)" }} />
+                  )}
+                </Box>
+              </Box>
+            }
+          />
         </Box>
       </Box>
 

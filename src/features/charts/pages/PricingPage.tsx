@@ -516,7 +516,7 @@ export default function PricingPage() {
       >
         <Box sx={{ mb: 2.5 }}>
           <AppPageHeader
-            eyebrow="Stats & Charts"
+            eyebrow="Explore"
             title="Pricing"
             subtitle="Track average, highest, and lowest release prices over time, plus yearly release volume and price extremes."
           />

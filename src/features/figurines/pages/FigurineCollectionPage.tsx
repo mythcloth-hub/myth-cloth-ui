@@ -906,8 +906,8 @@ export default function FigurineCollectionPage() {
       >
         <Box sx={{ mt: 1.5, mb: 1.5 }}>
           <AppPageHeader
-            eyebrow="Saint Collections"
-            title="Collection"
+            eyebrow="Collections"
+            title="Myth Cloth"
             subtitle="Browse, filter, and manage your Myth Cloth catalog from one place."
             compact
             actions={

@@ -52,6 +52,7 @@ import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
 import AddToCollectionModal from "../../collections/components/AddToCollectionModal";
 import { getCollections } from "../../collections/api/collectionApi";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: string; borderColor: string }> = {
   RELEASED:  { label: "Released",  color: "#4caf50", borderColor: "rgba(76,175,80,0.30)"   },
@@ -506,7 +507,7 @@ export default function FigurineDetailPage() {
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: 1,
           mb: 3,
           position: "sticky",
@@ -526,96 +527,107 @@ export default function FigurineDetailPage() {
             <ArrowBackIcon />
           </IconButton>
         </Tooltip>
-        <Typography variant="h4" sx={{ fontSize: { xs: "1.4rem", md: "2rem" }, flex: 1 }}>
-          {figurine.displayableName}
-        </Typography>
-        {/* Prev / Next arrows */}
-        {navList.length > 0 && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Tooltip title={prevId ? "Previous figurine" : ""}>
-              <span>
-                <IconButton
-                  onClick={() =>
-                    prevId &&
-                    navigate(`/figurines/${prevId}`, {
-                      replace: true,
-                      state: selectedCollectionContext
-                        ? { selectedCollection: selectedCollectionContext }
-                        : undefined,
-                    })
-                  }
-                  disabled={!prevId}
-                  size="small"
-                  sx={{ color: prevId ? "primary.main" : "text.disabled" }}
-                >
-                  <ChevronLeftIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
-            <Typography variant="caption" sx={{ color: "text.secondary", minWidth: 40, textAlign: "center" }}>
-              {currentIndex + 1} / {navList.length}
-            </Typography>
-            <Tooltip title={nextId ? "Next figurine" : ""}>
-              <span>
-                <IconButton
-                  onClick={() =>
-                    nextId &&
-                    navigate(`/figurines/${nextId}`, {
-                      replace: true,
-                      state: selectedCollectionContext
-                        ? { selectedCollection: selectedCollectionContext }
-                        : undefined,
-                    })
-                  }
-                  disabled={!nextId}
-                  size="small"
-                  sx={{ color: nextId ? "primary.main" : "text.disabled" }}
-                >
-                  <ChevronRightIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Box>
-        )}
-        {hasPermission("figurines:update") && (
-          <Button
-            variant="outlined"
-            startIcon={<EditOutlinedIcon />}
-            onClick={() => navigate(`/figurines/${id}/edit`)}
-            sx={{ flexShrink: 0 }}
-          >
-            Edit
-          </Button>
-        )}
-        {shouldShowAddToCollectionButton && (
-          <Button
-            variant="contained"
-            startIcon={<FavoriteBorderIcon />}
-            onClick={() => setAddToCollectionOpen(true)}
-            sx={{
-              flexShrink: 0,
-              background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
-              color: "#000",
-              fontWeight: 600,
-              "&:hover": {
-                background: "linear-gradient(135deg, #81d4fa 0%, #4fc3f7 100%)",
-                boxShadow: "0 8px 24px rgba(79,195,247,0.3)",
-              },
-              transition: "all 0.3s ease",
-              animation: "pulse 2s infinite",
-              "@keyframes pulse": {
-                "0%, 100%": {
-                  opacity: 1,
-                },
-                "50%": {
-                  opacity: 0.8,
-                },
-              },
-            }}
-          >
-            Add to Collection
-          </Button>
-        )}
+
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <AppPageHeader
+            eyebrow="Figurines"
+            title={figurine.displayableName}
+            subtitle="Review release details, market pricing, store links, and collection status for this Myth Cloth entry."
+            compact
+            actions={
+              <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", justifyContent: { xs: "flex-start", md: "flex-end" } }}>
+                  {navList.length > 0 && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <Tooltip title={prevId ? "Previous figurine" : ""}>
+                        <span>
+                          <IconButton
+                            onClick={() =>
+                              prevId &&
+                              navigate(`/figurines/${prevId}`, {
+                                replace: true,
+                                state: selectedCollectionContext
+                                  ? { selectedCollection: selectedCollectionContext }
+                                  : undefined,
+                              })
+                            }
+                            disabled={!prevId}
+                            size="small"
+                            sx={{ color: prevId ? "primary.main" : "text.disabled" }}
+                          >
+                            <ChevronLeftIcon />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Typography variant="caption" sx={{ color: "text.secondary", minWidth: 40, textAlign: "center" }}>
+                        {currentIndex + 1} / {navList.length}
+                      </Typography>
+                      <Tooltip title={nextId ? "Next figurine" : ""}>
+                        <span>
+                          <IconButton
+                            onClick={() =>
+                              nextId &&
+                              navigate(`/figurines/${nextId}`, {
+                                replace: true,
+                                state: selectedCollectionContext
+                                  ? { selectedCollection: selectedCollectionContext }
+                                  : undefined,
+                              })
+                            }
+                            disabled={!nextId}
+                            size="small"
+                            sx={{ color: nextId ? "primary.main" : "text.disabled" }}
+                          >
+                            <ChevronRightIcon />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </Box>
+                  )}
+                  {hasPermission("figurines:update") && (
+                    <Button
+                      variant="outlined"
+                      startIcon={<EditOutlinedIcon />}
+                      onClick={() => navigate(`/figurines/${id}/edit`)}
+                      sx={{ flexShrink: 0 }}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  {shouldShowAddToCollectionButton && (
+                    <Button
+                      variant="contained"
+                      startIcon={<FavoriteBorderIcon />}
+                      onClick={() => setAddToCollectionOpen(true)}
+                      sx={{
+                        flexShrink: 0,
+                        background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
+                        color: "#000",
+                        fontWeight: 600,
+                        "&:hover": {
+                          background: "linear-gradient(135deg, #81d4fa 0%, #4fc3f7 100%)",
+                          boxShadow: "0 8px 24px rgba(79,195,247,0.3)",
+                        },
+                        transition: "all 0.3s ease",
+                        animation: "pulse 2s infinite",
+                        "@keyframes pulse": {
+                          "0%, 100%": {
+                            opacity: 1,
+                          },
+                          "50%": {
+                            opacity: 0.8,
+                          },
+                        },
+                      }}
+                    >
+                      Add to Collection
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+            }
+          />
+        </Box>
       </Box>
 
       <Grid container spacing={{ xs: 2, md: 4 }}>

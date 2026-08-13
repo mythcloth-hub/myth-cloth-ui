@@ -57,6 +57,7 @@ import {
   type PurchaseRecordInput,
 } from "../../purchases/types/purchase";
 import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
+import AppPageHeader from "../../../components/AppPageHeader";
 
 type AlbumFigurine = CollectionFigurine & {
   purchasePrice?: number;
@@ -655,19 +656,13 @@ export default function CollectionDetailPage() {
           pb: 1,
           mb: 2,
           borderBottom: "1px solid rgba(212,175,55,0.08)",
-          animation: "detailHeaderReveal 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both",
-          "@keyframes detailHeaderReveal": {
-            "0%": { opacity: 0, transform: "translateY(-10px)" },
-            "100%": { opacity: 1, transform: "translateY(0)" },
-          },
         }}
       >
-        {/* Header */}
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
-            gap: 2,
+            alignItems: "flex-start",
+            gap: 1,
             mb: 1.5,
           }}
         >
@@ -677,24 +672,13 @@ export default function CollectionDetailPage() {
             </IconButton>
           </Tooltip>
 
-          <Box sx={{ flex: 1 }}>
-            <Typography
-              variant="h4"
-              sx={{
-                fontSize: { xs: "1.5rem", md: "2rem" },
-                fontWeight: 700,
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.info.main} 100%)`,
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              You are in collection {collection.name}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-              {collection.description?.trim() ||
-                "Browse this collection to track progress, review figurines, and manage purchases."}
-            </Typography>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <AppPageHeader
+              eyebrow="Collections"
+              title={collection.name}
+              subtitle={collection.description?.trim() || "Browse this collection to track progress, review figurines, and manage purchases."}
+              compact
+            />
           </Box>
         </Box>
 

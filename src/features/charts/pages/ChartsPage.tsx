@@ -319,7 +319,7 @@ export default function ChartsPage() {
       >
         <Box sx={{ mb: 2.5 }}>
           <AppPageHeader
-            eyebrow="Stats & Charts"
+            eyebrow="Explore"
             title="Charts"
             subtitle="Get a quick overview of your collection, including total figurines, release status, and category distribution."
           />

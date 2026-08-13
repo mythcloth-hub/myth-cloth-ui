@@ -509,7 +509,7 @@ export default function PurchasesPage() {
       >
         <Box sx={{ mb: 2.5 }}>
           <AppPageHeader
-            eyebrow="Saint Collections"
+            eyebrow="Collections"
             title="Purchases"
             subtitle="Track purchase records, totals, and shipping progress by collection."
           />
