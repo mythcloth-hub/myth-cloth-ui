@@ -9,9 +9,9 @@ import AnniversaryFormPage from "../features/anniversaries/pages/AnniversaryForm
 import ChartsPage from "../features/charts/pages/ChartsPage";
 import ReleasesPage from "../features/charts/pages/ReleasesPage";
 import PricingPage from "../features/charts/pages/PricingPage";
-import FigurineMatchingPage from "../features/charts/pages/FigurineMatchingPage";
-import FigurineMatchedStoresPage from "../features/charts/pages/FigurineMatchedStoresPage";
-import FigurineMatchedStoreDetailPage from "../features/charts/pages/FigurineMatchedStoreDetailPage";
+import FigurineMatchingPage from "../features/matching/pages/FigurineMatchingPage";
+import FigurineMatchedStoresPage from "../features/matching/pages/FigurineMatchedStoresPage";
+import FigurineMatchedStoreDetailPage from "../features/matching/pages/FigurineMatchedStoreDetailPage";
 import FigurineCollectionPage from "../features/figurines/pages/FigurineCollectionPage";
 import FigurineDetailPage from "../features/figurines/pages/FigurineDetailPage";
 import FigurineFormPage from "../features/figurines/pages/FigurineFormPage";
