@@ -39,18 +39,18 @@ export default function AppRoutes() {
           <Route path="/collections" element={<CollectionsListPage />} />
           <Route path="/collections/:id" element={<CollectionDetailPage />} />
           <Route path="/purchases" element={<PurchasesPage />} />
-          <Route path="/charts" element={<ChartsPage />} />
           <Route path="/releases" element={<ReleasesPage />} />
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/charts" element={<ChartsPage />} />
           <Route path="/figurine-matching" element={<FigurineMatchingPage />} />
           <Route path="/figurine-matching/stores" element={<FigurineMatchedStoresPage />} />
           <Route path="/figurine-matching/stores/:storeId" element={<FigurineMatchedStoreDetailPage />} />
-          <Route path="/distributors" element={<DistributorListPage />} />
-          <Route path="/distributors/new" element={<DistributorFormPage />} />
-          <Route path="/distributors/edit/:id" element={<DistributorFormPage />} />
           <Route path="/anniversaries" element={<AnniversaryListPage />} />
           <Route path="/anniversaries/new" element={<AnniversaryFormPage />} />
           <Route path="/anniversaries/edit/:id" element={<AnniversaryFormPage />} />
+          <Route path="/distributors" element={<DistributorListPage />} />
+          <Route path="/distributors/new" element={<DistributorFormPage />} />
+          <Route path="/distributors/edit/:id" element={<DistributorFormPage />} />
           <Route path="/catalogs/:catalogType" element={<CatalogListPage />} />
           <Route path="/catalogs/:catalogType/new" element={<CatalogFormPage />} />
           <Route path="/catalogs/:catalogType/edit/:id" element={<CatalogFormPage />} />

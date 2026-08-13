@@ -454,15 +454,6 @@ function FigurineCard({
           )}
         </Box>
 
-        <Typography
-          variant="caption"
-          sx={{ color: "text.secondary", display: "block", mb: 0.25, fontSize: "0.7rem" }}
-          noWrap
-          title={figurine.series.description}
-        >
-          {figurine.series.description}
-        </Typography>
-
         {figurine.group?.description && (
           <Typography
             variant="caption"
@@ -908,7 +899,7 @@ export default function FigurineCollectionPage() {
           <AppPageHeader
             eyebrow="Collections"
             title="Myth Cloth"
-            subtitle="Browse, filter, and manage your Myth Cloth catalog from one place."
+            subtitle="Explore the complete Myth Cloth catalog. Browse released, prototype, announced, rumored, and unreleased figurines, with filters to quickly find what you're looking for."
             compact
             actions={
               <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>

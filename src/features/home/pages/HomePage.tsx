@@ -149,9 +149,10 @@ export default function HomePage() {
     >
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
+          compact
           eyebrow="Home"
           title="Welcome to Saint Collections"
-          subtitle="Start from a calm overview, pick up where you left off, and move naturally from collecting to releases, pricing, and matching work."
+          subtitle="Keep track of your Myth Cloth, discover what's new, follow prices, and stay on top of your collection journey."
           actions={
             <Box sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" }, width: "100%" }}>
               <Button
@@ -194,10 +195,10 @@ export default function HomePage() {
                 START HERE
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.12, mb: 0.75 }}>
-                A friendlier way to enter the app
+                Welcome to your collection
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 760 }}>
-                Use this page as a launchpad when you do not want to jump directly into a data grid. Pick a path based on what you want to do first: browse, organize, analyze, or match.
+                Explore what you own, discover what’s new, follow the market, and keep your collection moving forward.
               </Typography>
             </Box>
 
