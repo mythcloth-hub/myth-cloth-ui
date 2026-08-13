@@ -554,6 +554,7 @@ export default function FigurineCollectionPage() {
   const navigate = useNavigate();
   const location  = useLocation();
   const { hasPermission, isAuthenticated } = useAuth();
+  const canReadCollections = hasPermission("collections:read");
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Persist current search params so the sidebar can restore them
@@ -656,7 +657,7 @@ export default function FigurineCollectionPage() {
   };
 
   const loadCollections = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !canReadCollections) {
       setCollections([]);
       setSelectedCollectionId("");
       return;
@@ -687,8 +688,14 @@ export default function FigurineCollectionPage() {
   }, []);
 
   useEffect(() => {
-    loadCollections();
-  }, [isAuthenticated]);
+    if (!isAuthenticated || !canReadCollections) {
+      setCollections([]);
+      setSelectedCollectionId("");
+      return;
+    }
+
+    void loadCollections();
+  }, [isAuthenticated, canReadCollections]);
 
   // Debounced search effect for search bar (only if >= 3 chars)
   useEffect(() => {
