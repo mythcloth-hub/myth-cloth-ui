@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "../layout/MainLayout";
 import DistributorListPage from "../features/distributors/pages/DistributorListPage";
 import DistributorFormPage from "../features/distributors/pages/DistributorFormPage";
@@ -24,13 +24,14 @@ import PermissionListPage from "../features/security/pages/PermissionListPage";
 import PermissionFormPage from "../features/security/pages/PermissionFormPage";
 import RolePermissionsPage from "../features/security/pages/RolePermissionsPage";
 import FigurineLoaderPage from "../features/figurines/pages/FigurineLoaderPage";
+import HomePage from "../features/home/pages/HomePage";
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
-          <Route path="/" element={<Navigate to="/figurines" />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/figurines" element={<FigurineCollectionPage />} />
           <Route path="/figurines/new" element={<FigurineFormPage />} />
           <Route path="/figurines/:id" element={<FigurineDetailPage />} />

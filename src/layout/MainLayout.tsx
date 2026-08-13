@@ -28,6 +28,7 @@ import {
   Typography,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material/Select";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
@@ -86,6 +87,12 @@ type NavSection = {
 };
 
 const NAV_SECTIONS: NavSection[] = [
+  {
+    heading: "",
+    items: [
+      { label: "Home", path: "/", icon: <HomeOutlinedIcon /> },
+    ],
+  },
   {
     heading: "Collections",
     items: [
@@ -217,6 +224,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const isActive = (path?: string) => {
     if (!path) {
       return false;
+    }
+
+    if (path === "/") {
+      return location.pathname === "/";
     }
 
     if (path === "/figurine-matching") {
@@ -433,7 +444,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
       {/* Brand */}
-      <Box sx={{ px: 3, py: 2.5, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+      <Box
+        onClick={() => handleClick("/")}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            handleClick("/");
+          }
+        }}
+        sx={{ px: 3, py: 2.5, borderBottom: "1px solid rgba(255,255,255,0.07)", cursor: "pointer" }}
+      >
         <Typography
           variant="h6"
           sx={{ color: "primary.main", fontWeight: 700, letterSpacing: 1, lineHeight: 1.2 }}
@@ -909,6 +931,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export default function MainLayout() {
   useFacebookSDK();
   useGoogleSDK();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const drawerSx = {
@@ -939,7 +962,11 @@ export default function MainLayout() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 700 }}>
+          <Typography
+            variant="h6"
+            onClick={() => navigate("/")}
+            sx={{ color: "primary.main", fontWeight: 700, cursor: "pointer" }}
+          >
             MythCloth
           </Typography>
         </Toolbar>
