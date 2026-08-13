@@ -36,7 +36,7 @@ import {
   setUnmatchedStoreListingIgnored,
   type UnmatchedStoreListing,
 } from "../api/unmatchedListingsApi";
-import { getFigurineSummary, type FigurineSummary } from "../api/figurineSummaryApi";
+import { getFigurineSummary, type FigurineSummary } from "../../charts/api/figurineSummaryApi";
 
 function extractHostName(url: string): string {
   try {
