@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 import Button from "@mui/material/Button";
 import FacebookIcon from "@mui/icons-material/Facebook";
@@ -9,6 +9,7 @@ import {
   Avatar,
   AppBar,
   Box,
+  Collapse,
   CircularProgress,
   Divider,
   Drawer,
@@ -27,28 +28,32 @@ import {
   Typography,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material/Select";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
-import CollectionsOutlinedIcon from "@mui/icons-material/CollectionsOutlined";
-import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
+import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
+import CelebrationOutlinedIcon from "@mui/icons-material/CelebrationOutlined";
 import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
-import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
-import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
+import GroupWorkOutlinedIcon from "@mui/icons-material/GroupWorkOutlined";
+import ViewTimelineOutlinedIcon from "@mui/icons-material/ViewTimelineOutlined";
 import AutoStoriesOutlinedIcon from "@mui/icons-material/AutoStoriesOutlined";
-import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
-import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
-import CompareArrowsOutlinedIcon from "@mui/icons-material/CompareArrowsOutlined";
-import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
-import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
+import QueryStatsOutlinedIcon from "@mui/icons-material/QueryStatsOutlined";
+import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
+import SellOutlinedIcon from "@mui/icons-material/SellOutlined";
+import CompareOutlinedIcon from "@mui/icons-material/CompareOutlined";
+import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
+import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import KeyOutlinedIcon from "@mui/icons-material/KeyOutlined";
+import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
+import LibraryBooksOutlinedIcon from "@mui/icons-material/LibraryBooksOutlined";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
+import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
 import { alpha, useTheme } from "@mui/material/styles";
@@ -69,8 +74,11 @@ const CURRENCY_META: Record<SupportedCurrency, { countryCode: string; symbol: st
 
 type NavItem = {
   label: string;
-  path: string;
+  path?: string;
   icon: React.ReactNode;
+  permission?: string;
+  children?: NavItem[];
+  expandOnly?: boolean;
 };
 
 type NavSection = {
@@ -80,56 +88,66 @@ type NavSection = {
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    heading: "Saint Collections",
+    heading: "",
     items: [
-      { label: "Collection",    path: "/figurines",      icon: <CollectionsOutlinedIcon /> },
-      { label: "My Collections", path: "/collections",   icon: <FavoriteBorderOutlinedIcon /> },
-      { label: "Purchases",     path: "/purchases",      icon: <ReceiptLongOutlinedIcon /> },
+      { label: "Home", path: "/", icon: <HomeOutlinedIcon /> },
     ],
   },
   {
-    heading: "Stats & Charts",
+    heading: "Collections",
     items: [
-      { label: "Charts",        path: "/charts",         icon: <InsightsOutlinedIcon /> },
-      { label: "Releases",      path: "/releases",       icon: <CalendarMonthOutlinedIcon /> },
-      { label: "Pricing",       path: "/pricing",        icon: <PaidOutlinedIcon /> },
+      { label: "Myth Cloth",     path: "/figurines",   icon: <WorkspacePremiumOutlinedIcon /> },
+      { label: "My Collections", path: "/collections", icon: <Inventory2OutlinedIcon />, permission: "collections:read" },
+      { label: "Purchases",      path: "/purchases",   icon: <ShoppingBagOutlinedIcon />,    permission: "collections:read" }
+    ],
+  },
+  {
+    heading: "Explore",
+    items: [
+      { label: "Releases", path: "/releases", icon: <RocketLaunchOutlinedIcon />, permission: "stats:read" },
+      { label: "Pricing",  path: "/pricing",  icon: <SellOutlinedIcon />,          permission: "stats:read" },
+      { label: "Charts",   path: "/charts",   icon: <QueryStatsOutlinedIcon />,      permission: "stats:read" }
     ],
   },
   {
     heading: "Figurine Matching",
     items: [
-      { label: "Matching by Store", path: "/figurine-matching/stores", icon: <StorefrontOutlinedIcon /> },
-      { label: "Manual Matching", path: "/figurine-matching", icon: <CompareArrowsOutlinedIcon /> },
+      { label: "Store Matching",  path: "/figurine-matching/stores", icon: <StoreOutlinedIcon />,    permission: "figurines:stores:read" },
+      { label: "Manual Matching", path: "/figurine-matching",        icon: <CompareOutlinedIcon />, permission: "stats:read" }
     ],
   },
   {
     heading: "Events & Partners",
     items: [
-      { label: "Anniversaries", path: "/anniversaries",  icon: <StarBorderOutlinedIcon /> },
-      { label: "Distributors",  path: "/distributors",   icon: <LocalShippingOutlinedIcon /> },
-    ],
-  },
-  {
-    heading: "Catalogs",
-    items: [
-      { label: "Distributions", path: "/catalogs/distributions", icon: <HubOutlinedIcon /> },
-      { label: "Groups",        path: "/catalogs/groups",        icon: <GroupsOutlinedIcon /> },
-      { label: "Lineups",       path: "/catalogs/lineups",       icon: <ViewListOutlinedIcon /> },
-      { label: "Series",        path: "/catalogs/series",        icon: <AutoStoriesOutlinedIcon /> },
-    ],
-  },
-  {
-    heading: "Security",
-    items: [
-      { label: "Roles", path: "/security/roles", icon: <AdminPanelSettingsOutlinedIcon /> },
-      { label: "Permissions", path: "/security/permissions", icon: <LockOutlinedIcon /> },
-      { label: "Role Permissions", path: "/security/role-permissions", icon: <LinkOutlinedIcon /> },
+      { label: "Anniversaries", path: "/anniversaries", icon: <CelebrationOutlinedIcon />,     permission: "anniversaries:read" },
+      { label: "Distributors",  path: "/distributors",  icon: <LocalShippingOutlinedIcon />,  permission: "distributors:read" }
     ],
   },
   {
     heading: "Administration",
     items: [
-      { label: "Figurine Import",    path: "/figurines/import",      icon: <UploadFileOutlinedIcon /> },
+      {
+        label: "Catalogs",
+        icon: <LibraryBooksOutlinedIcon />,
+        expandOnly: true,
+        children: [
+          { label: "Distributions", path: "/catalogs/distributions", icon: <HubOutlinedIcon />,         permission: "catalogs:read" },
+          { label: "Groups",        path: "/catalogs/groups",        icon: <GroupWorkOutlinedIcon />,      permission: "catalogs:read" },
+          { label: "Lineups",       path: "/catalogs/lineups",       icon: <ViewTimelineOutlinedIcon />,    permission: "catalogs:read" },
+          { label: "Series",        path: "/catalogs/series",        icon: <AutoStoriesOutlinedIcon />, permission: "catalogs:read" }
+        ]
+      },
+      { 
+        label: "Security",
+        icon: <SecurityOutlinedIcon />,
+        expandOnly: true,
+        children: [
+          { label: "Roles",            path: "/security/roles",            icon: <BadgeOutlinedIcon />, permission: "roles:read" },
+          { label: "Permissions",      path: "/security/permissions",      icon: <KeyOutlinedIcon />,               permission: "permissions:read" },
+          { label: "Role Permissions", path: "/security/role-permissions", icon: <VpnKeyOutlinedIcon />,               permission: "roles:read" }
+        ]
+      },
+      { label: "Figurine Import", path: "/figurines/import", icon: <UploadFileOutlinedIcon />, permission: "figurines:load" }
     ]
   }
 ];
@@ -180,6 +198,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const navScrollRef = useRef<HTMLDivElement | null>(null);
   const [showScrollUpHint, setShowScrollUpHint] = useState(false);
   const [showScrollDownHint, setShowScrollDownHint] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   const authCardSx = {
     px: 1.25,
@@ -202,7 +221,15 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     transition: "all 0.18s ease",
   };
 
-  const isActive = (path: string) => {
+  const isActive = (path?: string) => {
+    if (!path) {
+      return false;
+    }
+
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+
     if (path === "/figurine-matching") {
       return location.pathname === "/figurine-matching";
     }
@@ -214,65 +241,51 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     return location.pathname.startsWith(path);
   };
 
-  const visibleSections = NAV_SECTIONS
-    .map((section) => ({
-      ...section,
-      items: section.items.filter((item) => {
-        if (item.path === "/collections") {
-          return hasPermission("collections:read");
+  const filterVisibleNavItem = useCallback(
+    (item: NavItem): NavItem | null => {
+      const visibleChildren = item.children?.map(filterVisibleNavItem).filter((child): child is NavItem => child !== null);
+      const hasAccess = !item.permission || hasPermission(item.permission);
+      const hasVisibleChildren = Boolean(visibleChildren && visibleChildren.length > 0);
+
+      if (item.path) {
+        if (!hasAccess) {
+          return hasVisibleChildren ? { ...item, children: visibleChildren } : null;
         }
-        if (item.path === "/purchases") {
-          return hasPermission("collections:read");
-        }
-        if (item.path === "/charts") {
-          return hasPermission("stats:read");
-        }
-        if (item.path === "/releases") {
-          return hasPermission("stats:read");
-        }
-        if (item.path === "/pricing") {
-          return hasPermission("stats:read");
-        }
-        if (item.path === "/figurine-matching") {
-          return hasPermission("stats:read");
-        }
-        if (item.path === "/figurine-matching/stores") {
-          return hasPermission("figurines:stores:read");
-        }
-        if (item.path === "/anniversaries") {
-          return hasPermission("anniversaries:read");
-        }
-        if (item.path === "/distributors") {
-          return hasPermission("distributors:read");
-        }
-        if (item.path === "/catalogs/distributions") {
-          return hasPermission("catalogs:read");
-        }
-        if (item.path === "/catalogs/groups") {
-          return hasPermission("catalogs:read");
-        }
-        if (item.path === "/catalogs/lineups") {
-          return hasPermission("catalogs:read");
-        }
-        if (item.path === "/catalogs/series") {
-          return hasPermission("catalogs:read");
-        }
-        if (item.path === "/security/roles") {
-          return hasPermission("roles:read");
-        }
-        if (item.path === "/security/permissions") {
-          return hasPermission("permissions:read");
-        }
-        if (item.path === "/security/role-permissions") {
-          return hasPermission("roles:read");
-        }
-        if (item.path === "/figurines/import") {
-          return hasPermission("figurines:load");
-        }
-        return true;
-      }),
-    }))
-    .filter((section) => section.items.length > 0);
+        return hasVisibleChildren ? { ...item, children: visibleChildren } : item;
+      }
+
+      if (hasVisibleChildren) {
+        return { ...item, children: visibleChildren };
+      }
+
+      return null;
+    },
+    [hasPermission],
+  );
+
+  const visibleSections = useMemo(
+    () =>
+      NAV_SECTIONS
+        .map((section) => ({
+          ...section,
+          items: section.items
+            .map(filterVisibleNavItem)
+            .filter((item): item is NavItem => item !== null),
+        }))
+        .filter((section) => section.items.length > 0),
+    [filterVisibleNavItem],
+  );
+
+  const hasActiveDescendant = useCallback(
+    (item: NavItem): boolean =>
+      Boolean(
+        item.children?.some((child) => {
+          const childActive = isActive(child.path);
+          return childActive || hasActiveDescendant(child);
+        }),
+      ),
+    [location.pathname],
+  );
 
   const updateScrollHint = useCallback(() => {
     const el = navScrollRef.current;
@@ -321,6 +334,88 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     onNavigate?.();
   };
 
+  const toggleExpanded = (key: string) => {
+    setExpandedItems((prev) => ({ ...prev, [key]: !(prev[key] ?? false) }));
+  };
+
+  const renderNavItem = (item: NavItem, level: number, parentKey: string) => {
+    const itemKey = `${parentKey}/${item.path ?? item.label}`;
+    const hasChildren = Boolean(item.children?.length);
+    const canNavigate = Boolean(item.path) && !(hasChildren && item.expandOnly);
+    const active = isActive(item.path);
+    const activeDescendant = hasActiveDescendant(item);
+    const expanded = expandedItems[itemKey] ?? activeDescendant;
+    const collapseTimeout = {
+      enter: 180 + Math.min(level, 4) * 45,
+      exit: 120 + Math.min(level, 4) * 25,
+    };
+
+    return (
+      <Box key={itemKey}>
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() => {
+              if (hasChildren && (!canNavigate || !item.path)) {
+                toggleExpanded(itemKey);
+                return;
+              }
+              if (canNavigate && item.path) {
+                handleClick(item.path);
+              }
+            }}
+            sx={{
+              mx: 1,
+              pl: 1 + level * 1.5,
+              borderRadius: 1.5,
+              mb: 0.25,
+              color: active ? "primary.main" : "text.secondary",
+              backgroundColor: active ? "rgba(212, 175, 55, 0.12)" : "transparent",
+              borderLeft: active ? "2px solid #d4af37" : "2px solid transparent",
+              boxShadow: active ? "0 0 12px rgba(212, 175, 55, 0.15), inset 0 1px 0 rgba(255,255,255,0.06)" : "none",
+              backdropFilter: active ? "blur(8px)" : "none",
+              transition: "all 0.2s ease",
+              "&:hover": {
+                backgroundColor: active ? "rgba(212, 175, 55, 0.18)" : "rgba(255,255,255,0.05)",
+                color: active ? "primary.main" : "text.primary",
+                boxShadow: "0 0 8px rgba(212, 175, 55, 0.1)",
+              },
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: 36,
+                color: active ? "primary.main" : "text.secondary",
+              }}
+            >
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText
+              primary={item.label}
+              slotProps={{
+                primary: {
+                  sx: { fontSize: "0.875rem", fontWeight: active || activeDescendant ? 600 : 400 },
+                },
+              }}
+            />
+            {hasChildren && (
+              expanded
+                ? <KeyboardArrowDownOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                : <KeyboardArrowRightOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+            )}
+          </ListItemButton>
+        </ListItem>
+
+        {hasChildren && (
+          <Collapse in={expanded} timeout={collapseTimeout} unmountOnExit>
+            <List dense disablePadding>
+              {item.children!.map((child) => renderNavItem(child, level + 1, itemKey))}
+            </List>
+          </Collapse>
+        )}
+      </Box>
+    );
+  };
+
   const handleLogout = () => {
     setIsDemoSigningIn(false);
     logout();
@@ -349,12 +444,23 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
       {/* Brand */}
-      <Box sx={{ px: 3, py: 2.5, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+      <Box
+        onClick={() => handleClick("/")}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            handleClick("/");
+          }
+        }}
+        sx={{ px: 3, py: 2.5, borderBottom: "1px solid rgba(255,255,255,0.07)", cursor: "pointer" }}
+      >
         <Typography
           variant="h6"
           sx={{ color: "primary.main", fontWeight: 700, letterSpacing: 1, lineHeight: 1.2 }}
         >
-          MythCloth
+          Saint Collections
         </Typography>
         <Typography variant="caption" sx={{ color: "text.secondary" }}>
           Every collection tells a story. Track yours.
@@ -396,53 +502,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               </Typography>
             )}
             <List dense disablePadding>
-              {section.items.map((item) => {
-                const active = isActive(item.path);
-                return (
-                  <ListItem key={item.path} disablePadding>
-                    <ListItemButton
-                      onClick={() => handleClick(item.path)}
-                      sx={{
-                        mx: 1,
-                        borderRadius: 1.5,
-                        mb: 0.25,
-                        color: active ? "primary.main" : "text.secondary",
-                        backgroundColor: active
-                          ? "rgba(212, 175, 55, 0.12)"
-                          : "transparent",
-                        borderLeft: active ? "2px solid #d4af37" : "2px solid transparent",
-                        boxShadow: active ? "0 0 12px rgba(212, 175, 55, 0.15), inset 0 1px 0 rgba(255,255,255,0.06)" : "none",
-                        backdropFilter: active ? "blur(8px)" : "none",
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                          backgroundColor: active
-                            ? "rgba(212, 175, 55, 0.18)"
-                            : "rgba(255,255,255,0.05)",
-                          color: active ? "primary.main" : "text.primary",
-                          boxShadow: "0 0 8px rgba(212, 175, 55, 0.1)",
-                        },
-                      }}
-                    >
-                      <ListItemIcon
-                        sx={{
-                          minWidth: 36,
-                          color: active ? "primary.main" : "text.secondary",
-                        }}
-                      >
-                        {item.icon}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={item.label}
-                        slotProps={{
-                          primary: {
-                            sx: { fontSize: "0.875rem", fontWeight: active ? 600 : 400 },
-                          },
-                        }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })}
+              {section.items.map((item) => renderNavItem(item, 0, section.heading || "main"))}
             </List>
             {section.heading === "" && (
               <Divider sx={{ borderColor: "rgba(255,255,255,0.07)", mx: 2, mt: 1 }} />
@@ -871,6 +931,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export default function MainLayout() {
   useFacebookSDK();
   useGoogleSDK();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const drawerSx = {
@@ -901,7 +962,11 @@ export default function MainLayout() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 700 }}>
+          <Typography
+            variant="h6"
+            onClick={() => navigate("/")}
+            sx={{ color: "primary.main", fontWeight: 700, cursor: "pointer" }}
+          >
             MythCloth
           </Typography>
         </Toolbar>

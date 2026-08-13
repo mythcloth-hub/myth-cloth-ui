@@ -81,10 +81,10 @@ function SectionCard({
       sx={{
         p: { xs: 2, md: 3 },
         height: "100%",
-        borderRadius: 4,
+        borderRadius: 1.5,
         border: "1px solid rgba(255,255,255,0.08)",
         background: "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)",
-        backdropFilter: "blur(10px)",
+        boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
       }}
     >
       <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
@@ -298,8 +298,6 @@ export default function ChartsPage() {
       sx={{
         p: { xs: 1.5, sm: 2, md: 3 },
         minHeight: "100%",
-        background:
-          "radial-gradient(circle at top left, rgba(212,175,55,0.1), transparent 24%), radial-gradient(circle at 85% 8%, rgba(79,195,247,0.1), transparent 20%)",
       }}
     >
       <Box
@@ -314,12 +312,12 @@ export default function ChartsPage() {
           px: { xs: 1.5, sm: 2, md: 3 },
           pt: 0.25,
           pb: 1,
-          mb: 3,
+          mb: 2.5,
         }}
       >
-        <Box sx={{ mb: 2.5 }}>
+        <Box sx={{ mb: 2 }}>
           <AppPageHeader
-            eyebrow="Stats & Charts"
+            eyebrow="Explore"
             title="Charts"
             subtitle="Get a quick overview of your collection, including total figurines, release status, and category distribution."
           />
@@ -328,15 +326,14 @@ export default function ChartsPage() {
         <Paper
           sx={{
             p: { xs: 2, md: 3 },
-            borderRadius: 4,
+            borderRadius: 1.5,
             border: "1px solid rgba(255,255,255,0.08)",
-            background:
-              "radial-gradient(circle at top left, rgba(212,175,55,0.14), transparent 26%), radial-gradient(circle at right, rgba(79,195,247,0.14), transparent 24%), linear-gradient(135deg, rgba(10,14,22,0.98) 0%, rgba(15,20,31,0.98) 100%)",
-            boxShadow: "0 24px 70px rgba(0,0,0,0.25)",
+            background: "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+            boxShadow: "0 12px 30px rgba(0,0,0,0.16)",
           }}
         >
           {dashboard && (
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap" sx={{ mt: 2.25 }}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
               <Chip label={`${dashboard.totalFigurines} total figurines`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
               <Chip label={`${dashboard.totalFigurines - released} pending`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
               <Chip label={`${releaseRate}% release rate`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />

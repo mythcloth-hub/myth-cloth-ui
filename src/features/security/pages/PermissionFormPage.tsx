@@ -15,6 +15,8 @@ import axios from "axios";
 import { getPermissionById, createPermission, updatePermission } from "../api/permissionApi";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
+const PERMISSION_DESCRIPTION_PATTERN = /^[a-z0-9_-]+(:[a-z0-9_-]+)+$/;
+
 export default function PermissionFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
@@ -42,10 +44,25 @@ export default function PermissionFormPage() {
   }, [id, isEdit]);
 
   const validate = (): boolean => {
-    if (!description.trim()) {
-      setDescriptionError("Description is required");
+    const normalizedDescription = description.trim();
+
+    if (!normalizedDescription) {
+      setDescriptionError("Description must not be blank.");
       return false;
     }
+
+    if (normalizedDescription.length > 200) {
+      setDescriptionError("Description must not exceed 200 characters.");
+      return false;
+    }
+
+    if (!PERMISSION_DESCRIPTION_PATTERN.test(normalizedDescription)) {
+      setDescriptionError(
+        "Description must follow 'resource:action[:subaction...]' (e.g., 'posts:create' or 'posts:create:comment') using lowercase letters, numbers, hyphens, or underscores.",
+      );
+      return false;
+    }
+
     setDescriptionError(undefined);
     return true;
   };
@@ -120,9 +137,9 @@ export default function PermissionFormPage() {
               required
               fullWidth
               autoFocus
-              slotProps={{ htmlInput: { maxLength: 100 } }}
+              slotProps={{ htmlInput: { maxLength: 200 } }}
               error={Boolean(descriptionError)}
-              helperText={descriptionError}
+              helperText={descriptionError ?? "Use format resource:action[:subaction...] (lowercase, numbers, '-' or '_')."}
             />
             <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
               <Button variant="outlined" onClick={() => navigate("/security/permissions")}>
