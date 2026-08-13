@@ -121,28 +121,15 @@ function YearBarChart({
       sx={{
         position: "relative",
         overflow: "hidden",
-        borderRadius: 4,
-        border: "1px solid rgba(212, 175, 55, 0.18)",
-        background:
-          "radial-gradient(circle at top left, rgba(74,163,216,0.2), transparent 28%), radial-gradient(circle at 78% 18%, rgba(212,175,55,0.18), transparent 24%), linear-gradient(180deg, rgba(15,21,34,0.98) 0%, rgba(10,13,21,0.98) 100%)",
-        boxShadow: "0 28px 80px rgba(0,0,0,0.28)",
+        borderRadius: 1.5,
+        border: "1px solid rgba(255,255,255,0.08)",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)",
+        boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
       }}
     >
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          backgroundImage:
-            "radial-gradient(circle at 12% 24%, rgba(255,255,255,0.22) 0 1px, transparent 1.5px), radial-gradient(circle at 72% 18%, rgba(255,255,255,0.2) 0 1px, transparent 1.5px), radial-gradient(circle at 32% 70%, rgba(255,255,255,0.14) 0 1px, transparent 1.5px), radial-gradient(circle at 84% 64%, rgba(255,255,255,0.16) 0 1px, transparent 1.5px)",
-          opacity: 0.7,
-        }}
-      />
 
       <Box
         sx={{
-          position: "relative",
-          zIndex: 1,
           display: "flex",
           alignItems: { xs: "flex-start", md: "center" },
           justifyContent: "space-between",
@@ -451,10 +438,10 @@ function ReleaseYearDetailView({
         sx={{
           px: { xs: 2, md: 2.5 },
           py: 2,
-          borderRadius: 3,
+          borderRadius: 1.5,
           border: "1px solid rgba(255,255,255,0.08)",
           bgcolor: "rgba(255,255,255,0.03)",
-          backdropFilter: "blur(10px)",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
         }}
       >
         <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 2 }}>
@@ -472,26 +459,14 @@ function ReleaseYearDetailView({
             display: "flex",
             gap: { xs: 1.5, md: 2.5 },
             p: { xs: 1.5, md: 2.5 },
-            borderRadius: 4,
+            borderRadius: 1.5,
             border: "1px solid rgba(255,255,255,0.08)",
-            bgcolor: "rgba(8,12,20,0.72)",
-            boxShadow: "0 18px 44px rgba(0,0,0,0.22)",
-            backdropFilter: "blur(12px)",
-            position: "relative",
-            overflow: "hidden",
+            bgcolor: "rgba(255,255,255,0.03)",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
           }}
         >
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "radial-gradient(circle at top right, rgba(74,163,216,0.12), transparent 26%), radial-gradient(circle at bottom left, rgba(212,175,55,0.08), transparent 24%)",
-              pointerEvents: "none",
-            }}
-          />
           {/* Timeline spine */}
-          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: 52, flexShrink: 0, position: "relative", zIndex: 1 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: 52, flexShrink: 0 }}>
             <Box
               sx={{
                 width: 34,
@@ -676,8 +651,6 @@ export default function ReleasesPage() {
       sx={{
         p: { xs: 1.5, sm: 2, md: 3 },
         minHeight: "100%",
-        background:
-          "radial-gradient(circle at top, rgba(74,163,216,0.12), transparent 24%), radial-gradient(circle at 82% 12%, rgba(212,175,55,0.12), transparent 18%)",
       }}
     >
       <Box
@@ -692,10 +665,10 @@ export default function ReleasesPage() {
           px: { xs: 1.5, sm: 2, md: 3 },
           pt: 0.25,
           pb: 1,
-          mb: 3,
+          mb: 2.5,
         }}
       >
-        <Box sx={{ mb: 2.5 }}>
+        <Box sx={{ mb: 2 }}>
           <AppPageHeader
             eyebrow="Explore"
             title="Releases"
@@ -706,26 +679,13 @@ export default function ReleasesPage() {
         <Paper
           sx={{
             p: { xs: 2, md: 3 },
-            borderRadius: 4,
-            color: "common.white",
+            borderRadius: 1.5,
             border: "1px solid rgba(255,255,255,0.08)",
-            background:
-              "radial-gradient(circle at top left, rgba(212,175,55,0.18), transparent 26%), radial-gradient(circle at right, rgba(74,163,216,0.18), transparent 24%), linear-gradient(135deg, rgba(9,12,20,0.98) 0%, rgba(16,22,34,0.98) 100%)",
-            boxShadow: "0 24px 80px rgba(0,0,0,0.28)",
-            overflow: "hidden",
-            position: "relative",
+            background: "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+            boxShadow: "0 12px 30px rgba(0,0,0,0.16)",
           }}
         >
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              backgroundImage:
-                "radial-gradient(circle at 16% 22%, rgba(255,255,255,0.2) 0 1px, transparent 1.5px), radial-gradient(circle at 76% 30%, rgba(255,255,255,0.14) 0 1px, transparent 1.5px), radial-gradient(circle at 62% 76%, rgba(255,255,255,0.1) 0 1px, transparent 1.5px)",
-            }}
-          />
-          <Stack spacing={2} sx={{ position: "relative" }}>
+          <Stack spacing={2}>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
               <Chip label={`${visibleSummary.length} years with releases`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
               <Chip label={`${totalReleases} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
@@ -746,7 +706,7 @@ export default function ReleasesPage() {
         sx={{
           p: { xs: 1.5, md: 2 },
           mb: 3,
-          borderRadius: 4,
+          borderRadius: 1.5,
           border: "1px solid rgba(255,255,255,0.08)",
           background: "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))",
         }}
@@ -778,11 +738,10 @@ export default function ReleasesPage() {
             sx={{
               mb: 2.5,
               p: { xs: 2, md: 2.5 },
-              borderRadius: 4,
+              borderRadius: 1.5,
               border: "1px solid rgba(255,255,255,0.08)",
-              background:
-                "linear-gradient(135deg, rgba(9,12,20,0.96) 0%, rgba(17,22,32,0.96) 100%)",
-              boxShadow: "0 22px 60px rgba(0,0,0,0.24)",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+              boxShadow: "0 12px 30px rgba(0,0,0,0.16)",
             }}
           >
             <Box sx={{ display: "flex", alignItems: { xs: "flex-start", sm: "center" }, justifyContent: "space-between", gap: 2, flexWrap: "wrap" }}>
@@ -793,7 +752,7 @@ export default function ReleasesPage() {
                 <Typography variant="h4" sx={{ fontWeight: 900, lineHeight: 1.05 }}>
                   {selectedYear}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.4 }}>
                   Month-by-month release breakdown with lineup accents and figurine cards.
                 </Typography>
               </Box>

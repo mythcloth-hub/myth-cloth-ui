@@ -78,9 +78,10 @@ function PriceMetricCard({
     <Paper
       sx={{
         p: 2,
-        borderRadius: 3,
+        borderRadius: 1.5,
         border: "1px solid rgba(255,255,255,0.08)",
-        background: `linear-gradient(140deg, ${accent}24 0%, rgba(255,255,255,0.03) 70%)`,
+        background: `linear-gradient(180deg, ${accent}14 0%, rgba(255,255,255,0.03) 100%)`,
+        boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
       }}
     >
       <Typography variant="body2" color="text.secondary">
@@ -495,8 +496,6 @@ export default function PricingPage() {
       sx={{
         p: { xs: 1.5, sm: 2, md: 3 },
         minHeight: "100%",
-        background:
-          "radial-gradient(circle at top left, rgba(212,175,55,0.1), transparent 24%), radial-gradient(circle at 85% 8%, rgba(79,195,247,0.1), transparent 20%)",
       }}
     >
       <Box
@@ -511,10 +510,10 @@ export default function PricingPage() {
           px: { xs: 1.5, sm: 2, md: 3 },
           pt: 0.25,
           pb: 1,
-          mb: 3,
+          mb: 2.5,
         }}
       >
-        <Box sx={{ mb: 2.5 }}>
+        <Box sx={{ mb: 2 }}>
           <AppPageHeader
             eyebrow="Explore"
             title="Pricing"
@@ -525,15 +524,14 @@ export default function PricingPage() {
         <Paper
           sx={{
             p: { xs: 2, md: 3 },
-            borderRadius: 4,
+            borderRadius: 1.5,
             border: "1px solid rgba(255,255,255,0.08)",
-            background:
-              "radial-gradient(circle at top left, rgba(212,175,55,0.14), transparent 26%), radial-gradient(circle at right, rgba(79,195,247,0.14), transparent 24%), linear-gradient(135deg, rgba(10,14,22,0.98) 0%, rgba(15,20,31,0.98) 100%)",
-            boxShadow: "0 24px 70px rgba(0,0,0,0.25)",
+            background: "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+            boxShadow: "0 12px 30px rgba(0,0,0,0.16)",
           }}
         >
           {summary && (
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap" sx={{ mt: 2.25 }}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
               <Chip label={`${summary.firstYear} - ${summary.lastYear}`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
               <Chip label={`${formatCount(summary.totalReleases)} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
               <Chip label={`${formatCurrency(summary.weightedAverage, selectedCurrency)} weighted avg`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
@@ -542,7 +540,7 @@ export default function PricingPage() {
           )}
 
           {summary && (
-            <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mt: 2.5 }}>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} sx={{ mt: 1.75 }}>
               <Box sx={{ flex: 1 }}>
                 <PriceMetricCard
                   label="Year range"
@@ -585,7 +583,7 @@ export default function PricingPage() {
       <Paper
         sx={{
           p: { xs: 1.5, md: 2 },
-          borderRadius: 4,
+          borderRadius: 1.5,
           border: "1px solid rgba(255,255,255,0.08)",
           background: "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))",
         }}
@@ -602,7 +600,7 @@ export default function PricingPage() {
             <CircularProgress />
           </Box>
         ) : (
-          <Stack spacing={3}>
+          <Stack spacing={2.25}>
             <PriceTrendChart
               data={priceData}
               selectedYear={selectedYearData?.year ?? null}
@@ -620,7 +618,7 @@ export default function PricingPage() {
                 <Paper
                   sx={{
                     p: { xs: 1.5, md: 2 },
-                    borderRadius: 3,
+                    borderRadius: 1.5,
                     border: "1px solid rgba(255,255,255,0.08)",
                     bgcolor: "rgba(255,255,255,0.02)",
                   }}
@@ -628,7 +626,7 @@ export default function PricingPage() {
                   <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
                     Year focus: {selectedYearData.year}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.4, mb: 1.5 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, mb: 1.25 }}>
                     Snapshot for the selected year with key price metrics and release activity.
                   </Typography>
 
@@ -671,7 +669,7 @@ export default function PricingPage() {
                 <Paper
                   sx={{
                     p: { xs: 1.5, md: 2 },
-                    borderRadius: 3,
+                    borderRadius: 1.5,
                     border: "1px solid rgba(255,255,255,0.08)",
                     bgcolor: "rgba(255,255,255,0.02)",
                     position: { xs: "static", lg: "sticky" },
@@ -682,7 +680,7 @@ export default function PricingPage() {
                   <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
                     Price extremes
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.4, mb: 1.5 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, mb: 1.25 }}>
                     Highest and lowest priced figurines for {selectedYearData.year}.
                   </Typography>
 
