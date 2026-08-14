@@ -98,7 +98,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Myth Cloth",     path: "/figurines",   icon: <WorkspacePremiumOutlinedIcon /> },
       { label: "My Collections", path: "/collections", icon: <Inventory2OutlinedIcon />, permission: "collections:read" },
-      { label: "Purchases",      path: "/purchases",   icon: <ShoppingBagOutlinedIcon />,    permission: "collections:read" }
+      { label: "Purchases",      path: "/purchases",   icon: <ShoppingBagOutlinedIcon />,    permission: "purchases:read" }
     ],
   },
   {

@@ -542,15 +542,17 @@ export default function PurchasesPage() {
                 ))}
               </Select>
             </FormControl>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleOpenCreateDialog}
-              sx={{ flexShrink: 0 }}
-              disabled={!selectedCollectionId || loadingFigurines}
-            >
-              Record Purchase
-            </Button>
+            {hasPermission("purchases:create") && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleOpenCreateDialog}
+                sx={{ flexShrink: 0 }}
+                disabled={!selectedCollectionId || loadingFigurines}
+              >
+                Record Purchase
+              </Button>
+            )}
           </Stack>
         </Box>
 
