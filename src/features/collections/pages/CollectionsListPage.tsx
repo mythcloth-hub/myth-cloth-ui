@@ -29,9 +29,11 @@ import { deleteCollection, duplicateCollection, getCollections, updateCollection
 import type { Collection } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
+import { useAuth } from "../../../auth/AuthContext";
 
 export default function CollectionsListPage() {
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -621,15 +623,21 @@ export default function CollectionsListPage() {
 
       {/* Menu */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem onClick={handleEdit} sx={{ gap: 1 }}>
-          <EditIcon fontSize="small" /> Edit
-        </MenuItem>
+        {hasPermission("collections:update") && (
+          <MenuItem onClick={handleEdit} sx={{ gap: 1 }}>
+            <EditIcon fontSize="small" /> Edit
+          </MenuItem>
+        )}
+        {hasPermission("collections:duplicate") && (
         <MenuItem onClick={() => void handleDuplicateClick()} sx={{ gap: 1 }} disabled={duplicatingCollection}>
           <ContentCopyIcon fontSize="small" /> Duplicate
         </MenuItem>
-        <MenuItem onClick={handleDeleteClick} sx={{ gap: 1, color: "error.main" }}>
-          <DeleteIcon fontSize="small" /> Delete
-        </MenuItem>
+        )}
+        {hasPermission("collections:delete") && (
+          <MenuItem onClick={handleDeleteClick} sx={{ gap: 1, color: "error.main" }}>
+            <DeleteIcon fontSize="small" /> Delete
+          </MenuItem>
+        )}
       </Menu>
 
       {/* Delete confirmation dialog */}
