@@ -29,6 +29,7 @@ import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupported
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 
 import AppPageHeader from "../../../components/AppPageHeader";
+import { useAuth } from "../../../auth/AuthContext";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import {
   getUnmatchedStoreListings,
@@ -62,6 +63,7 @@ function getLineUpLabel(figurine?: FigurineSummary | null): string {
 }
 
 export default function FigurineMatchingPage() {
+  const { hasPermission } = useAuth();
   const [items, setItems] = useState<UnmatchedStoreListing[]>([]);
   const [figurineOptions, setFigurineOptions] = useState<FigurineSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -478,26 +480,27 @@ export default function FigurineMatchingPage() {
                         <Chip size="small" color="warning" variant="filled" label="Ignored" sx={{ mt: 0.6 }} />
                       )}
                     </Box>
-
-                    <Tooltip title={item.ignored ? "Restore for matching" : "Ignore this listing"}>
-                      <Button
-                        size="small"
-                        variant="text"
-                        color={item.ignored ? "info" : "warning"}
-                        onClick={() => void handleToggleIgnored(item)}
-                        disabled={updatingIgnoredId === item.id || savingMatch}
-                        aria-label={item.ignored ? "Restore for matching" : "Ignore this listing"}
-                        sx={{
-                          flexShrink: 0,
-                          mt: -0.25,
-                          minWidth: 0,
-                          px: 0.5,
-                          py: 0.25,
-                        }}
-                      >
-                        {item.ignored ? <RestoreOutlinedIcon fontSize="small" /> : <CancelOutlinedIcon fontSize="small" />}
-                      </Button>
-                    </Tooltip>
+                    {hasPermission("figurines:stores:ignore") && (
+                      <Tooltip title={item.ignored ? "Restore for matching" : "Ignore this listing"}>
+                        <Button
+                          size="small"
+                          variant="text"
+                          color={item.ignored ? "info" : "warning"}
+                          onClick={() => void handleToggleIgnored(item)}
+                          disabled={updatingIgnoredId === item.id || savingMatch}
+                          aria-label={item.ignored ? "Restore for matching" : "Ignore this listing"}
+                          sx={{
+                            flexShrink: 0,
+                            mt: -0.25,
+                            minWidth: 0,
+                            px: 0.5,
+                            py: 0.25,
+                          }}
+                        >
+                          {item.ignored ? <RestoreOutlinedIcon fontSize="small" /> : <CancelOutlinedIcon fontSize="small" />}
+                        </Button>
+                      </Tooltip>
+                    )}
                   </Box>
 
                   <Autocomplete
@@ -668,15 +671,17 @@ export default function FigurineMatchingPage() {
                   )}
 
                   <Stack direction="row" spacing={1} sx={{ mt: "auto" }}>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="success"
-                      disabled={item.ignored || !selectionByListingId[item.id] || savingMatch}
-                      onClick={() => setConfirmDialogItem(item)}
-                    >
-                      Confirm Match
-                    </Button>
+                    {hasPermission("figurines:stores:assign") && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="success"
+                        disabled={item.ignored || !selectionByListingId[item.id] || savingMatch}
+                        onClick={() => setConfirmDialogItem(item)}
+                      >
+                        Confirm Match
+                      </Button>
+                    )}
                     <Button
                       size="small"
                       variant="text"
