@@ -137,6 +137,7 @@ const NAV_SECTIONS: NavSection[] = [
           { label: "Series",        path: "/catalogs/series",        icon: <AutoStoriesOutlinedIcon />, permission: "catalogs:read" }
         ]
       },
+      { label: "Stores", path: "/stores", icon: <StoreOutlinedIcon />, permission: "stores:create" },
       { 
         label: "Security",
         icon: <SecurityOutlinedIcon />,
