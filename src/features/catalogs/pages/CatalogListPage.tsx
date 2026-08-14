@@ -26,10 +26,12 @@ import type { Catalog, CatalogType } from "../types/catalog";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
 import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
+import { useAuth } from "../../../auth/AuthContext";
 
 export default function CatalogListPage() {
   const { catalogType } = useParams<{ catalogType: string }>();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
 
   const api = catalogApiMap[catalogType as CatalogType];
   const meta = CATALOG_META[catalogType as CatalogType];
@@ -105,24 +107,28 @@ export default function CatalogListPage() {
       headerAlign: "center",
       renderCell: (params) => (
         <>
-          <Tooltip title="Edit">
-            <IconButton
-              size="small"
-              onClick={() => navigate(`/catalogs/${catalogType}/edit/${params.row.id}`)}
-              sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton
-              size="small"
-              onClick={() => handleDeleteClick(params.row.id)}
-              sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          {hasPermission("catalogs:update") && (
+            <Tooltip title="Edit">
+              <IconButton
+                size="small"
+                onClick={() => navigate(`/catalogs/${catalogType}/edit/${params.row.id}`)}
+                sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+          {hasPermission("catalogs:delete") && (
+            <Tooltip title="Delete">
+              <IconButton
+                size="small"
+                onClick={() => handleDeleteClick(params.row.id)}
+                sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
         </>
       ),
     },
@@ -135,7 +141,11 @@ export default function CatalogListPage() {
           eyebrow={`Catalogs · ${plural.toLowerCase()}`}
           title={plural}
           subtitle={`Manage ${plural.toLowerCase()} used throughout the collection experience.`}
-          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate(`/catalogs/${catalogType}/new`)}>Add {singular}</Button>}
+          actions={hasPermission("catalogs:create") ? (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate(`/catalogs/${catalogType}/new`)}>
+              Add {singular}
+            </Button>
+          ) : undefined}
         />
       </Box>
 
@@ -145,7 +155,7 @@ export default function CatalogListPage() {
         columns={columns}
         loading={loading}
         getRowId={(row) => row.id}
-        onRowDoubleClick={(params) => navigate(`/catalogs/${catalogType}/edit/${params.row.id}`)}
+        onRowDoubleClick={hasPermission("catalogs:update") ? (params) => navigate(`/catalogs/${catalogType}/edit/${params.row.id}`) : undefined}
         slots={{ noRowsOverlay: NoRowsOverlay }}
         sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
       />

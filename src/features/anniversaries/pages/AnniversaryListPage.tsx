@@ -25,6 +25,7 @@ import type { Anniversary } from "../types/anniversary";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
 import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
+import { useAuth } from "../../../auth/AuthContext";
 
 const anniversaryTypeLabels: Record<NonNullable<Anniversary["type"]>, string> = {
   TAMASHII_NATIONS_WORLD_TOUR: "Tamashii Nations World Tour",
@@ -47,6 +48,7 @@ function NoRowsOverlay() {
 }
 
 export default function AnniversaryListPage() {
+  const { hasPermission } = useAuth();
   const [items, setItems] = useState<Anniversary[]>([]);
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -118,24 +120,28 @@ export default function AnniversaryListPage() {
       headerAlign: "center",
       renderCell: (params) => (
         <>
-          <Tooltip title="Edit">
-            <IconButton
-              size="small"
-              onClick={() => navigateToEdit(params.row as Anniversary)}
-              sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton
-              size="small"
-              onClick={() => handleDeleteClick(params.row.id)}
-              sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          {hasPermission("anniversaries:update") && (
+            <Tooltip title="Edit">
+              <IconButton
+                size="small"
+                onClick={() => navigateToEdit(params.row as Anniversary)}
+                sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+          {hasPermission("anniversaries:delete") && (
+            <Tooltip title="Delete">
+              <IconButton
+                size="small"
+                onClick={() => handleDeleteClick(params.row.id)}
+                sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
         </>
       ),
     },
@@ -148,7 +154,11 @@ export default function AnniversaryListPage() {
           eyebrow="Events & Partners"
           title="Anniversaries"
           subtitle="Manage anniversary milestones and commemorative entries used across the collection."
-          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/anniversaries/new")}>Add Anniversary</Button>}
+          actions={hasPermission("anniversaries:create") ? (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/anniversaries/new")}>
+              Add Anniversary
+            </Button>
+          ) : undefined}
         />
       </Box>
 
@@ -158,7 +168,7 @@ export default function AnniversaryListPage() {
         columns={columns}
         loading={loading}
         getRowId={(row) => row.id}
-        onRowDoubleClick={(params) => navigateToEdit(params.row as Anniversary)}
+        onRowDoubleClick={hasPermission("anniversaries:update") ? (params) => navigateToEdit(params.row as Anniversary) : undefined}
         slots={{ noRowsOverlay: NoRowsOverlay }}
         sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
       />

@@ -50,7 +50,7 @@ function ImportHistoryNoRows() {
 
 export default function FigurineLoaderPage() {
   const { hasPermission } = useAuth();
-  const canLoadFigurines = hasPermission("figurines:load");
+  const canLoadFigurines = hasPermission("figurines:import");
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [importRecords, setImportRecords] = useState<FigurineImportRecord[]>([]);
@@ -169,17 +169,17 @@ export default function FigurineLoaderPage() {
           eyebrow="Administration"
           title="Figurine Import"
           subtitle="Trigger figurine imports from Google Sheets and review previous import runs."
-          actions={(
+          actions={canLoadFigurines ? (
             <Button
               variant="contained"
               color="primary"
               startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <UploadFileOutlinedIcon />}
               onClick={handleLoadClick}
-              disabled={!canLoadFigurines || submitting}
+              disabled={submitting}
             >
               {submitting ? "Importing..." : "Load All Figurines"}
             </Button>
-          )}
+          ) : undefined}
         />
       </Box>
 
@@ -189,7 +189,7 @@ export default function FigurineLoaderPage() {
         </Typography>
         {!canLoadFigurines && (
           <Alert severity="warning">
-            You do not have the required permission: figurines:load
+            You do not have the required permission: figurines:import
           </Alert>
         )}
       </Stack>

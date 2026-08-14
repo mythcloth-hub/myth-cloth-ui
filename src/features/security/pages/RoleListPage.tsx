@@ -25,6 +25,7 @@ import type { Role } from "../types/role";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
 import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
+import { useAuth } from "../../../auth/AuthContext";
 
 function CustomNoRowsOverlay() {
   return (
@@ -36,6 +37,7 @@ function CustomNoRowsOverlay() {
 }
 
 export default function RoleListPage() {
+  const { hasPermission } = useAuth();
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -45,8 +47,17 @@ export default function RoleListPage() {
   const [deleting, setDeleting] = useState(false);
 
   const navigate = useNavigate();
+  const canReadRoles = hasPermission("roles:read");
+  const canUpdateRoles = hasPermission("roles:update");
+  const canCreateRoles = hasPermission("roles:create");
 
   const loadData = async () => {
+    if (!canReadRoles) {
+      setRoles([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       const data = await getAllRoles();
       setRoles(data);
@@ -60,7 +71,7 @@ export default function RoleListPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [canReadRoles]);
 
   const handleDeleteClick = (id: number) => {
     setPendingDeleteId(id);
@@ -99,15 +110,17 @@ export default function RoleListPage() {
       headerAlign: "center",
       renderCell: (params) => (
         <>
-          <Tooltip title="Edit">
-            <IconButton
-              size="small"
-              onClick={() => navigate(`/security/roles/edit/${params.row.id}`)}
-              sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          {canUpdateRoles && (
+            <Tooltip title="Edit">
+              <IconButton
+                size="small"
+                onClick={() => navigate(`/security/roles/edit/${params.row.id}`)}
+                sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="Delete">
             <span>
                 <IconButton
@@ -132,7 +145,11 @@ export default function RoleListPage() {
           eyebrow="Administration · Security"
           title="Roles"
           subtitle="Manage role definitions used to control access across the application."
-          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/security/roles/new")}>Add Role</Button>}
+          actions={canCreateRoles ? (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/security/roles/new")}>
+              Add Role
+            </Button>
+          ) : undefined}
         />
       </Box>
 
@@ -142,7 +159,7 @@ export default function RoleListPage() {
         columns={columns}
         loading={loading}
         getRowId={(row) => row.id}
-        onRowDoubleClick={(params) => navigate(`/security/roles/edit/${params.row.id}`)}
+        onRowDoubleClick={canUpdateRoles ? (params) => navigate(`/security/roles/edit/${params.row.id}`) : undefined}
         slots={{ noRowsOverlay: CustomNoRowsOverlay }}
         sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
       />

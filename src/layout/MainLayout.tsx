@@ -98,7 +98,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Myth Cloth",     path: "/figurines",   icon: <WorkspacePremiumOutlinedIcon /> },
       { label: "My Collections", path: "/collections", icon: <Inventory2OutlinedIcon />, permission: "collections:read" },
-      { label: "Purchases",      path: "/purchases",   icon: <ShoppingBagOutlinedIcon />,    permission: "collections:read" }
+      { label: "Purchases",      path: "/purchases",   icon: <ShoppingBagOutlinedIcon />,    permission: "purchases:read" }
     ],
   },
   {
@@ -112,7 +112,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     heading: "Figurine Matching",
     items: [
-      { label: "Manual Matching", path: "/figurine-matching",        icon: <CompareOutlinedIcon />, permission: "stats:read" },
+      { label: "Manual Matching", path: "/figurine-matching",        icon: <CompareOutlinedIcon />, permission: "figurines:stores:read" },
       { label: "Store Matching",  path: "/figurine-matching/stores", icon: <StoreOutlinedIcon />,    permission: "figurines:stores:read" }
     ],
   },
@@ -137,6 +137,7 @@ const NAV_SECTIONS: NavSection[] = [
           { label: "Series",        path: "/catalogs/series",        icon: <AutoStoriesOutlinedIcon />, permission: "catalogs:read" }
         ]
       },
+      { label: "Stores", path: "/stores", icon: <StoreOutlinedIcon />, permission: "stores:create" },
       { 
         label: "Security",
         icon: <SecurityOutlinedIcon />,
@@ -144,10 +145,10 @@ const NAV_SECTIONS: NavSection[] = [
         children: [
           { label: "Roles",            path: "/security/roles",            icon: <BadgeOutlinedIcon />, permission: "roles:read" },
           { label: "Permissions",      path: "/security/permissions",      icon: <KeyOutlinedIcon />,               permission: "permissions:read" },
-          { label: "Role Permissions", path: "/security/role-permissions", icon: <VpnKeyOutlinedIcon />,               permission: "roles:read" }
+          { label: "Role Permissions", path: "/security/role-permissions", icon: <VpnKeyOutlinedIcon />,               permission: "roles:permissions:read" }
         ]
       },
-      { label: "Figurine Import", path: "/figurines/import", icon: <UploadFileOutlinedIcon />, permission: "figurines:load" }
+      { label: "Figurine Import", path: "/figurines/import", icon: <UploadFileOutlinedIcon />, permission: "figurines:import" }
     ]
   }
 ];

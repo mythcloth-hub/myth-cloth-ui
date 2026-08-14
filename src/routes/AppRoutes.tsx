@@ -18,6 +18,8 @@ import FigurineFormPage from "../features/figurines/pages/FigurineFormPage";
 import CollectionsListPage from "../features/collections/pages/CollectionsListPage";
 import CollectionDetailPage from "../features/collections/pages/CollectionDetailPage";
 import PurchasesPage from "../features/purchases/pages/PurchasesPage";
+import StoreListPage from "../features/stores/pages/StoreListPage";
+import StoreFormPage from "../features/stores/pages/StoreFormPage";
 import RoleListPage from "../features/security/pages/RoleListPage";
 import RoleFormPage from "../features/security/pages/RoleFormPage";
 import PermissionListPage from "../features/security/pages/PermissionListPage";
@@ -54,6 +56,9 @@ export default function AppRoutes() {
           <Route path="/catalogs/:catalogType" element={<CatalogListPage />} />
           <Route path="/catalogs/:catalogType/new" element={<CatalogFormPage />} />
           <Route path="/catalogs/:catalogType/edit/:id" element={<CatalogFormPage />} />
+          <Route path="/stores" element={<StoreListPage />} />
+          <Route path="/stores/new" element={<StoreFormPage />} />
+          <Route path="/stores/edit/:id" element={<StoreFormPage />} />
           <Route path="/security/roles" element={<RoleListPage />} />
           <Route path="/security/roles/new" element={<RoleFormPage />} />
           <Route path="/security/roles/edit/:id" element={<RoleFormPage />} />
