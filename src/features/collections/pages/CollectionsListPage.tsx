@@ -34,6 +34,7 @@ import { useAuth } from "../../../auth/AuthContext";
 export default function CollectionsListPage() {
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
+  const canReadCollectionFigurines = hasPermission("collections:figurines:read");
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -489,18 +490,25 @@ export default function CollectionsListPage() {
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  cursor: "pointer",
+                  cursor: canReadCollectionFigurines ? "pointer" : "default",
                   transition: "all 0.3s ease",
                   border: "1px solid rgba(212,175,55,0.15)",
                   background: "linear-gradient(135deg, rgba(6,8,24,0.8) 0%, rgba(20,15,40,0.8) 100%)",
                   backdropFilter: "blur(10px)",
+                  ...(canReadCollectionFigurines
+                    ? {}
+                    : {
+                        opacity: 0.62,
+                        filter: "grayscale(1) brightness(0.78) contrast(0.88)",
+                        border: "1px solid rgba(148,148,148,0.28)",
+                      }),
                   "&:hover": {
-                    transform: "translateY(-8px)",
-                    boxShadow: "0 16px 32px rgba(212,175,55,0.2)",
-                    border: "1px solid rgba(212,175,55,0.3)",
+                    transform: canReadCollectionFigurines ? "translateY(-8px)" : "none",
+                    boxShadow: canReadCollectionFigurines ? "0 16px 32px rgba(212,175,55,0.2)" : "none",
+                    border: canReadCollectionFigurines ? "1px solid rgba(212,175,55,0.3)" : "1px solid rgba(148,148,148,0.28)",
                   },
                 }}
-                onClick={() => navigate(`/collections/${collection.id}`, { state: { collection } })}
+                onClick={canReadCollectionFigurines ? () => navigate(`/collections/${collection.id}`, { state: { collection } }) : undefined}
               >
                 {/* Collection cover gradient */}
                 {collection.imageUrl ? (
