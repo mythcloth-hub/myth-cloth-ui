@@ -63,6 +63,7 @@ import type {
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
 import AppPageHeader from "../../../components/AppPageHeader";
+import { useAuth } from "../../../auth/AuthContext";
 // Event form helpers
 const EVENT_TYPES: { value: FigurineEventType; label: string }[] = [
   { value: "ANNOUNCEMENT", label: "Announcement" },
@@ -229,6 +230,7 @@ export default function FigurineFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -1039,7 +1041,7 @@ export default function FigurineFormPage() {
 
           {/* ── Actions ── */}
           <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
-            {isEdit && (
+            {isEdit && hasPermission("figurines:delete") && (
               <Button
                 variant="outlined"
                 color="error"
