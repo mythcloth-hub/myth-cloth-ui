@@ -168,7 +168,7 @@ export default function AnniversaryListPage() {
         columns={columns}
         loading={loading}
         getRowId={(row) => row.id}
-        onRowDoubleClick={(params) => navigateToEdit(params.row as Anniversary)}
+        onRowDoubleClick={hasPermission("anniversaries:update") ? (params) => navigateToEdit(params.row as Anniversary) : undefined}
         slots={{ noRowsOverlay: NoRowsOverlay }}
         sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
       />

@@ -15,6 +15,7 @@ import { countryCodeToFlag } from "../../../utils/countryFlag";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
 import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
+import { useAuth } from "../../../auth/AuthContext";
 
 function CustomNoRowsOverlay() {
   return (
@@ -26,6 +27,7 @@ function CustomNoRowsOverlay() {
 }
 
 export default function DistributorListPage() {
+  const { hasPermission } = useAuth();
   const [distributors, setDistributors] = useState<Distributor[]>([]);
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -129,24 +131,28 @@ export default function DistributorListPage() {
       headerAlign: "center",
       renderCell: (params) => (
         <>
-          <Tooltip title="Edit">
-            <IconButton
-              size="small"
-              onClick={() => navigate(`/distributors/edit/${params.row.id}`)}
-              sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton
-              size="small"
-              onClick={() => handleDeleteClick(params.row.id)}
-              sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          {hasPermission("collections:update") && (
+            <Tooltip title="Edit">
+              <IconButton
+                size="small"
+                onClick={() => navigate(`/distributors/edit/${params.row.id}`)}
+                sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+          {hasPermission("collections:delete") && (
+            <Tooltip title="Delete">
+              <IconButton
+                size="small"
+                onClick={() => handleDeleteClick(params.row.id)}
+                sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
         </>
       ),
     }
@@ -159,7 +165,11 @@ export default function DistributorListPage() {
           eyebrow="Events & Partners"
           title="Distributors"
           subtitle="Manage distributor partners, countries, and reference links for release tracking."
-          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/distributors/new")}>Add Distributor</Button>}
+          actions={hasPermission("collections:create") ? (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/distributors/new")}>
+              Add Distributor
+            </Button>
+          ) : undefined}
         />
       </Box>
 
@@ -170,7 +180,7 @@ export default function DistributorListPage() {
         loading={loading}
         getRowId={(row) => row.id}
         columnVisibilityModel={{ website: !isMobile }}
-        onRowDoubleClick={(params) => navigate(`/distributors/edit/${params.row.id}`)}
+        onRowDoubleClick={hasPermission("collections:update") ? (params) => navigate(`/distributors/edit/${params.row.id}`) : undefined}
         slots={{ noRowsOverlay: CustomNoRowsOverlay }}
         sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
       />
