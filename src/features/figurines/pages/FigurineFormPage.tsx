@@ -224,6 +224,8 @@ export default function FigurineFormPage() {
   });
   const [eventFormError, setEventFormError] = useState<string | null>(null);
   const [deletingEventId, setDeletingEventId] = useState<number | null>(null);
+  const [eventDeleteDialogOpen, setEventDeleteDialogOpen] = useState(false);
+  const [pendingDeleteEventId, setPendingDeleteEventId] = useState<number | null>(null);
   const eventsScrollRef = useRef<HTMLDivElement | null>(null);
   const [showEventsScrollUpHint, setShowEventsScrollUpHint] = useState(false);
   const [showEventsScrollDownHint, setShowEventsScrollDownHint] = useState(false);
@@ -294,8 +296,8 @@ export default function FigurineFormPage() {
       setEventFormError("All fields are required.");
       return;
     }
-    if (description.trim().length > 100) {
-      setEventFormError("Description cannot exceed 100 characters.");
+    if (description.trim().length > 200) {
+      setEventFormError("Description cannot exceed 200 characters.");
       return;
     }
     if (dayjs(date).isAfter(dayjs(), "day")) {
@@ -317,6 +319,7 @@ export default function FigurineFormPage() {
           figurineId,
         });
         setEvents((prev) => prev.map((ev) => (ev.id === eventId ? updated : ev)));
+        setSuccessMessage("Event updated successfully.");
       } else {
         // Create new event
         const created = await createFigurineEvent(figurineId, {
@@ -328,6 +331,7 @@ export default function FigurineFormPage() {
           figurineId,
         });
         setEvents((prev) => [...prev, created]);
+        setSuccessMessage("Event created successfully.");
       }
       closeEventDialog();
     } catch (err) {
@@ -338,12 +342,20 @@ export default function FigurineFormPage() {
     }
   };
 
-  const handleDeleteEvent = async (eventId: number) => {
-    if (!form || !id) return;
-    setDeletingEventId(eventId);
+  const requestDeleteEvent = (eventId: number) => {
+    setPendingDeleteEventId(eventId);
+    setEventDeleteDialogOpen(true);
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!form || !id || pendingDeleteEventId == null) return;
+    setDeletingEventId(pendingDeleteEventId);
     try {
-      await deleteFigurineEvent(Number(id), eventId);
-      setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
+      await deleteFigurineEvent(Number(id), pendingDeleteEventId);
+      setEvents((prev) => prev.filter((ev) => ev.id !== pendingDeleteEventId));
+      setEventDeleteDialogOpen(false);
+      setPendingDeleteEventId(null);
+      setSuccessMessage("Event deleted successfully.");
     } catch (err) {
       setEventFormError(getApiErrorMessage(err, { action: "delete", resource: "event" }));
       console.error(err);
@@ -678,7 +690,7 @@ export default function FigurineFormPage() {
             title={isEdit ? "Edit Figurine" : "New Figurine"}
             subtitle={isEdit ? "Update figurine details, media, distributors, and timeline events." : "Create a new figurine record with media, distributor pricing, and release data."}
             compact
-            actions={isEdit ? (
+            actions={isEdit && hasPermission("figurines:events:read") ? (
               <Button
                 variant="outlined"
                 startIcon={<EventOutlinedIcon />}
@@ -1074,14 +1086,16 @@ export default function FigurineFormPage() {
         <DialogTitle>Manage Events</DialogTitle>
         <DialogContent dividers sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <Box sx={{ mb: 2 }}>
-            <Button
-              variant="outlined"
-              startIcon={<AddIcon />}
-              onClick={openAddEventDialog}
-              sx={{ mb: 1 }}
-            >
-              Add Event
-            </Button>
+            {hasPermission("figurines:events:add") && (
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                onClick={openAddEventDialog}
+                sx={{ mb: 1 }}
+              >
+                Add Event
+              </Button>
+            )}
             <Box sx={{ position: "relative" }}>
               <Box
                 ref={eventsScrollRef}
@@ -1122,16 +1136,20 @@ export default function FigurineFormPage() {
                           Date {ev.dateConfirmed ? "confirmed" : "unconfirmed"}
                         </Typography>
                         <Box sx={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 1 }}>
-                          <Tooltip title="Edit">
-                            <IconButton size="small" onClick={() => openEditEventDialog(ev)}>
-                              <EditOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete">
-                            <IconButton size="small" color="error" onClick={() => handleDeleteEvent(ev.id)} disabled={deletingEventId === ev.id}>
-                              <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+                          {hasPermission("figurines:events:update") && (
+                            <Tooltip title="Edit">
+                              <IconButton size="small" onClick={() => openEditEventDialog(ev)}>
+                                <EditOutlinedIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          {hasPermission("figurines:events:delete") && (
+                            <Tooltip title="Delete">
+                              <IconButton size="small" color="error" onClick={() => requestDeleteEvent(ev.id)} disabled={deletingEventId === ev.id}>
+                                <DeleteOutlineIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </Box>
                       </Paper>
                     </Grid>
@@ -1207,6 +1225,36 @@ export default function FigurineFormPage() {
         </DialogActions>
       </Dialog>
 
+      <Dialog
+        open={eventDeleteDialogOpen}
+        onClose={() => {
+          if (deletingEventId !== null) return;
+          setEventDeleteDialogOpen(false);
+          setPendingDeleteEventId(null);
+        }}
+      >
+        <DialogTitle>Delete Event?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This will permanently delete this event. This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setEventDeleteDialogOpen(false);
+              setPendingDeleteEventId(null);
+            }}
+            disabled={deletingEventId !== null}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteEvent} color="error" variant="contained" disabled={deletingEventId !== null || pendingDeleteEventId == null}>
+            {deletingEventId !== null ? <CircularProgress size={18} color="inherit" /> : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Event add/edit modal */}
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Dialog open={eventDialogOpen} onClose={closeEventDialog} fullWidth maxWidth="sm">
@@ -1219,7 +1267,7 @@ export default function FigurineFormPage() {
                 onChange={(e) => handleEventFormChange("description", e.target.value)}
                 required
                 fullWidth
-                inputProps={{ maxLength: 100 }}
+                slotProps={{ htmlInput: { maxLength: 200 } }}
               />
               <DatePicker
                 label="Date"
