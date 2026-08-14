@@ -491,8 +491,11 @@ export default function FigurineDetailPage() {
     { label: "Distribution", value: figurine.distribution?.description },
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
   const notesText = figurine.notes ? figurine.notes.replace(/\\n/g, "\n") : "";
+  const canAddFigurinesToCollections = hasPermission("collections:figurines:add");
   const shouldShowAddToCollectionButton =
-    isAuthenticated && (figurine.releaseStatus === "ANNOUNCED" || figurine.releaseStatus === "RELEASED");
+    isAuthenticated
+    && canAddFigurinesToCollections
+    && (figurine.releaseStatus === "ANNOUNCED" || figurine.releaseStatus === "RELEASED");
   const restocks = (figurine.restocks ?? [])
     .filter((restock) => Number.isFinite(restock.id))
     .sort((a, b) => (b.releaseDate ?? "").localeCompare(a.releaseDate ?? ""));

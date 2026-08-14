@@ -555,6 +555,8 @@ export default function FigurineCollectionPage() {
   const location  = useLocation();
   const { hasPermission, isAuthenticated } = useAuth();
   const canReadCollections = hasPermission("collections:read");
+  const canAddFigurinesToCollections = hasPermission("collections:figurines:add");
+  const canUseBulkSelection = isAuthenticated && canAddFigurinesToCollections;
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Persist current search params so the sidebar can restore them
@@ -731,7 +733,7 @@ export default function FigurineCollectionPage() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (!isAuthenticated) return;
+      if (!canUseBulkSelection) return;
 
       // Escape: Clear selection
       if (e.key === "Escape") {
@@ -748,13 +750,13 @@ export default function FigurineCollectionPage() {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isAuthenticated, bulkSelection.clearAll, bulkSelection.selectAll]);
+  }, [canUseBulkSelection, bulkSelection.clearAll, bulkSelection.selectAll]);
 
   useEffect(() => {
-    if (!isAuthenticated && bulkSelection.selectedCount > 0) {
+    if (!canUseBulkSelection && bulkSelection.selectedCount > 0) {
       bulkSelection.clearAll();
     }
-  }, [isAuthenticated, bulkSelection.selectedCount, bulkSelection.clearAll]);
+  }, [canUseBulkSelection, bulkSelection.selectedCount, bulkSelection.clearAll]);
 
 
 
@@ -1328,7 +1330,7 @@ export default function FigurineCollectionPage() {
                       <FigurineCard
                         figurine={fig}
                         dimmed={Boolean(selectedCollection) && !selectedCollectionFigurineIds.has(fig.id)}
-                        selectionEnabled={isAuthenticated}
+                        selectionEnabled={canUseBulkSelection}
                         isSelected={bulkSelection.isSelected(fig.id)}
                         onToggleSelect={bulkSelection.toggleSelect}
                         selectable={SELECTABLE_STATUSES.includes(fig.releaseStatus)}
@@ -1426,7 +1428,7 @@ export default function FigurineCollectionPage() {
       </Snackbar>
 
       {/* Floating action bar for bulk selection */}
-      {isAuthenticated && bulkSelection.selectedCount > 0 && (
+      {canUseBulkSelection && bulkSelection.selectedCount > 0 && (
         <Box
           sx={{
             position: "fixed",
