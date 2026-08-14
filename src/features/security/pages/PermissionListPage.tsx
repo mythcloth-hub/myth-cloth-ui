@@ -25,6 +25,7 @@ import type { Permission } from "../types/permission";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
 import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
+import { useAuth } from "../../../auth/AuthContext";
 
 function CustomNoRowsOverlay() {
   return (
@@ -36,6 +37,7 @@ function CustomNoRowsOverlay() {
 }
 
 export default function PermissionListPage() {
+  const { hasPermission } = useAuth();
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -45,8 +47,18 @@ export default function PermissionListPage() {
   const [deleting, setDeleting] = useState(false);
 
   const navigate = useNavigate();
+  const canReadPermissions = hasPermission("permissions:read");
+  const canUpdatePermissions = hasPermission("permissions:update");
+  const canCreatePermissions = hasPermission("permissions:create");
+  const canDeletePermissions = hasPermission("permissions:delete");
 
   const loadData = async () => {
+    if (!canReadPermissions) {
+      setPermissions([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       const data = await getAllPermissions();
       setPermissions(data);
@@ -60,7 +72,7 @@ export default function PermissionListPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [canReadPermissions]);
 
   const handleDeleteClick = (id: number) => {
     setPendingDeleteId(id);
@@ -99,24 +111,28 @@ export default function PermissionListPage() {
       headerAlign: "center",
       renderCell: (params) => (
         <>
-          <Tooltip title="Edit">
-            <IconButton
-              size="small"
-              onClick={() => navigate(`/security/permissions/edit/${params.row.id}`)}
-              sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton
-              size="small"
-              onClick={() => handleDeleteClick(params.row.id)}
-              sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          {canUpdatePermissions && (
+            <Tooltip title="Edit">
+              <IconButton
+                size="small"
+                onClick={() => navigate(`/security/permissions/edit/${params.row.id}`)}
+                sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+          {canDeletePermissions && (
+            <Tooltip title="Delete">
+              <IconButton
+                size="small"
+                onClick={() => handleDeleteClick(params.row.id)}
+                sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
         </>
       ),
     },
@@ -129,7 +145,11 @@ export default function PermissionListPage() {
           eyebrow="Administration · Security"
           title="Permissions"
           subtitle="Manage granular permissions that are assigned to roles and protected features."
-          actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/security/permissions/new")}>Add Permission</Button>}
+          actions={canCreatePermissions ? (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/security/permissions/new")}>
+              Add Permission
+            </Button>
+          ) : undefined}
         />
       </Box>
 
@@ -139,7 +159,7 @@ export default function PermissionListPage() {
         columns={columns}
         loading={loading}
         getRowId={(row) => row.id}
-        onRowDoubleClick={(params) => navigate(`/security/permissions/edit/${params.row.id}`)}
+        onRowDoubleClick={canUpdatePermissions ? (params) => navigate(`/security/permissions/edit/${params.row.id}`) : undefined}
         slots={{ noRowsOverlay: CustomNoRowsOverlay }}
         sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
       />
