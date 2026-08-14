@@ -1187,7 +1187,7 @@ export default function CollectionDetailPage() {
                 <Box
                   onClick={slot.owned ? () => handleToggleFlip(slot) : undefined}
                   onDoubleClick={
-                    slot.owned && slot.figurine
+                    hasPermission("collections:figurines:add") && slot.owned && slot.figurine
                       ? (event) => {
                           event.stopPropagation();
                           void handleIncreaseFigurineQuantity(slot.figurine!.id);
@@ -1410,7 +1410,7 @@ export default function CollectionDetailPage() {
                       />
                     )}
 
-                    {slot.figurine && !slot.owned && (
+                    {hasPermission("collections:figurines:add") && slot.figurine && !slot.owned && (
                       <Tooltip title="Add this figurine to this collection">
                         <span>
                           <IconButton
@@ -1724,66 +1724,72 @@ export default function CollectionDetailPage() {
                             </Typography>
                           )}
                         </Stack>
-                        <Stack alignItems="center" sx={{ minWidth: 40 }}>
-                          <Tooltip title={hasPurchaseForFigurine ? "Edit purchase with this figurine" : "No purchase record yet"}>
-                            <span>
+                        {hasPermission("purchases:update") && (
+                          <Stack alignItems="center" sx={{ minWidth: 40 }}>
+                            <Tooltip title={hasPurchaseForFigurine ? "Edit purchase with this figurine" : "No purchase record yet"}>
+                              <span>
+                                <IconButton
+                                  size="small"
+                                  disabled={!hasPurchaseForFigurine}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenEditPurchaseForFigurine(slot.figurine!);
+                                  }}
+                                  sx={{ color: "rgba(235,243,255,0.95)" }}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                            {showBackActionLabels && (
+                              <Typography variant="caption" sx={{ color: "rgba(220,231,246,0.9)", fontSize: "0.6rem", lineHeight: 1 }}>
+                                Edit
+                              </Typography>
+                            )}
+                          </Stack>
+                        )}
+                        {hasPermission("purchases:create") && (
+                          <Stack alignItems="center" sx={{ minWidth: 40 }}>
+                            <Tooltip title="Create purchase for this figurine">
                               <IconButton
                                 size="small"
-                                disabled={!hasPurchaseForFigurine}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleOpenEditPurchaseForFigurine(slot.figurine!);
+                                  handleOpenCreatePurchaseForFigurine(slot.figurine!);
                                 }}
                                 sx={{ color: "rgba(235,243,255,0.95)" }}
                               >
-                                <EditIcon fontSize="small" />
+                                <AddIcon fontSize="small" />
                               </IconButton>
-                            </span>
-                          </Tooltip>
-                          {showBackActionLabels && (
-                            <Typography variant="caption" sx={{ color: "rgba(220,231,246,0.9)", fontSize: "0.6rem", lineHeight: 1 }}>
-                              Edit
-                            </Typography>
-                          )}
-                        </Stack>
-                        <Stack alignItems="center" sx={{ minWidth: 40 }}>
-                          <Tooltip title="Create purchase for this figurine">
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenCreatePurchaseForFigurine(slot.figurine!);
-                              }}
-                              sx={{ color: "rgba(235,243,255,0.95)" }}
-                            >
-                              <AddIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          {showBackActionLabels && (
-                            <Typography variant="caption" sx={{ color: "rgba(220,231,246,0.9)", fontSize: "0.6rem", lineHeight: 1 }}>
-                              New
-                            </Typography>
-                          )}
-                        </Stack>
-                        <Stack alignItems="center" sx={{ minWidth: 40 }}>
-                          <Tooltip title="Remove from collection">
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenDeleteFigurineDialog(slot.figurine!.id);
-                              }}
-                              sx={{ color: "rgba(144,52,43,0.92)" }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          {showBackActionLabels && (
-                            <Typography variant="caption" sx={{ color: "rgba(220,231,246,0.9)", fontSize: "0.6rem", lineHeight: 1 }}>
-                              Remove
-                            </Typography>
-                          )}
-                        </Stack>
+                            </Tooltip>
+                            {showBackActionLabels && (
+                              <Typography variant="caption" sx={{ color: "rgba(220,231,246,0.9)", fontSize: "0.6rem", lineHeight: 1 }}>
+                                New
+                              </Typography>
+                            )}
+                          </Stack>
+                        )}
+                        {hasPermission("collections:figurines:delete") && (
+                          <Stack alignItems="center" sx={{ minWidth: 40 }}>
+                            <Tooltip title="Remove from collection">
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenDeleteFigurineDialog(slot.figurine!.id);
+                                }}
+                                sx={{ color: "rgba(144,52,43,0.92)" }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            {showBackActionLabels && (
+                              <Typography variant="caption" sx={{ color: "rgba(220,231,246,0.9)", fontSize: "0.6rem", lineHeight: 1 }}>
+                                Remove
+                              </Typography>
+                            )}
+                          </Stack>
+                        )}
                       </Stack>
                     </Card>
                   )}
