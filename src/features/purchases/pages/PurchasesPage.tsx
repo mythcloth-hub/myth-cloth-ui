@@ -48,6 +48,7 @@ import type { PurchaseRecord, PurchaseRecordInput, ShippingStatus } from "../typ
 import AppPageHeader from "../../../components/AppPageHeader";
 import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
+import { useAuth } from "../../../auth/AuthContext";
 
 const SHIPPING_STATUS_STEPS: { value: ShippingStatus; label: string; Icon: SvgIconComponent }[] = [
   { value: "ORDERED", label: "Ordered", Icon: ShoppingCartOutlinedIcon },
@@ -76,6 +77,7 @@ const formatCount = (value: number): string => new Intl.NumberFormat().format(va
 
 export default function PurchasesPage() {
   const theme = useTheme();
+  const { hasPermission } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -667,34 +669,40 @@ export default function PurchasesPage() {
                   </Typography>
                 </Box>
                 <Stack direction="row" spacing={0.1} alignItems="center" sx={{ minWidth: 84, justifyContent: "flex-end" }}>
-                  <Tooltip title="Sync totals">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleOpenSyncDialog(purchase)}
-                      sx={{ color: "secondary.main", "&:hover": { color: "secondary.light" } }}
-                      disabled={!selectedCollectionId || loadingFigurines}
-                    >
-                      <SyncAltOutlinedIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Edit">
-                    <IconButton
-                      size="small"
-                      onClick={() => void handleOpenEditDialog(purchase)}
-                      sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleOpenDeleteDialog(purchase)}
-                      sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  {hasPermission("purchases:sync") && (
+                    <Tooltip title="Sync totals">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleOpenSyncDialog(purchase)}
+                        sx={{ color: "secondary.main", "&:hover": { color: "secondary.light" } }}
+                        disabled={!selectedCollectionId || loadingFigurines}
+                      >
+                        <SyncAltOutlinedIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {hasPermission("purchases:update") && (
+                    <Tooltip title="Edit">
+                      <IconButton
+                        size="small"
+                        onClick={() => void handleOpenEditDialog(purchase)}
+                        sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {hasPermission("purchases:delete") && (
+                    <Tooltip title="Delete">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleOpenDeleteDialog(purchase)}
+                        sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </Stack>
               </Stack>
               <Divider sx={{ my: 1, opacity: 0.55 }} />
