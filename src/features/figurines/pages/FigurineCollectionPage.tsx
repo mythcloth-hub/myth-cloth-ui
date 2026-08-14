@@ -594,6 +594,7 @@ export default function FigurineCollectionPage() {
   // State for paginated data from server
   const [figurines,     setFigurines]     = useState<Figurine[]>([]);
   const [loading,       setLoading]       = useState(true);
+  const [showSlowLoadNotice, setShowSlowLoadNotice] = useState(false);
   const [totalPages,    setTotalPages]    = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [totalCollectableElements, setTotalCollectableElements] = useState(0);
@@ -729,6 +730,19 @@ export default function FigurineCollectionPage() {
       })
       .finally(() => setLoading(false));
   }, [page, query, lineup, series, group, distribution, anniversary, releaseStatus, metalBody, originalColor, revival, plainCloth, battleDamaged, goldenArmor, gold24k, manga, multiPack, articulable, restocks, showOwnedOnly, selectedCollectionId, isAuthenticated]);
+
+  useEffect(() => {
+    if (!loading) {
+      setShowSlowLoadNotice(false);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowSlowLoadNotice(true);
+    }, 7000); // show the message if loading takes longer than 7 seconds
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loading]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -1263,7 +1277,26 @@ export default function FigurineCollectionPage() {
       </Box>
 
       {/* Grid / Status board */}
-      {displayLoading ? (
+      {displayLoading && showSlowLoadNotice && (
+        <Box
+          sx={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1300,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+            px: 2,
+          }}
+        >
+          <Alert severity="info" sx={{ maxWidth: 640, width: "100%", pointerEvents: "auto" }}>
+            Loading figurines. Please keep this page open.
+          </Alert>
+        </Box>
+      )}
+
+      {displayLoading ? (  
         <Grid container spacing={{ xs: 1.5, sm: 2 }}>
           {Array.from({ length: PAGE_SIZE }).map((_, i) => (
             <Grid key={i} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
