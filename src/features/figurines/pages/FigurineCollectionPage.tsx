@@ -974,7 +974,7 @@ export default function FigurineCollectionPage() {
             </FormControl>
             )}
             
-            {hasPermission("figurines:write") && (
+            {hasPermission("figurines:create") && (
               <Button 
                 variant="contained" 
                 startIcon={<AddIcon />}
