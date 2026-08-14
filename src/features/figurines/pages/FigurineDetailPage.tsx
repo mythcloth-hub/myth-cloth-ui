@@ -133,6 +133,8 @@ export default function FigurineDetailPage() {
   const { selectedCurrency } = useDisplayCurrency();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const canReadCurrentPrices = hasPermission("figurines:stores:read-current-prices");
+  const canReadHistoricalPrices = hasPermission("figurines:stores:read-historical-prices");
 
   const [figurine, setFigurine] = useState<Figurine | null>(null);
   const [loading, setLoading] = useState(true);
@@ -239,6 +241,13 @@ export default function FigurineDetailPage() {
       })
       .finally(() => setLoading(false));
 
+    if (!canReadCurrentPrices) {
+      setAverageRealtimePrice(null);
+      setAverageRealtimePriceCurrency(null);
+      setAverageRealtimePriceLoading(false);
+      return;
+    }
+
     getFigurineAverageRealtimePrice(Number(id), { currency: selectedCurrency ?? undefined })
       .then((result) => {
         setAverageRealtimePrice(result.realTimePrice);
@@ -250,7 +259,7 @@ export default function FigurineDetailPage() {
         setAverageRealtimePriceError("Live average price is not available right now.");
       })
       .finally(() => setAverageRealtimePriceLoading(false));
-  }, [id, selectedCurrency]);
+  }, [canReadCurrentPrices, id, selectedCurrency]);
 
   const hasRealtimeAveragePrice = averageRealtimePrice !== null && averageRealtimePrice > 0;
 
@@ -281,7 +290,7 @@ export default function FigurineDetailPage() {
   };
 
   useEffect(() => {
-    if (!hasRealtimeAveragePrice) {
+    if (!hasRealtimeAveragePrice || !canReadHistoricalPrices) {
       return;
     }
 
@@ -306,7 +315,7 @@ export default function FigurineDetailPage() {
     return () => {
       isActive = false;
     };
-  }, [hasRealtimeAveragePrice]);
+  }, [canReadHistoricalPrices, hasRealtimeAveragePrice]);
 
   useEffect(() => {
     if (
@@ -318,7 +327,10 @@ export default function FigurineDetailPage() {
   }, [historicalStores, selectedHistoricalStoreId]);
 
   useEffect(() => {
-    if (!hasRealtimeAveragePrice) {
+    if (!hasRealtimeAveragePrice || !canReadHistoricalPrices) {
+      setHistoricalPrices([]);
+      setHistoricalLoading(false);
+      setHistoricalError(null);
       return;
     }
 
@@ -374,7 +386,7 @@ export default function FigurineDetailPage() {
           setHistoricalLoading(false);
         }
       });
-  }, [hasRealtimeAveragePrice, id, selectedCurrency, selectedHistoricalStoreId]);
+  }, [canReadHistoricalPrices, hasRealtimeAveragePrice, id, selectedCurrency, selectedHistoricalStoreId]);
 
   useEffect(() => {
     if (!hasRealtimeAveragePrice) {
@@ -1211,7 +1223,7 @@ export default function FigurineDetailPage() {
           )}
 
           {/* Historical prices */}
-          {hasRealtimeAveragePrice && (
+          {hasRealtimeAveragePrice && canReadHistoricalPrices && (
             <>
               <Divider sx={{ borderColor: "rgba(212,175,55,0.1)", mt: 2, mb: 1.5 }} />
               <Typography
