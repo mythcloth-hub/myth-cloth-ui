@@ -166,6 +166,48 @@ Important:
 - Vite injects `VITE_*` variables at build time.
 - If you change Render env values, trigger a new deploy.
 
+## Social Login Domain Registration (Google + Facebook)
+
+Use this checklist whenever login works locally but fails in production.
+
+### Google Login (Google Cloud Console)
+
+1. Open Google Cloud Console.
+2. Go to APIs & Services > Credentials.
+3. Create or open your OAuth 2.0 Client ID (type: Web application).
+4. In Authorized JavaScript origins, add all frontend origins that can host this UI:
+	- http://localhost:5173
+	- https://saintcollections.com
+	- https://www.saintcollections.com
+	- Any Render preview/static host where you test login
+5. Save changes and ensure the client ID matches `VITE_GOOGLE_CLIENT_ID`.
+
+Notes:
+
+- For the current frontend Google Identity token flow, JavaScript origins are the critical setting.
+- If you also implement backend OAuth code flow later, configure redirect URIs in the same client.
+
+### Facebook Login (Meta App Dashboard)
+
+1. Open Meta for Developers and select your app.
+2. In Settings > Basic > App Domains, add hostnames:
+	- saintcollections.com
+	- www.saintcollections.com
+3. In Facebook Login > Settings > Allowed Domains for the JavaScript SDK, add:
+	- saintcollections.com
+	- www.saintcollections.com
+4. In Facebook Login > Settings > Valid OAuth Redirect URIs, add:
+	- https://saintcollections.com/
+	- https://www.saintcollections.com/
+	- Any Render preview/static host where you test login
+5. Ensure the App ID matches `VITE_FACEBOOK_APP_ID`.
+
+Notes:
+
+- App Domains and JS SDK Domains must be hostnames only (no scheme or path).
+- OAuth Redirect URIs must be full HTTPS URLs.
+- If login still fails for non-admin users, verify app mode and role/test-user access in Meta Dashboard.
+
 ## Deployment Troubleshooting (Render)
 
 ### White screen on deep-link refresh
@@ -243,10 +285,14 @@ curl -sSI https://your-domain.com/figurines/14 | sed -n '1,20p'
 - Verify active host in browser:
 	- Final production host currently resolves to https://saintcollections.com/ (www redirects to apex).
 
-4. `nvm` command not found after reboot
+5. Google error: "The given origin is not allowed for the given client ID"
+- Add your current site origin in Google Cloud Console > APIs & Services > Credentials > OAuth client > Authorized JavaScript origins.
+- Confirm `VITE_GOOGLE_CLIENT_ID` is from that same OAuth client.
+
+6. `nvm` command not found after reboot
 - Restart terminal or run `source ~/.bashrc` / `source ~/.zshrc`.
 
-5. Port 5173 is busy
+7. Port 5173 is busy
 
 ```bash
 npm run dev -- --port 5174
