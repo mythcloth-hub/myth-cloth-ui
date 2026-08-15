@@ -743,7 +743,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             fontWeight: 700,
           }}
         >
-          Your account
+          Current account
         </Typography>
 
         {isAuthenticated ? (
@@ -772,27 +772,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 </Typography>
               )}
             </Box>
-            {session?.email && (
-              <Typography
-                sx={{
-                  color: "text.secondary",
-                  fontSize: "0.77rem",
-                  mt: 0.5,
-                  mb: 1.1,
-                  maxWidth: "100%",
-                  overflowWrap: "anywhere",
-                  wordBreak: "break-word",
-                }}
-              >
-                {session.email}
-              </Typography>
-            )}
+            
             <Button
               onClick={handleLogout}
               startIcon={<LogoutOutlinedIcon />}
               variant="outlined"
               sx={{
                 ...authButtonBaseSx,
+                mt: 1.1,
                 color: theme.palette.error.main,
                 borderColor: alpha(theme.palette.error.main, 0.55),
                 backgroundColor: alpha(theme.palette.error.main, 0.08),
