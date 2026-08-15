@@ -137,6 +137,22 @@ Destination: /index.html
 Action: Rewrite
 ```
 
+Important:
+
+- Use `/index.html` (with leading slash). Using `index.html` can cause blank pages on direct deep-link refresh.
+
+Quick verification after deploy:
+
+```bash
+curl -sSI https://your-domain.com/figurines/14 | sed -n '1,20p'
+```
+
+Expected:
+
+- `HTTP 200`
+- `content-type: text/html`
+- Non-empty response body for `https://your-domain.com/figurines/14`
+
 4. Add environment variables in Render:
 
 ```text
@@ -149,6 +165,30 @@ Important:
 
 - Vite injects `VITE_*` variables at build time.
 - If you change Render env values, trigger a new deploy.
+
+## Deployment Troubleshooting (Render)
+
+### White screen on deep-link refresh
+
+- Symptom: route works when navigating inside the app, but direct refresh on a deep link (for example `/figurines/14`) shows a blank page.
+- Cause: SPA rewrite is missing or misconfigured.
+- Fix in Render Static Site rules:
+
+```text
+Source: /*
+Destination: /index.html
+Action: Rewrite
+```
+
+- Make sure destination is exactly `/index.html` (leading slash required).
+- Redeploy and clear browser cache (or test in an incognito window).
+- Verify deep link response:
+
+```bash
+curl -sSI https://your-domain.com/figurines/14 | sed -n '1,20p'
+```
+
+- Expected: `HTTP 200`, `content-type: text/html`, and non-empty response body.
 
 ## Scripts
 
@@ -191,3 +231,4 @@ Important:
 ```bash
 npm run dev -- --port 5174
 ```
+
