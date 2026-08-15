@@ -223,6 +223,26 @@ curl -sSI https://your-domain.com/figurines/14 | sed -n '1,20p'
 - Confirm `VITE_GOOGLE_CLIENT_ID` and/or `VITE_FACEBOOK_APP_ID` are set.
 - Restart dev server after editing `.env`.
 
+4. Facebook error: "Domain hosting the JavaScript SDK is not in your app's host domain list"
+- Cause: Facebook app configuration is missing one or more frontend hostnames.
+- In Meta App Dashboard, update all of the following:
+	- Settings > Basic > App Domains:
+		- saintcollections.com
+		- www.saintcollections.com
+	- Facebook Login > Settings > Allowed Domains for the JavaScript SDK:
+		- saintcollections.com
+		- www.saintcollections.com
+	- Facebook Login > Settings > Valid OAuth Redirect URIs:
+		- https://saintcollections.com/
+		- https://www.saintcollections.com/
+		- Add your Render preview/static hostname too if you test login there.
+- Important:
+	- Domain entries should be hostnames only (no scheme/path) in App Domains and JS SDK Domains.
+	- OAuth redirect URI entries must include full https URL.
+	- If you changed app mode/permissions, ensure app is Live and the test user/account is allowed.
+- Verify active host in browser:
+	- Final production host currently resolves to https://saintcollections.com/ (www redirects to apex).
+
 4. `nvm` command not found after reboot
 - Restart terminal or run `source ~/.bashrc` / `source ~/.zshrc`.
 
