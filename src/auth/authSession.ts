@@ -2,6 +2,7 @@ export type AuthSession = {
   collectorId: number;
   displayName: string;
   email: string;
+  role?: string;
   profilePictureUrl?: string;
   accessToken: string;
   permissions: string[];
@@ -14,6 +15,7 @@ export type AuthApiResponse = {
   collectorId: number;
   displayName: string;
   email: string;
+  role?: string;
   profilePictureUrl?: string;
   picture?: string;
   accessToken: string;
@@ -113,6 +115,7 @@ export function loadAuthSession(): AuthSession | null {
       collectorId: Number(parsed.collectorId),
       displayName: String(parsed.displayName ?? ""),
       email: String(parsed.email ?? ""),
+      role: parsed.role ? String(parsed.role) : undefined,
       profilePictureUrl: parsed.profilePictureUrl,
       accessToken: parsed.accessToken,
       permissions: normalizePermissions({

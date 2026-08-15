@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Avatar,
   Box,
   Button,
   Chip,
@@ -121,7 +122,7 @@ const START_STEPS = [
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { isAuthenticated, hasPermission } = useAuth();
+  const { isAuthenticated, session, hasPermission } = useAuth();
 
   const visibleLinks = useMemo(
     () => HOME_LINKS.filter((link) => !link.permission || hasPermission(link.permission)),
@@ -210,6 +211,47 @@ export default function HomePage() {
           </Stack>
 
           <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+
+          {isAuthenticated && session && (
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: 1.25,
+                border: "1px solid rgba(255,255,255,0.08)",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025))",
+              }}
+            >
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ xs: "flex-start", sm: "center" }}>
+                <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0, flex: 1 }}>
+                  {session.profilePictureUrl ? (
+                    <Avatar
+                      src={session.profilePictureUrl}
+                      alt={session.displayName || "Profile picture"}
+                      sx={{ width: 42, height: 42, flexShrink: 0 }}
+                    />
+                  ) : (
+                    <Avatar sx={{ width: 42, height: 42, flexShrink: 0, bgcolor: "primary.main", color: "primary.contrastText" }}>
+                      {session.displayName?.charAt(0)?.toUpperCase() || "U"}
+                    </Avatar>
+                  )}
+
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 1.5 }}>
+                      CURRENT ACCOUNT
+                    </Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+                      {session.displayName}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: "anywhere" }}>
+                      {session.email}
+                    </Typography>
+                  </Box>
+                </Stack>
+
+                {session.role && <Chip label={`Role: ${session.role}`} color="primary" variant="outlined" />}
+              </Stack>
+            </Box>
+          )}
 
           <Box
             sx={{
