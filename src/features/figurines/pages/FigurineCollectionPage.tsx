@@ -1291,7 +1291,7 @@ export default function FigurineCollectionPage() {
           }}
         >
           <Alert severity="info" sx={{ maxWidth: 640, width: "100%", pointerEvents: "auto" }}>
-            Loading figurines. Please keep this page open.
+            We’re currently loading the figurines and retrieving the latest information. This may take a little longer than usual. Please keep this page open while we finish loading the data.
           </Alert>
         </Box>
       )}
