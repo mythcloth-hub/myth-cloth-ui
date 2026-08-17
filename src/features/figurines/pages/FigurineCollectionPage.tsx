@@ -922,7 +922,7 @@ export default function FigurineCollectionPage() {
           <AppPageHeader
             eyebrow="Collections"
             title="Myth Cloth"
-            subtitle="Explore the complete Myth Cloth catalog. Browse released, prototype, announced, rumored, and unreleased figurines, with filters to quickly find what you're looking for."
+            subtitle="Omarcin Explore the complete Myth Cloth catalog. Browse released, prototype, announced, rumored, and unreleased figurines, with filters to quickly find what you're looking for."
             compact
             actions={
               <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
