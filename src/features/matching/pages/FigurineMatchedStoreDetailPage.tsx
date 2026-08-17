@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   CircularProgress,
   Divider,
@@ -26,16 +27,19 @@ import CompareArrowsOutlinedIcon from "@mui/icons-material/CompareArrowsOutlined
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
+import CloseIcon from "@mui/icons-material/Close";
 
 import { useAuth } from "../../../auth/AuthContext";
 import { useDisplayCurrency } from "../../../currency/CurrencyContext";
 import AppPageHeader from "../../../components/AppPageHeader";
+import { useBulkSelection } from "../../../hooks/useBulkSelection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import {
   getMatchedListingsByStoreId,
   getMatchedListingsSummary,
   manuallyMatchFigurineListing,
+  unmatchFigurineListings,
   type FigurineStoreMatched,
   type FigurineStoreMatchedPrice,
   type FigurineStoreMatchedSummary,
@@ -219,7 +223,11 @@ export default function FigurineMatchedStoreDetailPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [manualMatchTarget, setManualMatchTarget] = useState<FigurineStoreMatched | null>(null);
   const [savingManualMatch, setSavingManualMatch] = useState(false);
+  const [bulkUnmatchOpen, setBulkUnmatchOpen] = useState(false);
+  const [savingBulkUnmatch, setSavingBulkUnmatch] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const bulkSelection = useBulkSelection(items);
+  const canAssignMatches = hasPermission("figurines:stores:assign");
 
   const parsedStoreId = useMemo(() => {
     const parsed = Number(storeId);
@@ -269,6 +277,29 @@ export default function FigurineMatchedStoreDetailPage() {
     }
   };
 
+  const handleConfirmBulkUnmatch = async () => {
+    const selectedIds = Array.from(bulkSelection.selectedIds);
+    if (selectedIds.length === 0) {
+      setBulkUnmatchOpen(false);
+      return;
+    }
+
+    setSavingBulkUnmatch(true);
+    try {
+      await unmatchFigurineListings(selectedIds);
+      await loadDetails();
+      bulkSelection.clearAll();
+      setSuccessMessage(
+        `Sent ${selectedIds.length} match${selectedIds.length === 1 ? "" : "es"} to manual matching.`,
+      );
+      setBulkUnmatchOpen(false);
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, { action: "update", resource: "manual figurine match" }));
+    } finally {
+      setSavingBulkUnmatch(false);
+    }
+  };
+
   useEffect(() => {
     const loadStoreSummary = async () => {
       try {
@@ -307,7 +338,7 @@ export default function FigurineMatchedStoreDetailPage() {
   }
 
   return (
-    <Box sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
+    <Box sx={{ px: { xs: 2, md: 3 }, pb: canAssignMatches && bulkSelection.selectedCount > 0 ? 12 : 3 }}>
       <Box
         sx={{
           display: "flex",
@@ -372,19 +403,22 @@ export default function FigurineMatchedStoreDetailPage() {
       </Box>
 
       {!errorMessage && (
-        <Card
-          sx={{
-            mb: 2,
-            border: "1px solid rgba(212,175,55,0.2)",
-            background: "linear-gradient(145deg, rgba(212,175,55,0.12) 0%, rgba(79,195,247,0.08) 100%)",
-          }}
-        >
-          <CardContent>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
-              <Chip label={`${items.length} matched figurine${items.length === 1 ? "" : "s"}`} sx={{ fontWeight: 700 }} />
-            </Stack>
-          </CardContent>
-        </Card>
+        <Box sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+            <Chip
+              label={`${items.length} matched figurine${items.length === 1 ? "" : "s"}`}
+              sx={{ fontWeight: 700, border: "1px solid rgba(212,175,55,0.26)", bgcolor: "rgba(212,175,55,0.08)" }}
+            />
+            {canAssignMatches && (
+              <Chip
+                color={bulkSelection.selectedCount > 0 ? "warning" : "default"}
+                variant={bulkSelection.selectedCount > 0 ? "filled" : "outlined"}
+                label={`${bulkSelection.selectedCount} selected`}
+                sx={{ fontWeight: 700 }}
+              />
+            )}
+          </Stack>
+        </Box>
       )}
 
       {!errorMessage && items.length === 0 && (
@@ -746,6 +780,14 @@ export default function FigurineMatchedStoreDetailPage() {
                   <Grid size={{ xs: 12, md: 2 }}>
                     <Box sx={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <Stack alignItems="center" spacing={0.4}>
+                        {canAssignMatches && (
+                          <Checkbox
+                            checked={bulkSelection.isSelected(item.id)}
+                            onChange={() => bulkSelection.toggleSelect(item.id)}
+                            disabled={savingBulkUnmatch || savingManualMatch}
+                            sx={{ color: "rgba(212,175,55,0.6)", "&.Mui-checked": { color: "#d4af37" } }}
+                          />
+                        )}
                         <CompareArrowsOutlinedIcon sx={{ color: "#d4af37" }} />
                         <Typography variant="caption" sx={{ color: "text.secondary", letterSpacing: "0.08em" }}>
                           MATCHED
@@ -828,13 +870,14 @@ export default function FigurineMatchedStoreDetailPage() {
                               Official
                             </Button>
                           )}
-                          {hasPermission("figurines:stores:assign") && (
+                          {canAssignMatches && (
                             <Button
                               size="small"
                               variant="contained"
                               color="warning"
                               startIcon={<CompareArrowsOutlinedIcon />}
                               onClick={() => handleManualMatchClick(item)}
+                              disabled={savingBulkUnmatch || savingManualMatch}
                             >
                               Manual Match
                             </Button>
@@ -860,6 +903,108 @@ export default function FigurineMatchedStoreDetailPage() {
           );
         })}
       </Stack>
+
+      {canAssignMatches && bulkSelection.selectedCount > 0 && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: "linear-gradient(135deg, rgba(6,8,24,0.98) 0%, rgba(20,15,40,0.98) 100%)",
+            backdropFilter: "blur(20px)",
+            borderTop: "2px solid rgba(212,175,55,0.2)",
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            flexWrap: "wrap",
+            zIndex: 1200,
+            boxShadow: "0 -4px 20px rgba(0,0,0,0.3)",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "#d4af37" }}>
+              {bulkSelection.selectedCount} match{bulkSelection.selectedCount === 1 ? "" : "es"} selected
+            </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={bulkSelection.selectAll}
+              disabled={items.length === 0 || savingBulkUnmatch || savingManualMatch}
+              sx={{ fontSize: "0.75rem" }}
+            >
+              This page ({items.length})
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={bulkSelection.clearAll}
+              disabled={savingBulkUnmatch || savingManualMatch}
+              color="inherit"
+              sx={{ fontSize: "0.75rem" }}
+            >
+              Clear
+            </Button>
+          </Box>
+
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <Button
+              variant="contained"
+              color="warning"
+              startIcon={<CompareArrowsOutlinedIcon />}
+              onClick={() => setBulkUnmatchOpen(true)}
+              disabled={savingBulkUnmatch || savingManualMatch}
+            >
+              Manual Match Selected
+            </Button>
+            <IconButton
+              onClick={bulkSelection.clearAll}
+              disabled={savingBulkUnmatch || savingManualMatch}
+              sx={{ color: "text.secondary", "&:hover": { color: "text.primary" } }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      )}
+
+      <Dialog
+        open={bulkUnmatchOpen}
+        onClose={() => {
+          if (!savingBulkUnmatch) {
+            setBulkUnmatchOpen(false);
+          }
+        }}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Confirm bulk manual match</DialogTitle>
+        <DialogContent>
+          <Stack spacing={1.2} sx={{ pt: 0.5 }}>
+            <Typography variant="body2" color="text.secondary">
+              This action will remove {bulkSelection.selectedCount} automatic match{bulkSelection.selectedCount === 1 ? "" : "es"} so they can be handled on the manual matching page.
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              After confirmation, selected matches will disappear from this list.
+            </Typography>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBulkUnmatchOpen(false)} disabled={savingBulkUnmatch}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={handleConfirmBulkUnmatch}
+            disabled={bulkSelection.selectedCount === 0 || savingBulkUnmatch}
+          >
+            {savingBulkUnmatch ? "Sending..." : "Yes, send selected"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={Boolean(manualMatchTarget)}

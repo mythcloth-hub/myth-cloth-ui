@@ -41,7 +41,8 @@ export type FigurineStoreMatchedPrice = {
 };
 
 const BASE = "/figurine-stores/matched-listings";
-const MANUAL_MATCH_BASE = "/figurine-stores/matched-listings/figurine-store";
+const BULK_UNMATCH_BASE = "/figurine-stores/matched-listings/figurine-stores/unmatch";
+const BULK_UNMATCH_FALLBACK_BASE = "/figurine-stores/matched-listings/figurine-store/unmatch";
 
 export const getMatchedListingsSummary = async (
   params?: CurrencyRequestParams,
@@ -71,9 +72,28 @@ export const getMatchedListingsByStoreId = async (
 };
 
 export const manuallyMatchFigurineListing = async (figurineStoreId: number): Promise<void> => {
-  await httpClient.post(`${MANUAL_MATCH_BASE}/${figurineStoreId}`, undefined, {
-    headers: {
-      accept: "application/json",
-    },
-  });
+  await unmatchFigurineListings([figurineStoreId]);
+};
+
+export const unmatchFigurineListings = async (figurineStoreIds: number[]): Promise<void> => {
+  try {
+    await httpClient.post(BULK_UNMATCH_BASE, figurineStoreIds, {
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error: unknown) {
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    if (status !== 404) {
+      throw error;
+    }
+
+    await httpClient.post(BULK_UNMATCH_FALLBACK_BASE, figurineStoreIds, {
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+  }
 };
