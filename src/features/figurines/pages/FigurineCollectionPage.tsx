@@ -1141,8 +1141,8 @@ export default function FigurineCollectionPage() {
               <MenuItem value="ANNOUNCED">Announced</MenuItem>
               <MenuItem value="RELEASED">Released</MenuItem>
               <MenuItem value="PROTOTYPE">Prototype</MenuItem>
-              <MenuItem value="RUMORED">Rumored</MenuItem>
               <MenuItem value="UNRELEASED">Unreleased</MenuItem>
+              <MenuItem value="RUMORED">Rumored</MenuItem>
             </Select>
           </FormControl>
           {([

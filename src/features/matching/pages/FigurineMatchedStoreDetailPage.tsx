@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -17,6 +17,7 @@ import {
   Grid,
   IconButton,
   Link,
+  Pagination,
   Stack,
   Tooltip,
   Typography,
@@ -213,10 +214,16 @@ function buildSparklinePath(values: number[], width: number, height: number): st
 export default function FigurineMatchedStoreDetailPage() {
   const navigate = useNavigate();
   const { storeId } = useParams<{ storeId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { hasPermission } = useAuth();
   const { selectedCurrency } = useDisplayCurrency();
 
+  const PAGE_SIZE = 10;
+  const page = Number(searchParams.get("page") ?? "1");
+  const pageIndex = Math.max(page - 1, 0);
+
   const [items, setItems] = useState<FigurineStoreMatched[]>([]);
+  const [pageInfo, setPageInfo] = useState({ size: PAGE_SIZE, number: 0, totalElements: 0, totalPages: 1 });
   const [storeSummary, setStoreSummary] = useState<FigurineStoreMatchedSummary | null>(null);
   const [hideStoreLogo, setHideStoreLogo] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -246,8 +253,12 @@ export default function FigurineMatchedStoreDetailPage() {
     try {
       const data = await getMatchedListingsByStoreId(parsedStoreId, {
         currency: selectedCurrency ?? undefined,
+        page: pageIndex,
+        size: PAGE_SIZE,
       });
-      setItems(data);
+
+      setItems(data.content ?? []);
+      setPageInfo(data.page ?? { size: PAGE_SIZE, number: pageIndex, totalElements: 0, totalPages: 1 });
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "matched store figurines" }));
     } finally {
@@ -301,6 +312,12 @@ export default function FigurineMatchedStoreDetailPage() {
   };
 
   useEffect(() => {
+    if (!searchParams.has("page") || !Number.isFinite(Number(searchParams.get("page"))) || Number(searchParams.get("page")) < 1) {
+      setSearchParams({ page: "1" }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
     const loadStoreSummary = async () => {
       try {
         const summaries = await getMatchedListingsSummary({ currency: selectedCurrency ?? undefined });
@@ -312,7 +329,7 @@ export default function FigurineMatchedStoreDetailPage() {
 
     void loadDetails();
     void loadStoreSummary();
-  }, [parsedStoreId, selectedCurrency]);
+  }, [parsedStoreId, selectedCurrency, pageIndex, setSearchParams]);
 
   const storeHost = useMemo(() => {
     const candidate = items[0]?.storeProductUrl;
@@ -324,6 +341,12 @@ export default function FigurineMatchedStoreDetailPage() {
   }, [items, parsedStoreId, storeSummary?.storeName]);
 
   const storeLogo = storeSummary?.storeLogo?.trim() || null;
+  const totalPages = Math.max(pageInfo.totalPages || 1, 1);
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setSearchParams({ page: String(value) }, { replace: false });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   useEffect(() => {
     setHideStoreLogo(false);
@@ -403,18 +426,50 @@ export default function FigurineMatchedStoreDetailPage() {
       </Box>
 
       {!errorMessage && (
-        <Box sx={{ mb: 2 }}>
-          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-            <Chip
-              label={`${items.length} matched figurine${items.length === 1 ? "" : "s"}`}
-              sx={{ fontWeight: 700, border: "1px solid rgba(212,175,55,0.26)", bgcolor: "rgba(212,175,55,0.08)" }}
-            />
+        <Box
+          sx={{
+            mb: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1,
+            flexWrap: "wrap",
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            {pageInfo.totalElements > 0
+              ? `${pageInfo.totalElements.toLocaleString()} matched figurine${pageInfo.totalElements === 1 ? "" : "s"} · page ${page} of ${totalPages}`
+              : null}
+          </Typography>
+
+          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" alignItems="center">
             {canAssignMatches && (
               <Chip
                 color={bulkSelection.selectedCount > 0 ? "warning" : "default"}
                 variant={bulkSelection.selectedCount > 0 ? "filled" : "outlined"}
                 label={`${bulkSelection.selectedCount} selected`}
                 sx={{ fontWeight: 700 }}
+              />
+            )}
+
+            {totalPages > 1 && (
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+                shape="rounded"
+                size="small"
+                showFirstButton
+                showLastButton
+                sx={{
+                  "& .MuiPaginationItem-root": { color: "text.secondary" },
+                  "& .MuiPaginationItem-root.Mui-selected": {
+                    backgroundColor: "rgba(212, 175, 55, 0.2)",
+                    color: "primary.main",
+                    fontWeight: 700,
+                  },
+                }}
               />
             )}
           </Stack>
@@ -903,6 +958,28 @@ export default function FigurineMatchedStoreDetailPage() {
           );
         })}
       </Stack>
+
+      {!errorMessage && totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4, mb: 2 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            shape="rounded"
+            showFirstButton
+            showLastButton
+            sx={{
+              "& .MuiPaginationItem-root": { color: "text.secondary" },
+              "& .MuiPaginationItem-root.Mui-selected": {
+                backgroundColor: "rgba(212, 175, 55, 0.2)",
+                color: "primary.main",
+                fontWeight: 700,
+              },
+            }}
+          />
+        </Box>
+      )}
 
       {canAssignMatches && bulkSelection.selectedCount > 0 && (
         <Box

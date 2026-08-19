@@ -32,6 +32,18 @@ export type FigurineStoreMatched = {
   storePrices?: FigurineStoreMatchedPrice[] | null;
 };
 
+export type FigurineStoreMatchedPageInfo = {
+  size: number;
+  number: number;
+  totalElements: number;
+  totalPages: number;
+};
+
+export type PaginatedFigurineStoreMatchedResponse = {
+  content: FigurineStoreMatched[];
+  page: FigurineStoreMatchedPageInfo;
+};
+
 export type FigurineStoreMatchedPrice = {
   currency?: string | null;
   realTimePrice?: number | null;
@@ -59,10 +71,16 @@ export const getMatchedListingsSummary = async (
 
 export const getMatchedListingsByStoreId = async (
   storeId: number,
-  params?: CurrencyRequestParams,
-): Promise<FigurineStoreMatched[]> => {
-  const response = await httpClient.get<FigurineStoreMatched[]>(`${BASE}/stores/${storeId}`, {
-    params: toCurrencyParam(params?.currency),
+  params?: CurrencyRequestParams & { page?: number; size?: number },
+): Promise<PaginatedFigurineStoreMatchedResponse> => {
+  const queryParams = {
+    ...toCurrencyParam(params?.currency),
+    ...(typeof params?.page === "number" ? { page: params.page } : {}),
+    ...(typeof params?.size === "number" ? { size: params.size } : {}),
+  };
+
+  const response = await httpClient.get<PaginatedFigurineStoreMatchedResponse>(`${BASE}/stores/${storeId}`, {
+    params: queryParams,
     headers: {
       accept: "application/json",
     },
