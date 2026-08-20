@@ -3,7 +3,10 @@ import type {
   AssignFigurinesRequest,
   Collection,
   CollectionFigurine,
+  CollectionFigurinesPageInfo,
+  CollectionSummaryResponse,
   CreateCollectionRequest,
+  PaginatedCollectionFigurinesResponse,
   UpdateCollectionRequest,
 } from "../types/collection";
 
@@ -12,6 +15,11 @@ const API_BASE = "/collections";
 type CollectionFigurineApiResponse = Partial<CollectionFigurine> & {
   imageUrl?: string | null;
   year?: number | string | null;
+};
+
+type PaginatedCollectionFigurinesApiResponse = {
+  content?: CollectionFigurineApiResponse[];
+  page?: Partial<CollectionFigurinesPageInfo>;
 };
 
 type CollectionFigurineDetailApiResponse = {
@@ -24,6 +32,75 @@ type CollectionFigurineDetailApiResponse = {
   }>;
   tamashiiUrl?: string;
   lineUpUrl?: string;
+};
+
+type CollectionSummaryApiResponse = Partial<CollectionSummaryResponse> & {
+  summary?: Partial<CollectionSummaryResponse["summary"]>;
+  collection?: Partial<CollectionSummaryResponse["collection"]>;
+};
+
+type JsonObject = Record<string, unknown>;
+
+const toSafeNumber = (value: unknown): number => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+};
+
+const toObject = (value: unknown): JsonObject | null =>
+  typeof value === "object" && value !== null ? (value as JsonObject) : null;
+
+const pickNumber = (source: JsonObject | null, keys: string[]): number => {
+  if (!source) return 0;
+
+  for (const key of keys) {
+    if (key in source) {
+      const next = toSafeNumber(source[key]);
+      if (next > 0 || source[key] === 0 || source[key] === "0") {
+        return next;
+      }
+    }
+  }
+
+  return 0;
+};
+
+const extractSummaryPayload = (raw: unknown): CollectionSummaryApiResponse | undefined => {
+  const direct = toObject(raw);
+  if (!direct) return undefined;
+
+  if (toObject(direct.summary) || toObject(direct.collection)) {
+    return direct as CollectionSummaryApiResponse;
+  }
+
+  const dataLevel = toObject(direct.data);
+  if (dataLevel && (toObject(dataLevel.summary) || toObject(dataLevel.collection))) {
+    return dataLevel as CollectionSummaryApiResponse;
+  }
+
+  const nestedDataLevel = toObject(dataLevel?.data);
+  if (nestedDataLevel && (toObject(nestedDataLevel.summary) || toObject(nestedDataLevel.collection))) {
+    return nestedDataLevel as CollectionSummaryApiResponse;
+  }
+
+  const payloadLevel = toObject(direct.payload);
+  if (payloadLevel && (toObject(payloadLevel.summary) || toObject(payloadLevel.collection))) {
+    return payloadLevel as CollectionSummaryApiResponse;
+  }
+
+  const resultLevel = toObject(direct.result);
+  if (resultLevel && (toObject(resultLevel.summary) || toObject(resultLevel.collection))) {
+    return resultLevel as CollectionSummaryApiResponse;
+  }
+
+  return direct as CollectionSummaryApiResponse;
 };
 
 function normalizeCollection(collection: Partial<Collection>): Collection {
@@ -75,6 +152,72 @@ function normalizeCollectionFigurine(figurine: CollectionFigurineApiResponse): C
   };
 }
 
+function normalizeCollectionFigurinesPageInfo(
+  page: Partial<CollectionFigurinesPageInfo> | undefined,
+  fallbackSize: number,
+  fallbackNumber: number,
+  fallbackElements: number
+): CollectionFigurinesPageInfo {
+  return {
+    size: Math.max(1, toSafeNumber(page?.size) || fallbackSize),
+    number: Math.max(0, toSafeNumber(page?.number) || fallbackNumber),
+    totalElements: Math.max(0, toSafeNumber(page?.totalElements) || fallbackElements),
+    totalPages: Math.max(1, toSafeNumber(page?.totalPages) || 1),
+  };
+}
+
+function normalizePaginatedCollectionFigurinesResponse(
+  response: unknown,
+  page?: number,
+  size?: number
+): PaginatedCollectionFigurinesResponse {
+  if (Array.isArray(response)) {
+    const content = response.map(normalizeCollectionFigurine);
+    const fallbackSize = size ?? (content.length || 1);
+    return {
+      content,
+      page: normalizeCollectionFigurinesPageInfo(undefined, fallbackSize, page ?? 0, content.length),
+    };
+  }
+
+  const candidate = toObject(response) as PaginatedCollectionFigurinesApiResponse | null;
+  const content = Array.isArray(candidate?.content)
+    ? candidate.content.map(normalizeCollectionFigurine)
+    : [];
+  const fallbackSize = size ?? (content.length || 1);
+
+  return {
+    content,
+    page: normalizeCollectionFigurinesPageInfo(candidate?.page, fallbackSize, page ?? 0, content.length),
+  };
+}
+
+function normalizeCollectionSummary(
+  response: unknown
+): CollectionSummaryResponse {
+  const summary = extractSummaryPayload(response);
+  const summarySection = toObject(summary?.summary);
+  const collectionSection = toObject(summary?.collection);
+
+  return {
+    summary: {
+      totalFigurines: pickNumber(summarySection, ["totalFigurines", "total_figurines"]),
+      totalUpcoming: pickNumber(summarySection, ["totalUpcoming", "total_upcoming"]),
+      totalReleased: pickNumber(summarySection, ["totalReleased", "total_released"]),
+    },
+    collection: {
+      preorderedCopies: pickNumber(collectionSection, ["preorderedCopies", "preordered_copies"]),
+      ownedCopies: pickNumber(collectionSection, ["ownedCopies", "owned_copies"]),
+      preorderedFigurines: pickNumber(collectionSection, ["preorderedFigurines", "preordered_figurines"]),
+      ownedFigurines: pickNumber(collectionSection, ["ownedFigurines", "owned_figurines"]),
+      missingReleasedFigurines: pickNumber(collectionSection, [
+        "missingReleasedFigurines",
+        "missing_released_figurines",
+      ]),
+    },
+  };
+}
+
 export async function getCollections(): Promise<Collection[]> {
   const response = await httpClient.get<Collection[]>(API_BASE);
   return response.data.map(normalizeCollection);
@@ -86,8 +229,35 @@ export async function getCollectionById(id: number): Promise<Collection> {
 }
 
 export async function getCollectionFigurines(collectionId: number): Promise<CollectionFigurine[]> {
-  const response = await httpClient.get<CollectionFigurineApiResponse[]>(`${API_BASE}/${collectionId}/figurines`);
-  return response.data.map(normalizeCollectionFigurine);
+  const response = await httpClient.get<CollectionFigurineApiResponse[] | PaginatedCollectionFigurinesApiResponse>(
+    `${API_BASE}/${collectionId}/figurines`
+  );
+  const normalized = normalizePaginatedCollectionFigurinesResponse(response.data);
+  return normalized.content;
+}
+
+export async function getCollectionFigurinesPaginated(
+  collectionId: number,
+  params?: { page?: number; size?: number }
+): Promise<PaginatedCollectionFigurinesResponse> {
+  const queryParams = {
+    ...(typeof params?.page === "number" ? { page: params.page } : {}),
+    ...(typeof params?.size === "number" ? { size: params.size } : {}),
+  };
+
+  const response = await httpClient.get<CollectionFigurineApiResponse[] | PaginatedCollectionFigurinesApiResponse>(
+    `${API_BASE}/${collectionId}/figurines`,
+    {
+      params: queryParams,
+    }
+  );
+
+  return normalizePaginatedCollectionFigurinesResponse(response.data, params?.page, params?.size);
+}
+
+export async function getCollectionSummary(collectionId: number): Promise<CollectionSummaryResponse> {
+  const response = await httpClient.get<CollectionSummaryApiResponse>(`${API_BASE}/${collectionId}/summary`);
+  return normalizeCollectionSummary(response.data);
 }
 
 export async function getCollectionFigurine(

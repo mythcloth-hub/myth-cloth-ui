@@ -50,3 +50,34 @@ export interface CollectionFigurine {
   isCollected: boolean;
   ownedQuantity: number;
 }
+
+export interface CollectionFigurinesPageInfo {
+  size: number;
+  number: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface PaginatedCollectionFigurinesResponse {
+  content: CollectionFigurine[];
+  page: CollectionFigurinesPageInfo;
+}
+
+export interface CollectionCatalogSummary {
+  totalFigurines: number;
+  totalUpcoming: number;
+  totalReleased: number;
+}
+
+export interface CollectionProgressSummary {
+  preorderedCopies: number;
+  ownedCopies: number;
+  preorderedFigurines: number;
+  ownedFigurines: number;
+  missingReleasedFigurines: number;
+}
+
+export interface CollectionSummaryResponse {
+  summary: CollectionCatalogSummary;
+  collection: CollectionProgressSummary;
+}

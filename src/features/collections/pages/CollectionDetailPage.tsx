@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -14,10 +14,9 @@ import {
   DialogTitle,
   IconButton,
   LinearProgress,
+  Pagination,
   Snackbar,
   Stack,
-  ToggleButton,
-  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -35,11 +34,12 @@ import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import {
   addFigurineToCollection,
-  getCollectionFigurines,
+  getCollectionSummary,
+  getCollectionFigurinesPaginated,
   getCollectionFigurine,
   removeFigurineFromCollection,
 } from "../api/collectionApi";
-import type { Collection, CollectionFigurine } from "../types/collection";
+import type { Collection, CollectionFigurine, CollectionSummaryResponse } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import PurchaseFormDialog from "../../purchases/components/PurchaseFormDialog";
 import {
@@ -56,7 +56,6 @@ import {
   type PurchaseRecord,
   type PurchaseRecordInput,
 } from "../../purchases/types/purchase";
-import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
 
@@ -66,11 +65,10 @@ type AlbumFigurine = CollectionFigurine & {
   trackingCode?: string;
 };
 
-const BASE_ALBUM_TARGET = 24;
 const MIN_ALBUM_ZOOM = 0.8;
 const MAX_ALBUM_ZOOM = 2;
 const ALBUM_ZOOM_STEP = 0.1;
-const TIMELINE_HEIGHT = 400;
+const COLLECTION_FIGURINES_PAGE_SIZE = 50;
 
 const ALBUM_PATTERNS = [
   { colSpan: 1, rowSpan: 2, tilt: -1.5 },
@@ -131,18 +129,27 @@ export default function CollectionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const initialCollection = (location.state as { collection?: Collection } | null)?.collection ?? null;
+  const parsedPage = Number(searchParams.get("page") ?? "1");
+  const page = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.floor(parsedPage) : 1;
+  const pageIndex = Math.max(page - 1, 0);
 
   const [collection, setCollection] = useState<Collection | null>(null);
+  const [collectionSummary, setCollectionSummary] = useState<CollectionSummaryResponse | null>(null);
   const [figurines, setFigurines] = useState<AlbumFigurine[]>([]);
+  const [pageInfo, setPageInfo] = useState({
+    size: COLLECTION_FIGURINES_PAGE_SIZE,
+    number: 0,
+    totalElements: 0,
+    totalPages: 1,
+  });
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [flippedFigurineId, setFlippedFigurineId] = useState<number | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [albumZoom, setAlbumZoom] = useState(1);
-  const [showOwnedOnly, setShowOwnedOnly] = useState(false);
-  const [timelineProgress, setTimelineProgress] = useState(0);
   const [figurineBackDetails, setFigurineBackDetails] = useState<Record<number, FigurineBackDetail>>({});
   const [figurineBackNameLoadingId, setFigurineBackNameLoadingId] = useState<number | null>(null);
   const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
@@ -156,6 +163,8 @@ export default function CollectionDetailPage() {
   const [recentlyAddedFigurineId, setRecentlyAddedFigurineId] = useState<number | null>(null);
   const [animatedProgressPercent, setAnimatedProgressPercent] = useState(0);
   const albumGridSectionRef = useRef<HTMLDivElement | null>(null);
+  const pendingRestoreScrollTopRef = useRef<number | null>(null);
+  const pendingRestoreUsesContainerRef = useRef(false);
 
   const toFigurineNameById = (items: AlbumFigurine[]): Record<number, string> =>
     Object.fromEntries(items.map((item) => [item.id, item.displayableName]));
@@ -175,8 +184,14 @@ export default function CollectionDetailPage() {
   };
 
   useEffect(() => {
+    if (!searchParams.has("page") || !Number.isFinite(Number(searchParams.get("page"))) || Number(searchParams.get("page")) < 1) {
+      setSearchParams({ page: "1" }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
     loadCollection();
-  }, [id]);
+  }, [id, pageIndex]);
 
   useEffect(() => {
     if (loading) return;
@@ -205,14 +220,6 @@ export default function CollectionDetailPage() {
         }
       }
 
-      const rect = gridSection.getBoundingClientRect();
-      const viewportHeight = scrollContainer?.clientHeight ?? window.innerHeight;
-      const viewportTop = scrollContainer?.getBoundingClientRect().top ?? 0;
-      const relativeTop = rect.top - viewportTop;
-      const totalTravel = rect.height + viewportHeight;
-      const passed = viewportHeight - relativeTop;
-      const ratioInSection = Math.min(1, Math.max(0, passed / Math.max(1, totalTravel)));
-      setTimelineProgress(ratioInSection);
     };
 
     const initialGridSection = albumGridSectionRef.current;
@@ -231,8 +238,24 @@ export default function CollectionDetailPage() {
     };
   }, [loading]);
 
-  const loadCollection = async () => {
+  const loadCollection = async (options?: { preserveScroll?: boolean }) => {
     if (!id) return;
+
+    if (options?.preserveScroll) {
+      const gridSection = albumGridSectionRef.current;
+      const scrollContainer = getNearestScrollContainer(gridSection);
+
+      if (scrollContainer) {
+        pendingRestoreScrollTopRef.current = scrollContainer.scrollTop;
+        pendingRestoreUsesContainerRef.current = true;
+      } else {
+        pendingRestoreScrollTopRef.current = window.scrollY;
+        pendingRestoreUsesContainerRef.current = false;
+      }
+    } else {
+      pendingRestoreScrollTopRef.current = null;
+    }
+
     setLoading(true);
     setErrorMessage(null);
     try {
@@ -248,26 +271,93 @@ export default function CollectionDetailPage() {
       };
 
       setCollection(data);
+      setCollectionSummary(null);
       setFlippedFigurineId(null);
       setFigurineBackDetails({});
       setFigurineBackNameLoadingId(null);
 
-      const collectionFigurines = await getCollectionFigurines(data.id);
-      const normalizedFigurines = collectionFigurines.map((figurine) => ({
-        ...figurine,
-        purchasePrice: undefined,
-        purchaseCurrency: undefined,
-        trackingCode: undefined,
-      }));
+      const [summaryResult, figurinesResult] = await Promise.allSettled([
+        getCollectionSummary(data.id),
+        getCollectionFigurinesPaginated(data.id, {
+          page: pageIndex,
+          size: COLLECTION_FIGURINES_PAGE_SIZE,
+        }),
+      ]);
+
+      if (summaryResult.status === "fulfilled") {
+        const summary = summaryResult.value;
+        setCollectionSummary(summary);
+        setCollection((current) =>
+          current
+            ? {
+                ...current,
+                totalFigurines: summary.summary.totalFigurines,
+              }
+            : current
+        );
+      }
+
+      const normalizedFigurines =
+        figurinesResult.status === "fulfilled"
+          ? figurinesResult.value.content.map((figurine) => ({
+              ...figurine,
+              purchasePrice: undefined,
+              purchaseCurrency: undefined,
+              trackingCode: undefined,
+            }))
+          : [];
+
+      if (figurinesResult.status === "fulfilled") {
+        setPageInfo(figurinesResult.value.page);
+      } else {
+        setPageInfo({
+          size: COLLECTION_FIGURINES_PAGE_SIZE,
+          number: pageIndex,
+          totalElements: 0,
+          totalPages: 1,
+        });
+      }
 
       setFigurines(normalizedFigurines);
 
-      const backendPurchases = await loadBackendPurchasesForCollection(normalizedFigurines);
-      setPurchases(backendPurchases);
+      if (summaryResult.status === "rejected" && figurinesResult.status === "rejected") {
+        throw summaryResult.reason ?? figurinesResult.reason;
+      }
+
+      if (normalizedFigurines.length > 0) {
+        try {
+          const backendPurchases = await loadBackendPurchasesForCollection(normalizedFigurines);
+          setPurchases(backendPurchases);
+        } catch {
+          setPurchases([]);
+        }
+      } else {
+        setPurchases([]);
+      }
+
+      if (summaryResult.status === "rejected" && figurinesResult.status === "fulfilled") {
+        setErrorMessage("Collection summary is temporarily unavailable. Showing fallback values from figurines.");
+      }
     } catch (err) {
       setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "collection" }));
     } finally {
       setLoading(false);
+
+      const top = pendingRestoreScrollTopRef.current;
+      if (top !== null) {
+        window.requestAnimationFrame(() => {
+          const gridSection = albumGridSectionRef.current;
+          const scrollContainer = getNearestScrollContainer(gridSection);
+
+          if (pendingRestoreUsesContainerRef.current && scrollContainer) {
+            scrollContainer.scrollTo({ top, behavior: "auto" });
+          } else {
+            window.scrollTo({ top, behavior: "auto" });
+          }
+
+          pendingRestoreScrollTopRef.current = null;
+        });
+      }
     }
   };
 
@@ -290,17 +380,6 @@ export default function CollectionDetailPage() {
     });
   };
 
-  const formatPriceWithTax = (amount: number, currency?: string): string => {
-    return formatCurrencyAmount(amount, currency ?? null, {
-      style: "currency",
-      maximumFractionDigits: 2,
-      fallbackCurrency: "USD",
-    });
-  };
-
-  const getReleaseStatusLabel = (status: CollectionFigurine["releaseStatus"]): string =>
-    status.replaceAll("_", " ");
-
   const handleCloseDeleteFigurineDialog = () => {
     if (isDeletingFigurine) return;
 
@@ -314,7 +393,7 @@ export default function CollectionDetailPage() {
 
     try {
       await removeFigurineFromCollection(collection.id, pendingDeleteFigurineId);
-      await loadCollection();
+      await loadCollection({ preserveScroll: true });
       setSuccessMessage("Figurine removed from collection.");
     } catch (err) {
       setErrorMessage(
@@ -332,7 +411,7 @@ export default function CollectionDetailPage() {
     setAddingFigurineId(figurineId);
     try {
       await addFigurineToCollection(collection.id, figurineId);
-      await loadCollection();
+      await loadCollection({ preserveScroll: true });
       setRecentlyAddedFigurineId(figurineId);
       setSuccessMessage("Figurine added to collection.");
     } catch (err) {
@@ -350,7 +429,7 @@ export default function CollectionDetailPage() {
     setAddingFigurineId(figurineId);
     try {
       await addFigurineToCollection(collection.id, figurineId);
-      await loadCollection();
+      await loadCollection({ preserveScroll: true });
       setRecentlyAddedFigurineId(figurineId);
       setSuccessMessage("Figurine quantity increased.");
     } catch (err) {
@@ -363,42 +442,55 @@ export default function CollectionDetailPage() {
   };
 
   const baseVisibleFigurines = figurines;
-  const visibleFigurines = showOwnedOnly
-    ? baseVisibleFigurines.filter((figurine) => figurine.isCollected)
-    : baseVisibleFigurines;
-  const collectedCount = baseVisibleFigurines.filter(
+  const visibleFigurines = baseVisibleFigurines;
+  const fallbackOwnedReleasedFigurines = baseVisibleFigurines.filter(
     (figurine) => figurine.releaseStatus === "RELEASED" && figurine.isCollected
   ).length;
-  const effectiveOwnedTotal = baseVisibleFigurines
-    .filter((figurine) => figurine.isCollected)
-    .reduce((total, figurine) => total + Math.max(1, figurine.ownedQuantity), 0);
-  const toCompleteCount = baseVisibleFigurines.filter(
+  const fallbackMissingReleasedFigurines = baseVisibleFigurines.filter(
     (figurine) => figurine.releaseStatus === "RELEASED" && !figurine.isCollected
   ).length;
-  const progressPercent = Math.round(
-    (collectedCount / Math.max(1, collectedCount + toCompleteCount)) * 100
+  const fallbackOwnedCopies = baseVisibleFigurines
+    .filter((figurine) => figurine.isCollected)
+    .reduce((total, figurine) => total + Math.max(1, figurine.ownedQuantity), 0);
+
+  const catalogSummary = collectionSummary?.summary;
+  const collectorSummary = collectionSummary?.collection;
+  const totalReleased = Math.max(
+    0,
+    catalogSummary?.totalReleased ??
+      fallbackOwnedReleasedFigurines + fallbackMissingReleasedFigurines
   );
-  const releasedTrackedTotal = collectedCount + toCompleteCount;
+  const totalUpcoming = Math.max(
+    0,
+    catalogSummary?.totalUpcoming ?? Math.max(0, baseVisibleFigurines.length - totalReleased)
+  );
+  const ownedReleasedFigurines = Math.max(
+    0,
+    collectorSummary?.ownedFigurines ?? fallbackOwnedReleasedFigurines
+  );
+  const missingReleasedFigurines = Math.max(
+    0,
+    collectorSummary?.missingReleasedFigurines ?? fallbackMissingReleasedFigurines
+  );
+  const ownedCopies = Math.max(0, collectorSummary?.ownedCopies ?? fallbackOwnedCopies);
+  const preorderedCopies = Math.max(0, collectorSummary?.preorderedCopies ?? 0);
+  const preorderedFigurines = Math.max(0, collectorSummary?.preorderedFigurines ?? 0);
+  const releasedProgressRawPercent = (ownedReleasedFigurines / Math.max(1, totalReleased)) * 100;
+  const releasedProgressPercent = Number(releasedProgressRawPercent.toFixed(1));
+  const releasedProgressBarValue =
+    releasedProgressRawPercent > 0
+      ? Math.max(3, Math.min(100, releasedProgressRawPercent))
+      : 0;
+  const upcomingCoveragePercent = Math.round((preorderedFigurines / Math.max(1, totalUpcoming)) * 100);
+  const catalogTotalFigurines = Math.max(
+    baseVisibleFigurines.length,
+    catalogSummary?.totalFigurines ?? collection?.totalFigurines ?? 0
+  );
   const zoomPercent = Math.round(albumZoom * 100);
 
   const ownedColor = theme.palette.success.main;
   const missingColor = theme.palette.warning.main;
   const accentColor = theme.palette.info.main;
-
-  const timelineYears = useMemo(
-    () => visibleFigurines.map((figurine) => figurine.year).filter((year): year is number => typeof year === "number"),
-    [visibleFigurines]
-  );
-  const newestYear = timelineYears.length > 0 ? timelineYears[0] : null;
-  const oldestYear = timelineYears.length > 0 ? timelineYears[timelineYears.length - 1] : null;
-  const activeYear =
-    timelineYears.length > 0
-      ? timelineYears[Math.min(timelineYears.length - 1, Math.round(timelineProgress * (timelineYears.length - 1)))]
-      : null;
-  const timelineIndicatorTop = Math.max(
-    24,
-    Math.min(TIMELINE_HEIGHT - 24, 12 + timelineProgress * (TIMELINE_HEIGHT - 40))
-  );
 
   const handleZoomOut = () => {
     setAlbumZoom((current) => Math.max(MIN_ALBUM_ZOOM, Number((current - ALBUM_ZOOM_STEP).toFixed(2))));
@@ -416,11 +508,11 @@ export default function CollectionDetailPage() {
     setAnimatedProgressPercent(0);
 
     const frameId = window.requestAnimationFrame(() => {
-      setAnimatedProgressPercent(progressPercent);
+      setAnimatedProgressPercent(releasedProgressBarValue);
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [progressPercent, collection?.id]);
+  }, [releasedProgressBarValue, collection?.id]);
 
   useEffect(() => {
     if (recentlyAddedFigurineId === null) return;
@@ -432,25 +524,25 @@ export default function CollectionDetailPage() {
     return () => window.clearTimeout(timeoutId);
   }, [recentlyAddedFigurineId]);
 
-  const totalNeeded = useMemo(() => {
-    if (!collection) return BASE_ALBUM_TARGET;
-    const base = Math.max(BASE_ALBUM_TARGET, collection.totalFigurines);
-    return Math.ceil(base / 12) * 12;
-  }, [collection]);
+  const totalPages = Math.max(pageInfo.totalPages || 1, 1);
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    const next: Record<string, string> = {};
+    if (value > 1) {
+      next.page = String(value);
+    }
+
+    setSearchParams(next, { replace: false });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const albumSlots: AlbumSlot[] = useMemo(() => {
-    const ownedSlots = visibleFigurines.map((figurine) => ({
+    return visibleFigurines.map((figurine) => ({
       key: `owned-${figurine.id}`,
       owned: figurine.isCollected,
       figurine,
     }));
-    const missingCount = showOwnedOnly ? 0 : Math.max(0, totalNeeded - ownedSlots.length);
-    const missingSlots = Array.from({ length: missingCount }, (_, idx) => ({
-      key: `missing-${idx}`,
-      owned: false,
-    }));
-    return [...ownedSlots, ...missingSlots];
-  }, [showOwnedOnly, visibleFigurines, totalNeeded]);
+  }, [visibleFigurines]);
 
   const handleToggleFlip = (slot: AlbumSlot) => {
     if (!slot.owned || !slot.figurine) return;
@@ -636,25 +728,26 @@ export default function CollectionDetailPage() {
     <Box
       sx={{
         padding: { xs: 1.5, sm: 2, md: 3 },
+        paddingBottom: { xs: "calc(env(safe-area-inset-bottom, 0px) + 12px)", sm: 2, md: 3 },
         background: `linear-gradient(165deg,
           ${alpha(theme.palette.background.default, 0.94)} 0%,
           ${alpha(theme.palette.primary.main, Math.min(0.32, 0.14 + scrollProgress * 0.18))} 42%,
           ${alpha(theme.palette.background.paper, 0.96)} 100%)`,
-       
+        overflowX: "clip",
         minHeight: "calc(100vh - 96px)",
       }}
     >
       <Box
         sx={{
           position: "sticky",
-          top: 0,
+          top: "env(safe-area-inset-top, 0px)",
           zIndex: 9,
           bgcolor: "background.default",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           mx: { xs: -1.5, sm: -2, md: -3 },
           px: { xs: 1.5, sm: 2, md: 3 },
-          pt: 0.25,
+          pt: { xs: 0.5, sm: 0.25 },
           pb: 1,
           mb: 2,
           borderBottom: "1px solid rgba(212,175,55,0.08)",
@@ -686,11 +779,11 @@ export default function CollectionDetailPage() {
 
         <Box
           sx={{
-            p: 1.5,
+            p: 1.2,
             display: "grid",
-            gap: 1,
-            gridTemplateColumns: { xs: "1fr", lg: "1fr auto" },
-            alignItems: "center",
+            gap: 0.9,
+            gridTemplateColumns: "1fr",
+            alignItems: "stretch",
             animation: "detailStatsReveal 560ms cubic-bezier(0.2, 0.9, 0.2, 1) 90ms both",
             "@keyframes detailStatsReveal": {
               "0%": { opacity: 0, transform: "translateY(14px)" },
@@ -698,147 +791,163 @@ export default function CollectionDetailPage() {
             },
           }}
         >
-          <Box>
-            <Box
-              sx={{
-                px: 1,
-                py: 0.8,
-                borderRadius: 1.4,
-                bgcolor: alpha(theme.palette.background.default, 0.24),
-              }}
-            >
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.6 }}>
-                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.9), fontWeight: 700 }}>
-                  Collection completion
-                </Typography>
-                <Typography variant="caption" sx={{ color: accentColor, fontWeight: 800 }}>
-                  {collectedCount} / {releasedTrackedTotal} released ({progressPercent}%)
-                </Typography>
-              </Stack>
-              <LinearProgress
-                variant="determinate"
-                value={animatedProgressPercent}
-                sx={{
-                  height: 10,
-                  borderRadius: 99,
-                  bgcolor: alpha(theme.palette.common.white, 0.18),
-                  "& .MuiLinearProgress-bar": {
-                    borderRadius: 99,
-                    background: `linear-gradient(90deg, ${ownedColor} 0%, ${accentColor} 100%)`,
-                    transition: "transform 900ms cubic-bezier(0.2, 0.9, 0.2, 1)",
-                  },
-                }}
-              />
-              <Stack direction="row" justifyContent="space-between" sx={{ mt: 0.5 }}>
-                <Typography variant="caption" sx={{ color: ownedColor, fontWeight: 700 }}>
-                  Owned: {collectedCount}
-                </Typography>
-                <Typography variant="caption" sx={{ color: missingColor, fontWeight: 700 }}>
-                  Missing: {toCompleteCount}
-                </Typography>
-              </Stack>
-              <Box
-                sx={{
-                  mt: 0.9,
-                  p: 1.1,
-                  borderRadius: 1.2,
-                  bgcolor: alpha(theme.palette.background.default, 0.3),
-                }}
-              >
-                <Stack direction="row" alignItems="center" spacing={1.2}>
-                  <Box
-                    sx={{
-                      minWidth: 76,
-                      px: 1,
-                      py: 0.65,
-                      borderRadius: 1.35,
-                      textAlign: "center",
-                      bgcolor: alpha(theme.palette.info.main, 0.22),
-                    }}
-                  >
-                    <Typography sx={{ fontSize: "1.45rem", lineHeight: 1, fontWeight: 900, color: theme.palette.info.light }}>
-                      {effectiveOwnedTotal}
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Stack direction="row" spacing={0.6} alignItems="center">
-                      <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.78), fontWeight: 700 }}>
-                        Effective copies
-                      </Typography>
-                      <Tooltip title="This number of figurines includes duplicates, as well as figurines that have not been released yet.">
-                        <IconButton size="small" sx={{ color: alpha(theme.palette.text.primary, 0.66), p: 0.15 }}>
-                          <InfoOutlinedIcon fontSize="inherit" />
-                        </IconButton>
-                      </Tooltip>
-                    </Stack>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        display: "block",
-                        mt: 0.2,
-                        color: alpha(theme.palette.info.light, 0.84),
-                        fontWeight: 700,
-                        letterSpacing: "0.02em",
-                      }}
-                    >
-                      Total owned (with duplicates)
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Box>
-            </Box>
-          </Box>
-
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={0.8}
-            alignItems={{ xs: "stretch", sm: "center" }}
-            justifyContent={{ sm: "flex-end" }}
+          <Card
+            sx={{
+              p: { xs: 1.1, sm: 1.2 },
+              borderRadius: 1.6,
+              border: `1px solid ${alpha(theme.palette.info.main, 0.18)}`,
+              bgcolor: alpha(theme.palette.background.default, 0.3),
+            }}
           >
-            <ToggleButtonGroup
-              size="small"
-              value={showOwnedOnly ? "owned" : "all"}
-              exclusive
-              onChange={(_, value: "all" | "owned" | null) => {
-                if (!value) return;
-                setShowOwnedOnly(value === "owned");
-              }}
-              sx={{
-                bgcolor: alpha(theme.palette.background.default, 0.3),
-                borderRadius: 1.2,
-                border: `1px solid ${alpha(theme.palette.divider, 0.18)}`,
-                p: 0.3,
-                "& .MuiToggleButtonGroup-grouped": {
-                  border: "none",
-                  borderRadius: 0.9,
-                  px: 1.2,
-                  py: 0.35,
-                  textTransform: "none",
-                  fontWeight: 700,
-                  color: alpha(theme.palette.text.primary, 0.84),
-                },
-                "& .MuiToggleButtonGroup-grouped.Mui-selected": {
-                  bgcolor: alpha(theme.palette.info.main, 0.22),
-                  color: theme.palette.info.light,
-                  boxShadow: "none",
-                },
-              }}
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              alignItems={{ xs: "flex-start", sm: "flex-start" }}
+              sx={{ mb: 0.45, gap: { xs: 0.35, sm: 0 } }}
             >
-              <ToggleButton value="all">All</ToggleButton>
-              <ToggleButton value="owned">Owned</ToggleButton>
-            </ToggleButtonGroup>
+              <Box>
+                <Typography variant="body2" sx={{ color: alpha(theme.palette.text.primary, 0.74), fontWeight: 600 }}>
+                  {ownedReleasedFigurines} of {totalReleased} released figurines collected
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: "right" }}>
+                <Typography sx={{ fontSize: { xs: "1.3rem", sm: "1.6rem" }, lineHeight: 1, fontWeight: 900, color: accentColor }}>
+                  {releasedProgressPercent}%
+                </Typography>
+                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.66), fontWeight: 700 }}>
+                  completion
+                </Typography>
+              </Box>
+            </Stack>
+
+            <LinearProgress
+              variant="determinate"
+              value={animatedProgressPercent}
+              sx={{
+                height: 12,
+                borderRadius: 99,
+                bgcolor: alpha(theme.palette.common.white, 0.16),
+                "& .MuiLinearProgress-bar": {
+                  borderRadius: 99,
+                  background: `linear-gradient(90deg, ${ownedColor} 0%, ${accentColor} 100%)`,
+                  transition: "transform 900ms cubic-bezier(0.2, 0.9, 0.2, 1)",
+                },
+              }}
+            />
 
             <Stack
               direction="row"
-              spacing={0.6}
-              alignItems="center"
-              justifyContent={{ xs: "space-between", sm: "center" }}
+              spacing={0.65}
+              useFlexGap
+              flexWrap="nowrap"
               sx={{
-                p: 0.5,
+                mt: 0.8,
+                overflowX: "auto",
+                overflowY: "hidden",
+                pb: 0.2,
+                scrollbarWidth: "thin",
+                scrollbarColor: `${alpha(theme.palette.text.primary, 0.24)} transparent`,
+                WebkitOverflowScrolling: "touch",
+                "& .MuiChip-root": {
+                  flexShrink: 0,
+                },
+                "&::-webkit-scrollbar": {
+                  height: 6,
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: alpha(theme.palette.text.primary, 0.24),
+                  borderRadius: 99,
+                },
+              }}
+            >
+              <Tooltip title="Distinct released figurines from the catalog that are currently in this collection.">
+                <Chip
+                  size="small"
+                  icon={<InfoOutlinedIcon />}
+                  label={`Owned released: ${ownedReleasedFigurines}`}
+                  sx={{ bgcolor: alpha(ownedColor, 0.2), color: ownedColor, fontWeight: 800 }}
+                />
+              </Tooltip>
+              <Tooltip title="Released figurines from the catalog that are still missing from this collection.">
+                <Chip
+                  size="small"
+                  icon={<InfoOutlinedIcon />}
+                  label={`Missing released: ${missingReleasedFigurines}`}
+                  sx={{ bgcolor: alpha(missingColor, 0.2), color: missingColor, fontWeight: 800 }}
+                />
+              </Tooltip>
+              <Tooltip title="Coverage of announced figurines: distinct upcoming figurines preordered versus all upcoming figurines in the catalog.">
+                <Chip
+                  size="small"
+                  icon={<InfoOutlinedIcon />}
+                  label={`Upcoming: ${preorderedFigurines}/${totalUpcoming} (${upcomingCoveragePercent}%)`}
+                  sx={{ bgcolor: alpha(theme.palette.secondary.main, 0.16), color: theme.palette.secondary.light, fontWeight: 800 }}
+                />
+              </Tooltip>
+              <Tooltip title="Physical released copies currently owned, including duplicates.">
+                <Chip
+                  size="small"
+                  icon={<InfoOutlinedIcon />}
+                  label={`Owned copies: ${ownedCopies}`}
+                  sx={{ bgcolor: alpha(theme.palette.info.main, 0.2), color: theme.palette.info.light, fontWeight: 800 }}
+                />
+              </Tooltip>
+              <Tooltip title="Physical copies of upcoming figurines that are preordered, including duplicate copies.">
+                <Chip
+                  size="small"
+                  icon={<InfoOutlinedIcon />}
+                  label={`Preordered copies: ${preorderedCopies}`}
+                  sx={{ bgcolor: alpha(theme.palette.warning.main, 0.2), color: theme.palette.warning.light, fontWeight: 800 }}
+                />
+              </Tooltip>
+              <Tooltip title="Total figurines available in the full catalog, including released and upcoming entries.">
+                <Chip
+                  size="small"
+                  icon={<InfoOutlinedIcon />}
+                  label={`Catalog total: ${catalogTotalFigurines}`}
+                  sx={{ bgcolor: alpha(theme.palette.common.white, 0.1), color: alpha(theme.palette.text.primary, 0.84), fontWeight: 800 }}
+                />
+              </Tooltip>
+            </Stack>
+
+          </Card>
+
+          <Box
+            sx={{
+              gridColumn: "1 / -1",
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", lg: "1fr minmax(220px, 1fr) auto" },
+              alignItems: "center",
+              gap: 1,
+              rowGap: { xs: 0.75, sm: 1 },
+              pt: 0.2,
+            }}
+          >
+            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
+              {pageInfo.totalElements > 0
+                ? `${pageInfo.totalElements.toLocaleString()} figurines · page ${page} of ${totalPages}`
+                : "No figurines available for this page."}
+            </Typography>
+
+            <Stack
+              direction="row"
+              spacing={0.5}
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{
+                p: 0.45,
                 borderRadius: 1.2,
                 border: `1px solid ${alpha(theme.palette.divider, 0.18)}`,
                 bgcolor: alpha(theme.palette.background.default, 0.3),
+                minWidth: 0,
+                width: { xs: "100%", lg: "auto" },
+                justifySelf: { xs: "stretch", lg: "center" },
+                mx: { lg: "auto" },
+                overflowX: "auto",
+                overflowY: "hidden",
+                scrollbarWidth: "thin",
+                scrollbarColor: `${alpha(theme.palette.text.primary, 0.24)} transparent`,
+                WebkitOverflowScrolling: "touch",
               }}
             >
               <Tooltip title="Zoom out">
@@ -853,30 +962,33 @@ export default function CollectionDetailPage() {
                   </IconButton>
                 </span>
               </Tooltip>
+
               <Chip
                 label={`${zoomPercent}%`}
                 size="small"
                 sx={{
-                  minWidth: 62,
+                  minWidth: 60,
                   bgcolor: alpha(theme.palette.common.white, 0.14),
                   color: theme.palette.text.primary,
-                  fontWeight: 700,
+                  fontWeight: 800,
                 }}
               />
+
               <Button
                 size="small"
                 variant="text"
                 onClick={handleResetZoom}
                 disabled={albumZoom === 1}
                 sx={{
-                  minWidth: 52,
-                  px: 1,
+                  minWidth: 50,
+                  px: 0.8,
                   whiteSpace: "nowrap",
                   bgcolor: alpha(theme.palette.background.paper, 0.22),
                 }}
               >
                 Reset
               </Button>
+
               <Tooltip title="Zoom in">
                 <span>
                   <IconButton
@@ -890,7 +1002,29 @@ export default function CollectionDetailPage() {
                 </span>
               </Tooltip>
             </Stack>
-          </Stack>
+
+            {totalPages > 1 && (
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+                shape="rounded"
+                size="small"
+                showFirstButton
+                showLastButton
+                sx={{
+                  justifySelf: { xs: "center", lg: "end" },
+                  "& .MuiPaginationItem-root": { color: "text.secondary" },
+                  "& .MuiPaginationItem-root.Mui-selected": {
+                    backgroundColor: "rgba(212, 175, 55, 0.2)",
+                    color: "primary.main",
+                    fontWeight: 700,
+                  },
+                }}
+              />
+            )}
+          </Box>
         </Box>
       </Box>
 
@@ -1168,6 +1302,16 @@ export default function CollectionDetailPage() {
             const isQuantityUpdating = Boolean(
               slot.figurine && slot.owned && slot.figurine.id === addingFigurineId
             );
+            const isDarkTheme = theme.palette.mode === "dark";
+            const backGradientStart = isAnnounced
+              ? alpha(theme.palette.secondary.dark, isDarkTheme ? 0.78 : 0.24)
+              : alpha(theme.palette.primary.dark, isDarkTheme ? 0.72 : 0.22);
+            const backGradientEnd = alpha(theme.palette.background.paper, isDarkTheme ? 0.92 : 0.98);
+            const backTileBackground = alpha(theme.palette.background.paper, isDarkTheme ? 0.2 : 0.68);
+            const backTextPrimary = alpha(theme.palette.text.primary, isDarkTheme ? 0.95 : 0.9);
+            const backTextSecondary = alpha(theme.palette.text.secondary, isDarkTheme ? 0.88 : 0.82);
+            const backActionIconColor = alpha(theme.palette.text.primary, isDarkTheme ? 0.92 : 0.84);
+            const backDangerActionColor = alpha(theme.palette.error.main, isDarkTheme ? 0.92 : 0.84);
 
             return (
               <Box
@@ -1531,29 +1675,35 @@ export default function CollectionDetailPage() {
                         inset: 0,
                         backfaceVisibility: "hidden",
                         transform: "rotateY(180deg)",
-                        borderRadius: 2,
+                        borderRadius: 1.4,
                         border: `1px solid ${alpha("#d4af37", 0.95)}`,
-                        background: backDetail?.lineUpUrl
-                          ? `linear-gradient(155deg, rgba(18, 26, 38, 0.88) 0%, rgba(12, 18, 28, 0.9) 100%), url(${backDetail.lineUpUrl}) center / contain no-repeat`
-                          : isAnnounced
-                            ? `linear-gradient(155deg, ${alpha(theme.palette.secondary.dark, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.95)} 100%)`
-                            : `linear-gradient(155deg, rgba(88,98,114,0.98) 0%, rgba(70,79,95,0.98) 52%, rgba(53,60,73,0.98) 100%)`,
-                        p: { xs: 0.9, md: 1.2 },
+                        background: `linear-gradient(155deg, ${backGradientStart} 0%, ${backGradientEnd} 100%)`,
+                        p: { xs: 0.85, md: 1 },
                         display: "flex",
                         flexDirection: "column",
-                        gap: 0.55,
+                        gap: 0.5,
                         overflow: "hidden",
-                        boxShadow: "inset 0 0 0 1px rgba(186,201,222,0.12), 0 9px 22px rgba(0,0,0,0.34)",
+                        boxShadow: `inset 0 0 0 1px ${alpha(theme.palette.common.white, isDarkTheme ? 0.1 : 0.28)}, 0 9px 22px ${alpha(theme.palette.common.black, 0.28)}`,
+                        "&::before": backDetail?.lineUpUrl
+                          ? {
+                              content: '""',
+                              position: "absolute",
+                              inset: 0,
+                              background: `url(${backDetail.lineUpUrl}) center 56% / 58% auto no-repeat`,
+                              opacity: 0.08,
+                              pointerEvents: "none",
+                            }
+                          : undefined,
                         "&::after": {
                           content: '"MYTH CLOTH"',
                           position: "absolute",
-                          top: "49%",
+                          top: "52%",
                           left: "50%",
-                          transform: "translate(-50%, -50%) rotate(-24deg)",
-                          fontSize: "0.78rem",
-                          letterSpacing: "0.2rem",
+                          transform: "translate(-50%, -50%) rotate(-20deg)",
+                          fontSize: "0.7rem",
+                          letterSpacing: "0.14rem",
                           fontWeight: 800,
-                          color: "rgba(198, 212, 232, 0.12)",
+                          color: alpha(theme.palette.text.primary, isDarkTheme ? 0.1 : 0.12),
                           whiteSpace: "nowrap",
                           pointerEvents: "none",
                         },
@@ -1566,145 +1716,173 @@ export default function CollectionDetailPage() {
                           right: 0,
                           width: 24,
                           height: 24,
-                          background:
-                            "linear-gradient(135deg, rgba(187,198,217,0.95) 0%, rgba(149,163,187,0.9) 55%, rgba(116,129,152,0.86) 100%)",
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, isDarkTheme ? 0.72 : 0.92)} 0%, ${alpha(theme.palette.primary.light, isDarkTheme ? 0.45 : 0.62)} 55%, ${alpha(theme.palette.primary.main, isDarkTheme ? 0.34 : 0.46)} 100%)`,
                           clipPath: "polygon(100% 0, 0 0, 100% 100%)",
-                          borderLeft: "1px solid rgba(138,154,179,0.45)",
-                          borderBottom: "1px solid rgba(138,154,179,0.35)",
-                          boxShadow: "-2px 2px 6px rgba(18,23,34,0.28)",
+                          borderLeft: `1px solid ${alpha(theme.palette.primary.main, isDarkTheme ? 0.35 : 0.28)}`,
+                          borderBottom: `1px solid ${alpha(theme.palette.primary.main, isDarkTheme ? 0.28 : 0.22)}`,
+                          boxShadow: `-2px 2px 6px ${alpha(theme.palette.common.black, 0.24)}`,
                           pointerEvents: "none",
                           zIndex: 2,
                         }}
                       />
 
-                      <Box
-                        sx={{
-                          position: "relative",
-                          zIndex: 1,
-                          flex: 1,
-                          minHeight: 0,
-                          overflowY: "auto",
-                          pr: 0.2,
-                          "&::-webkit-scrollbar": {
-                            width: 4,
-                          },
-                          "&::-webkit-scrollbar-thumb": {
-                            backgroundColor: "rgba(209,221,242,0.32)",
-                            borderRadius: 99,
-                          },
-                        }}
-                      >
-                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.8 }}>
+                      <Box sx={{ position: "relative", zIndex: 1, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+                        <Box
+                          sx={{
+                            p: 0.6,
+                            borderRadius: 0.6,
+                            bgcolor: alpha(theme.palette.background.default, 0.22),
+                          }}
+                        >
+                          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={0.6}>
+                            <Chip
+                              size="small"
+                              label={isAnnounced ? "Announced" : "Released"}
+                              sx={{
+                                height: 18,
+                                fontSize: "0.62rem",
+                                fontWeight: 800,
+                                bgcolor: alpha(RELEASE_STATUS_COLORS[slot.figurine.releaseStatus], 0.25),
+                                color: isAnnounced ? theme.palette.secondary.light : backTextPrimary,
+                              }}
+                            />
+                            <Typography variant="caption" sx={{ color: backTextSecondary, fontWeight: 800 }}>
+                              #{slot.figurine.id}
+                            </Typography>
+                          </Stack>
+
                           <Typography
                             variant="caption"
                             sx={{
-                              color: isAnnounced ? theme.palette.secondary.light : "rgba(228,236,248,0.92)",
-                              fontWeight: 900,
-                              letterSpacing: "0.06rem",
-                              textTransform: "uppercase",
-                              pr: 1.6,
-                              lineHeight: 1.15,
+                              mt: 0.5,
                               display: "-webkit-box",
                               overflow: "hidden",
-                              WebkitLineClamp: 2,
+                              WebkitLineClamp: 1,
                               WebkitBoxOrient: "vertical",
+                              color: backTextPrimary,
+                              fontWeight: 900,
+                              lineHeight: 1.2,
                             }}
                           >
-                              {isBackDisplayNameLoading ? "Loading sticker name..." : backDisplayName ?? slot.figurine.displayableName}
+                            {isBackDisplayNameLoading ? "Loading sticker name..." : backDisplayName ?? slot.figurine.displayableName}
                           </Typography>
-                        </Stack>
+                        </Box>
+
+                        <Box
+                          sx={{
+                            mt: 0.55,
+                            display: "grid",
+                            gap: 0.45,
+                            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              p: 0.45,
+                              borderRadius: 0.55,
+                              bgcolor: backTileBackground,
+                            }}
+                          >
+                            <Typography variant="caption" sx={{ display: "block", color: alpha(theme.palette.text.primary, 0.64), fontWeight: 700, lineHeight: 1 }}>
+                              Release
+                            </Typography>
+                            <Typography variant="caption" sx={{ display: "block", mt: 0.2, color: backTextPrimary, fontWeight: 800, lineHeight: 1.2 }}>
+                              {backDetail?.releaseDateLabel ?? "N/A"}
+                            </Typography>
+                          </Box>
+
+                          <Box
+                            sx={{
+                              p: 0.45,
+                              borderRadius: 0.55,
+                              bgcolor: backTileBackground,
+                            }}
+                          >
+                            <Typography variant="caption" sx={{ display: "block", color: alpha(theme.palette.text.primary, 0.64), fontWeight: 700, lineHeight: 1 }}>
+                              Qty
+                            </Typography>
+                            <Typography variant="caption" sx={{ display: "block", mt: 0.2, color: backTextPrimary, fontWeight: 800, lineHeight: 1.2 }}>
+                              x{Math.max(1, slot.figurine.ownedQuantity)}
+                            </Typography>
+                          </Box>
+                        </Box>
 
                         {isAnnounced && (
                           <Typography
                             variant="caption"
                             sx={{
-                              mb: 0.8,
+                              mt: 0.45,
                               display: "block",
-                              p: 0.6,
-                              borderRadius: 1,
-                              bgcolor: alpha(theme.palette.background.paper, 0.35),
-                              color: alpha(theme.palette.secondary.light, 0.95),
-                              border: `1px solid ${alpha(theme.palette.secondary.main, 0.36)}`,
-                              lineHeight: 1.25,
+                              px: 0.55,
+                              py: 0.45,
+                              borderRadius: 0.55,
+                              bgcolor: alpha(theme.palette.background.paper, 0.28),
+                              color: alpha(theme.palette.secondary.light, 0.92),
+                              lineHeight: 1.2,
                             }}
                           >
-                            Not part of collection yet: awaiting official release.
+                            Awaiting official release.
                           </Typography>
                         )}
 
-                        <Box
-                          sx={{
-                            borderTop: "1px dashed rgba(179,196,220,0.34)",
-                            mb: 0.7,
-                          }}
-                        />
-                        <Typography variant="caption" sx={{ display: "block", color: "rgba(220,231,246,0.9)", fontWeight: 700 }}>
-                          ID: #{slot.figurine.id}
-                        </Typography>
-                        <Typography variant="caption" sx={{ display: "block", color: "rgba(220,231,246,0.9)", fontWeight: 700 }}>
-                          Name: {slot.figurine.name}
-                        </Typography>
-                        {typeof backDetail?.priceWithTax === "number" && (
-                          <Typography variant="caption" sx={{ display: "block", color: "rgba(220,231,246,0.9)", fontWeight: 700 }}>
-                            Price w/ Tax: {formatPriceWithTax(backDetail.priceWithTax, backDetail.currency)}
-                          </Typography>
-                        )}
-                        {backDetail?.releaseDateLabel && (
-                          <Typography variant="caption" sx={{ display: "block", color: "rgba(220,231,246,0.9)", fontWeight: 700 }}>
-                            Release Date: {backDetail.releaseDateLabel}
-                          </Typography>
-                        )}
-                        {backDetail?.tamashiiUrl && (
-                          <Tooltip title="Open Tamashii page">
-                            <IconButton
-                              component="a"
-                              href={backDetail.tamashiiUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(event) => event.stopPropagation()}
-                              size="small"
-                              sx={{
-                                mt: 0.2,
-                                p: 0.3,
-                                color: theme.palette.info.light,
-                                border: `1px solid ${alpha(theme.palette.info.light, 0.4)}`,
-                                bgcolor: alpha(theme.palette.background.default, 0.2),
-                                width: 22,
-                                height: 22,
+                        {noteText.length > 0 && (
+                          <Tooltip title={noteText} arrow placement="top-start">
+                            <Typography
+                              variant="caption"
+                                sx={{
+                                mt: 0.45,
+                                color: alpha(theme.palette.text.primary, isDarkTheme ? 0.78 : 0.84),
+                                lineHeight: 1.2,
+                                display: "-webkit-box",
+                                overflow: "hidden",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
                               }}
                             >
-                              <OpenInNewIcon sx={{ fontSize: 14 }} />
-                            </IconButton>
+                              {noteText}
+                            </Typography>
                           </Tooltip>
                         )}
-
-                        <Tooltip title={getReleaseStatusLabel(slot.figurine.releaseStatus)}>
-                          <Box
-                            sx={{
-                              mt: 0.8,
-                              width: 12,
-                              height: 12,
-                              borderRadius: "50%",
-                              bgcolor: RELEASE_STATUS_COLORS[slot.figurine.releaseStatus],
-                              border: `1px solid ${alpha(theme.palette.common.white, 0.6)}`,
-                              boxShadow: "0 0 0 1px rgba(0,0,0,0.35)",
-                            }}
-                          />
-                        </Tooltip>
                       </Box>
 
                       <Stack
                         direction="row"
-                        spacing={0.25}
+                        spacing={0.35}
                         sx={{
                           position: "relative",
                           zIndex: 1,
                           mt: "auto",
-                          pt: 0.45,
-                          borderTop: "1px solid rgba(179,196,220,0.28)",
+                          pt: 0.5,
+                          borderTop: "1px solid rgba(179,196,220,0.24)",
                           justifyContent: "space-between",
+                          bgcolor: alpha(theme.palette.background.default, isDarkTheme ? 0.22 : 0.56),
+                          borderRadius: 0.45,
+                          px: 0.35,
+                          pb: 0.2,
                         }}
                       >
+                        {backDetail?.tamashiiUrl && (
+                          <Stack alignItems="center" sx={{ minWidth: 40 }}>
+                            <Tooltip title="Open Tamashii page">
+                              <IconButton
+                                component="a"
+                                href={backDetail.tamashiiUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(event) => event.stopPropagation()}
+                                size="small"
+                                sx={{ color: backActionIconColor }}
+                              >
+                                <OpenInNewIcon sx={{ fontSize: 14 }} />
+                              </IconButton>
+                            </Tooltip>
+                            {showBackActionLabels && (
+                              <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
+                                Link
+                              </Typography>
+                            )}
+                          </Stack>
+                        )}
                         <Stack alignItems="center" sx={{ minWidth: 40 }}>
                           <Tooltip title="View figurine details">
                             <IconButton
@@ -1713,13 +1891,13 @@ export default function CollectionDetailPage() {
                                 e.stopPropagation();
                                 navigate(`/figurines/${slot.figurine!.id}`);
                               }}
-                              sx={{ color: "rgba(235,243,255,0.95)" }}
+                              sx={{ color: backActionIconColor }}
                             >
                               <VisibilityOutlinedIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                           {showBackActionLabels && (
-                            <Typography variant="caption" sx={{ color: "rgba(220,231,246,0.9)", fontSize: "0.6rem", lineHeight: 1 }}>
+                            <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
                               View
                             </Typography>
                           )}
@@ -1735,14 +1913,14 @@ export default function CollectionDetailPage() {
                                     e.stopPropagation();
                                     handleOpenEditPurchaseForFigurine(slot.figurine!);
                                   }}
-                                  sx={{ color: "rgba(235,243,255,0.95)" }}
+                                  sx={{ color: backActionIconColor }}
                                 >
                                   <EditIcon fontSize="small" />
                                 </IconButton>
                               </span>
                             </Tooltip>
                             {showBackActionLabels && (
-                              <Typography variant="caption" sx={{ color: "rgba(220,231,246,0.9)", fontSize: "0.6rem", lineHeight: 1 }}>
+                              <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
                                 Edit
                               </Typography>
                             )}
@@ -1757,13 +1935,13 @@ export default function CollectionDetailPage() {
                                   e.stopPropagation();
                                   handleOpenCreatePurchaseForFigurine(slot.figurine!);
                                 }}
-                                sx={{ color: "rgba(235,243,255,0.95)" }}
+                                sx={{ color: backActionIconColor }}
                               >
                                 <AddIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
                             {showBackActionLabels && (
-                              <Typography variant="caption" sx={{ color: "rgba(220,231,246,0.9)", fontSize: "0.6rem", lineHeight: 1 }}>
+                              <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
                                 New
                               </Typography>
                             )}
@@ -1778,13 +1956,13 @@ export default function CollectionDetailPage() {
                                   e.stopPropagation();
                                   handleOpenDeleteFigurineDialog(slot.figurine!.id);
                                 }}
-                                sx={{ color: "rgba(144,52,43,0.92)" }}
+                                sx={{ color: backDangerActionColor }}
                               >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
                             {showBackActionLabels && (
-                              <Typography variant="caption" sx={{ color: "rgba(220,231,246,0.9)", fontSize: "0.6rem", lineHeight: 1 }}>
+                              <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
                                 Remove
                               </Typography>
                             )}
@@ -1799,93 +1977,6 @@ export default function CollectionDetailPage() {
           })}
         </Box>
 
-        <Box
-          sx={{
-            display: { xs: "none", lg: "flex" },
-            width: 92,
-            position: "sticky",
-            top: { lg: `calc(100vh - ${TIMELINE_HEIGHT + 20}px)` },
-            alignSelf: "flex-start",
-            justifyContent: "center",
-          }}
-        >
-          <Box
-            sx={{
-              width: "100%",
-              height: TIMELINE_HEIGHT,
-              position: "relative",
-              borderRadius: 2,
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "linear-gradient(180deg, rgba(11,16,33,0.72) 0%, rgba(8,12,24,0.72) 100%)",
-              px: 1,
-              py: 1.2,
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: 14,
-                bottom: 14,
-                left: "50%",
-                width: 2,
-                transform: "translateX(-50%)",
-                bgcolor: "rgba(255,255,255,0.2)",
-                borderRadius: 4,
-              }}
-            />
-
-            {newestYear && (
-              <Typography
-                variant="caption"
-                sx={{
-                  position: "absolute",
-                  top: 6,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  color: "#b8cbff",
-                  fontWeight: 700,
-                }}
-              >
-                {newestYear}
-              </Typography>
-            )}
-
-            {oldestYear && (
-              <Typography
-                variant="caption"
-                sx={{
-                  position: "absolute",
-                  bottom: 6,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  color: "#b8cbff",
-                  fontWeight: 700,
-                }}
-              >
-                {oldestYear}
-              </Typography>
-            )}
-
-            {activeYear && (
-              <Chip
-                label={activeYear}
-                size="small"
-                sx={{
-                  position: "absolute",
-                  left: "50%",
-                  top: `${timelineIndicatorTop}px`,
-                  transform: "translate(-50%, -50%)",
-                  bgcolor: "rgba(79,195,247,0.92)",
-                  color: "#07101f",
-                  fontWeight: 800,
-                  border: "1px solid rgba(255,255,255,0.45)",
-                  zIndex: 2,
-                  transition: "top 120ms linear",
-                }}
-              />
-            )}
-          </Box>
-        </Box>
         </Box>
       </Box>
     </Box>
