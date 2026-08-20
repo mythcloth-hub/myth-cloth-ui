@@ -926,7 +926,7 @@ export default function FigurineCollectionPage() {
             compact
             actions={
               <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
-            {hasPermission("collections:read") && (
+            {canReadCollections && collections.length > 0 && (
               <ToggleButtonGroup
                 size="small"
                 value={showOwnedOnly ? "owned" : "all"}
@@ -962,7 +962,7 @@ export default function FigurineCollectionPage() {
                 <ToggleButton value="owned">Owned</ToggleButton>
               </ToggleButtonGroup>
             )}
-            {hasPermission("collections:read") && (
+            {canReadCollections && collections.length > 0 && (
               <FormControl size="small" sx={{ minWidth: 190, flexShrink: 0 }}>
               <InputLabel>Collection View</InputLabel>
               <Select

@@ -19,12 +19,15 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { alpha, useTheme } from "@mui/material/styles";
 import { deleteCollection, duplicateCollection, getCollections, updateCollection } from "../api/collectionApi";
 import type { Collection } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
@@ -33,6 +36,7 @@ import { useAuth } from "../../../auth/AuthContext";
 
 export default function CollectionsListPage() {
   const navigate = useNavigate();
+  const theme = useTheme();
   const { hasPermission } = useAuth();
   const canReadCollectionFigurines = hasPermission("collections:figurines:read");
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -72,6 +76,32 @@ export default function CollectionsListPage() {
   const uniquenessRatio =
     totalFigurinesAcrossCollections > 0 ? uniqueFigurinesAcrossCollections / totalFigurinesAcrossCollections : 0;
   const uniquenessPercent = Math.round(uniquenessRatio * 100);
+  const repeatedEntriesAcrossCollections = Math.max(
+    totalFigurinesAcrossCollections - uniqueFigurinesAcrossCollections,
+    0
+  );
+  const metricCardSx = {
+    p: 1.25,
+    borderRadius: 1.5,
+    bgcolor: alpha(theme.palette.background.paper, 0.64),
+    border: `1px solid ${alpha(theme.palette.info.main, 0.24)}`,
+  };
+  const metricLabelRowSx = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 1,
+    mb: 0.5,
+  };
+  const infoIconSx = { fontSize: "0.95rem" };
+  const metricValueSx = { fontWeight: 700, color: "primary.main", lineHeight: 1 };
+  const coverGradients = [
+    [theme.palette.primary.main, theme.palette.info.main],
+    [theme.palette.info.main, theme.palette.secondary.main],
+    [theme.palette.success.main, theme.palette.primary.main],
+    [theme.palette.warning.main, theme.palette.secondary.main],
+    [theme.palette.secondary.main, theme.palette.info.main],
+  ];
 
   useEffect(() => {
     loadCollections();
@@ -188,7 +218,7 @@ export default function CollectionsListPage() {
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
-        <CircularProgress sx={{ color: "#d4af37" }} />
+        <CircularProgress sx={{ color: "primary.main" }} />
       </Box>
     );
   }
@@ -215,7 +245,7 @@ export default function CollectionsListPage() {
           <AppPageHeader
             eyebrow="Collections"
             title="My Collections"
-            subtitle="Manage groups, compare sizes, and track unique entries across your collection library."
+            subtitle="Manage your collections and keep your different collecting goals organized."
             compact
             actions={
               <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
@@ -274,11 +304,11 @@ export default function CollectionsListPage() {
             startIcon={<AddIcon />}
             onClick={() => navigate("/figurines")}
             sx={{
-              background: "linear-gradient(135deg, #d4af37 0%, #e6c547 100%)",
-              color: "#000",
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
+              color: theme.palette.getContrastText(theme.palette.primary.main),
               fontWeight: 600,
               "&:hover": {
-                background: "linear-gradient(135deg, #e6c547 0%, #d4af37 100%)",
+                background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
               },
             }}
           >
@@ -290,21 +320,22 @@ export default function CollectionsListPage() {
           <Card
             sx={{
               mb: 2.5,
-              border: "1px solid rgba(212,175,55,0.2)",
-              background: "linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(79,195,247,0.12) 100%)",
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.24)}`,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.info.main, 0.1)} 100%)`,
               backdropFilter: "blur(10px)",
             }}
           >
             <CardContent>
-              <Typography variant="overline" sx={{ color: "#4fc3f7", letterSpacing: 1.1, lineHeight: 1 }}>
+              <Typography variant="overline" sx={{ color: "info.main", letterSpacing: 1.1, lineHeight: 1 }}>
                 Collections Overview
               </Typography>
               <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5, maxWidth: 760 }}>
-                Track how your collection library is growing over time, compare collection sizes, and quickly spot
-                how many figurines are unique versus repeated across your groups.
+                Track your collections as they grow and compare what is unique versus repeated.
+                "Total entries" counts every figurine placement in every collection, while "Unique figurines" counts each figurine only once.
+                Counts include both upcoming reserved releases and items already in hand when available in your collections.
               </Typography>
               {largestCollection && (
-                <Typography variant="caption" sx={{ color: "#d4af37", mt: 0.75, display: "block", fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ color: "primary.main", mt: 0.75, display: "block", fontWeight: 600 }}>
                   Largest collection: <strong>{largestCollection.name}</strong> with {largestCollection.figurineIds.length}{" "}
                   figurine{largestCollection.figurineIds.length !== 1 ? "s" : ""}
                 </Typography>
@@ -317,39 +348,81 @@ export default function CollectionsListPage() {
                   gap: 1.25,
                 }}
               >
-                <Box sx={{ p: 1.25, borderRadius: 1.5, bgcolor: "rgba(6,12,24,0.36)", border: "1px solid rgba(79,195,247,0.2)" }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                <Box sx={metricCardSx}>
+                  <Box sx={metricLabelRowSx}>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      total collections
+                    </Typography>
+                    <Tooltip title="How many different collections you currently have." arrow>
+                      <span>
+                        <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
+                          <InfoOutlinedIcon sx={infoIconSx} />
+                        </Box>
+                      </span>
+                    </Tooltip>
+                  </Box>
+                  <Typography variant="h5" sx={metricValueSx}>
                     {collections.length}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    collection{collections.length !== 1 ? "s" : ""}
-                  </Typography>
                 </Box>
-                <Box sx={{ p: 1.25, borderRadius: 1.5, bgcolor: "rgba(6,12,24,0.36)", border: "1px solid rgba(79,195,247,0.2)" }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                <Box sx={metricCardSx}>
+                  <Box sx={metricLabelRowSx}>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      total figurine entries
+                    </Typography>
+                    <Tooltip title="Counts all placements, including upcoming reserved releases and already-owned released figures. If the same figurine appears in 3 collections, it counts as 3 entries." arrow>
+                      <span>
+                        <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
+                          <InfoOutlinedIcon sx={infoIconSx} />
+                        </Box>
+                      </span>
+                    </Tooltip>
+                  </Box>
+                  <Typography variant="h5" sx={metricValueSx}>
                     {totalFigurinesAcrossCollections}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    figurines across all collections
-                  </Typography>
                 </Box>
-                <Box sx={{ p: 1.25, borderRadius: 1.5, bgcolor: "rgba(6,12,24,0.36)", border: "1px solid rgba(79,195,247,0.2)" }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                <Box sx={metricCardSx}>
+                  <Box sx={metricLabelRowSx}>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      unique figurines
+                    </Typography>
+                    <Tooltip title="Counts each figurine only once, even if it appears in multiple collections." arrow>
+                      <span>
+                        <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
+                          <InfoOutlinedIcon sx={infoIconSx} />
+                        </Box>
+                      </span>
+                    </Tooltip>
+                  </Box>
+                  <Typography variant="h5" sx={metricValueSx}>
                     {uniqueFigurinesAcrossCollections}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    unique figurines across collections
-                  </Typography>
                 </Box>
-                <Box sx={{ p: 1.25, borderRadius: 1.5, bgcolor: "rgba(6,12,24,0.36)", border: "1px solid rgba(79,195,247,0.2)" }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: "#d4af37", lineHeight: 1 }}>
+                <Box sx={metricCardSx}>
+                  <Box sx={metricLabelRowSx}>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      average per collection
+                    </Typography>
+                    <Tooltip title="Average number of figurines per collection = total figurine entries divided by total collections." arrow>
+                      <span>
+                        <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
+                          <InfoOutlinedIcon sx={infoIconSx} />
+                        </Box>
+                      </span>
+                    </Tooltip>
+                  </Box>
+                  <Typography variant="h5" sx={metricValueSx}>
                     {averageFigurinesPerCollection.toFixed(1)}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    average figurines per collection
                   </Typography>
                 </Box>
               </Box>
+              <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 1.1 }}>
+                Repeated entries across collections: {repeatedEntriesAcrossCollections}
+                {repeatedEntriesAcrossCollections > 0
+                  ? " (same figurine appears in more than one collection)."
+                  : " (no figurine is repeated across collections)."}
+              </Typography>
 
               <Box
                 sx={{
@@ -363,13 +436,22 @@ export default function CollectionsListPage() {
                   sx={{
                     p: 2,
                     borderRadius: 2,
-                    border: "1px solid rgba(79,195,247,0.2)",
-                    background: "rgba(9,20,40,0.35)",
+                    border: `1px solid ${alpha(theme.palette.info.main, 0.24)}`,
+                    background: alpha(theme.palette.info.main, 0.07),
                   }}
                 >
-                  <Typography variant="subtitle2" sx={{ color: "#4fc3f7", mb: 1.5, fontWeight: 700 }}>
-                    Collection Size Distribution
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1.5 }}>
+                    <Typography variant="subtitle2" sx={{ color: "info.main", fontWeight: 700 }}>
+                      Largest Collections by Figurine Count
+                    </Typography>
+                    <Tooltip title="Shows up to 5 collections ordered by figurine count. Longer bars mean more figurines in that collection." arrow>
+                      <span>
+                        <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
+                          <InfoOutlinedIcon sx={infoIconSx} />
+                        </Box>
+                      </span>
+                    </Tooltip>
+                  </Box>
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
                     {topCollectionsBySize.map((collection, index) => {
                       const count = collection.figurineIds.length;
@@ -390,15 +472,15 @@ export default function CollectionsListPage() {
                             >
                               {collection.name}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: "#d4af37", fontWeight: 700, flexShrink: 0 }}>
-                              {count}
+                            <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, flexShrink: 0 }}>
+                              {count} figurine{count !== 1 ? "s" : ""}
                             </Typography>
                           </Box>
                           <Box
                             sx={{
                               height: 8,
                               borderRadius: 999,
-                              background: "rgba(79,195,247,0.12)",
+                              background: alpha(theme.palette.info.main, 0.14),
                               overflow: "hidden",
                             }}
                           >
@@ -407,7 +489,7 @@ export default function CollectionsListPage() {
                                 height: "100%",
                                 width: `${Math.max(barWidth, count > 0 ? 6 : 0)}%`,
                                 borderRadius: 999,
-                                background: "linear-gradient(90deg, #4fc3f7 0%, #d4af37 100%)",
+                                background: `linear-gradient(90deg, ${theme.palette.info.main} 0%, ${theme.palette.primary.main} 100%)`,
                                 transformOrigin: "left center",
                                 animation: `barReveal 700ms cubic-bezier(0.2, 0.9, 0.2, 1) ${index * 90}ms both`,
                                 "@keyframes barReveal": {
@@ -427,8 +509,8 @@ export default function CollectionsListPage() {
                   sx={{
                     p: 2,
                     borderRadius: 2,
-                    border: "1px solid rgba(212,175,55,0.2)",
-                    background: "rgba(26,20,8,0.28)",
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.24)}`,
+                    background: alpha(theme.palette.primary.main, 0.08),
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
@@ -436,17 +518,26 @@ export default function CollectionsListPage() {
                     gap: 1,
                   }}
                 >
-                  <Typography variant="subtitle2" sx={{ color: "#d4af37", fontWeight: 700 }}>
-                    Uniqueness Score
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                    <Typography variant="subtitle2" sx={{ color: "primary.main", fontWeight: 700 }}>
+                      Unique Figurines Ratio
+                    </Typography>
+                    <Tooltip title="Percent of entries that are unique: unique figurines divided by total figurine entries." arrow>
+                      <span>
+                        <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
+                          <InfoOutlinedIcon sx={infoIconSx} />
+                        </Box>
+                      </span>
+                    </Tooltip>
+                  </Box>
                   <Box
                     sx={{
                       width: 120,
                       height: 120,
                       borderRadius: "50%",
-                      p: "10px",
-                      background: `conic-gradient(#4fc3f7 0% ${uniquenessPercent}%, rgba(212,175,55,0.2) ${uniquenessPercent}% 100%)`,
-                      boxShadow: "0 8px 24px rgba(79,195,247,0.2)",
+                      p: 1.25,
+                      background: `conic-gradient(${theme.palette.info.main} 0% ${uniquenessPercent}%, ${alpha(theme.palette.primary.main, 0.22)} ${uniquenessPercent}% 100%)`,
+                      boxShadow: `0 8px 24px ${alpha(theme.palette.info.main, 0.24)}`,
                       animation: "donutReveal 700ms ease-out both",
                       "@keyframes donutReveal": {
                         "0%": { transform: "scale(0.86)", opacity: 0 },
@@ -459,14 +550,14 @@ export default function CollectionsListPage() {
                         width: "100%",
                         height: "100%",
                         borderRadius: "50%",
-                        bgcolor: "rgba(8,12,24,0.95)",
+                        bgcolor: alpha(theme.palette.background.paper, 0.95),
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      <Typography variant="h5" sx={{ color: "#4fc3f7", fontWeight: 800, lineHeight: 1 }}>
+                      <Typography variant="h5" sx={{ color: "info.main", fontWeight: 800, lineHeight: 1 }}>
                         {uniquenessPercent}%
                       </Typography>
                       <Typography variant="caption" sx={{ color: "text.secondary" }}>
@@ -475,7 +566,7 @@ export default function CollectionsListPage() {
                     </Box>
                   </Box>
                   <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "center", maxWidth: 220 }}>
-                    {uniqueFigurinesAcrossCollections} unique out of {totalFigurinesAcrossCollections} total figurine entries.
+                    {uniqueFigurinesAcrossCollections} unique figurines out of {totalFigurinesAcrossCollections} total entries.
                   </Typography>
                 </Box>
               </Box>
@@ -492,20 +583,20 @@ export default function CollectionsListPage() {
                   flexDirection: "column",
                   cursor: canReadCollectionFigurines ? "pointer" : "default",
                   transition: "all 0.3s ease",
-                  border: "1px solid rgba(212,175,55,0.15)",
-                  background: "linear-gradient(135deg, rgba(6,8,24,0.8) 0%, rgba(20,15,40,0.8) 100%)",
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.22)}`,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.94)} 0%, ${alpha(theme.palette.background.default, 0.96)} 100%)`,
                   backdropFilter: "blur(10px)",
                   ...(canReadCollectionFigurines
                     ? {}
                     : {
                         opacity: 0.62,
                         filter: "grayscale(1) brightness(0.78) contrast(0.88)",
-                        border: "1px solid rgba(148,148,148,0.28)",
+                        border: `1px solid ${alpha(theme.palette.text.disabled, 0.5)}`,
                       }),
                   "&:hover": {
                     transform: canReadCollectionFigurines ? "translateY(-8px)" : "none",
-                    boxShadow: canReadCollectionFigurines ? "0 16px 32px rgba(212,175,55,0.2)" : "none",
-                    border: canReadCollectionFigurines ? "1px solid rgba(212,175,55,0.3)" : "1px solid rgba(148,148,148,0.28)",
+                    boxShadow: canReadCollectionFigurines ? `0 16px 32px ${alpha(theme.palette.primary.main, 0.24)}` : "none",
+                    border: canReadCollectionFigurines ? `1px solid ${alpha(theme.palette.primary.main, 0.4)}` : `1px solid ${alpha(theme.palette.text.disabled, 0.5)}`,
                   },
                 }}
                 onClick={canReadCollectionFigurines ? () => navigate(`/collections/${collection.id}`, { state: { collection } }) : undefined}
@@ -528,8 +619,8 @@ export default function CollectionsListPage() {
                     sx={{
                       height: 140,
                       background: `linear-gradient(135deg, 
-                      ${["#d4af37", "#4fc3f7", "#81d4fa", "#42a5f5", "#ff9800"][collection.id % 5]} 0%, 
-                      ${["#4fc3f7", "#81d4fa", "#ff9800", "#d4af37", "#42a5f5"][collection.id % 5]} 100%)`,
+                      ${coverGradients[collection.id % coverGradients.length][0]} 0%, 
+                      ${coverGradients[collection.id % coverGradients.length][1]} 100%)`,
                       position: "relative",
                       overflow: "hidden",
                       display: "flex",
@@ -540,7 +631,7 @@ export default function CollectionsListPage() {
                         position: "absolute",
                         inset: 0,
                         background:
-                          "linear-gradient(45deg, rgba(212,175,55,0.1) 25%, transparent 25%, transparent 50%, rgba(212,175,55,0.1) 50%, rgba(212,175,55,0.1) 75%, transparent 75%, transparent)",
+                          `linear-gradient(45deg, ${alpha(theme.palette.common.white, 0.1)} 25%, transparent 25%, transparent 50%, ${alpha(theme.palette.common.white, 0.1)} 50%, ${alpha(theme.palette.common.white, 0.1)} 75%, transparent 75%, transparent)`,
                         backgroundSize: "20px 20px",
                         animation: "shimmer 3s infinite",
                       },
@@ -553,9 +644,9 @@ export default function CollectionsListPage() {
                     <Typography
                       variant="h5"
                       sx={{
-                        color: "rgba(255,255,255,0.9)",
+                        color: alpha(theme.palette.common.white, 0.9),
                         fontWeight: 700,
-                        textShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                        textShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.4)}`,
                         zIndex: 1,
                         textAlign: "center",
                         px: 2,
@@ -573,7 +664,7 @@ export default function CollectionsListPage() {
                         variant="h6"
                         sx={{
                           fontWeight: 700,
-                          color: "#d4af37",
+                          color: "primary.main",
                           mb: 0.5,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -606,19 +697,19 @@ export default function CollectionsListPage() {
                       display: "inline-block",
                       px: 1.5,
                       py: 0.75,
-                      background: "rgba(79,195,247,0.1)",
-                      borderRadius: "12px",
-                      border: "1px solid rgba(79,195,247,0.2)",
+                      background: alpha(theme.palette.info.main, 0.12),
+                      borderRadius: 1.5,
+                      border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
                     }}
                   >
                     <Typography
                       variant="caption"
                       sx={{
-                        color: "#4fc3f7",
+                        color: "info.main",
                         fontWeight: 600,
                       }}
                     >
-                      {collection.figurineIds.length} figurine{collection.figurineIds.length !== 1 ? "s" : ""}
+                      {collection.figurineIds.length} figurine{collection.figurineIds.length !== 1 ? "s" : ""} in this collection
                     </Typography>
                   </Box>
                 </CardContent>
