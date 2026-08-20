@@ -68,7 +68,7 @@ type AlbumFigurine = CollectionFigurine & {
 const MIN_ALBUM_ZOOM = 0.8;
 const MAX_ALBUM_ZOOM = 2;
 const ALBUM_ZOOM_STEP = 0.1;
-const COLLECTION_FIGURINES_PAGE_SIZE = 50;
+const COLLECTION_FIGURINES_PAGE_SIZE = 40;
 
 const ALBUM_PATTERNS = [
   { colSpan: 1, rowSpan: 2, tilt: -1.5 },
@@ -860,7 +860,7 @@ export default function CollectionDetailPage() {
                 },
               }}
             >
-              <Tooltip title="Distinct released figurines from the catalog that are currently in this collection.">
+              <Tooltip title="Unique released figurines from the catalog that are currently in your collection.">
                 <Chip
                   size="small"
                   icon={<InfoOutlinedIcon />}
@@ -868,7 +868,7 @@ export default function CollectionDetailPage() {
                   sx={{ bgcolor: alpha(ownedColor, 0.2), color: ownedColor, fontWeight: 800 }}
                 />
               </Tooltip>
-              <Tooltip title="Released figurines from the catalog that are still missing from this collection.">
+              <Tooltip title="Released catalog figurines that are still missing from your collection.">
                 <Chip
                   size="small"
                   icon={<InfoOutlinedIcon />}
@@ -1379,10 +1379,10 @@ export default function CollectionDetailPage() {
                       backfaceVisibility: "hidden",
                       overflow: "hidden",
                       borderRadius: 2,
-                      border: slot.owned
-                        ? `1px solid ${alpha("#d4af37", 0.95)}`
-                        : isAnnounced
-                          ? `1px dashed ${alpha(theme.palette.secondary.main, 0.72)}`
+                      border: isAnnounced
+                        ? `2px dashed ${alpha(theme.palette.secondary.main, 0.86)}`
+                        : slot.owned
+                          ? `1px solid ${alpha(theme.palette.primary.main, 0.95)}`
                           : `1px dashed ${alpha(theme.palette.divider, 0.58)}`,
                       background: slot.owned
                         ? `linear-gradient(165deg, ${alpha(theme.palette.primary.dark, 0.84)} 0%, ${alpha(theme.palette.secondary.dark, 0.82)} 100%)`
@@ -1410,6 +1410,9 @@ export default function CollectionDetailPage() {
                       boxShadow: slot.owned
                         ? "0 8px 26px rgba(0,0,0,0.34)"
                         : "inset 0 0 0 1px rgba(255,255,255,0.08)",
+                      ...(isAnnounced && {
+                        boxShadow: `0 16px 40px ${alpha(theme.palette.secondary.main, 0.4)}, 0 0 0 1px ${alpha(theme.palette.secondary.light, 0.3)}, inset 0 0 0 1px ${alpha(theme.palette.secondary.light, 0.52)}`,
+                      }),
                       "&::after": !slot.owned
                         ? {
                             content: '""',
@@ -1438,7 +1441,12 @@ export default function CollectionDetailPage() {
                           height: "100%",
                           objectFit: "cover",
                           opacity: slot.owned ? 1 : 0.74,
-                          filter: slot.owned ? "none" : "grayscale(1) brightness(0.82) contrast(0.9)",
+                          filter: isAnnounced
+                            ? "saturate(72%) brightness(0.88) contrast(0.92) hue-rotate(-10deg)"
+                            : slot.owned
+                              ? "none"
+                              : "grayscale(1) brightness(0.82) contrast(0.9)",
+                          transition: "filter 260ms ease, transform 260ms ease",
                         }}
                       />
                     ) : (
@@ -1468,6 +1476,18 @@ export default function CollectionDetailPage() {
                           "linear-gradient(180deg, transparent 0%, rgba(3,4,8,0.10) 40%, rgba(6,7,12,0.86) 100%)",
                       }}
                     />
+
+                    {isAnnounced && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          inset: 0,
+                          pointerEvents: "none",
+                          background: `radial-gradient(120% 85% at 50% 0%, ${alpha(theme.palette.secondary.light, 0.22)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 42%, transparent 72%)`,
+                          mixBlendMode: "screen",
+                        }}
+                      />
+                    )}
 
                     {isQuantityUpdating && (
                       <Box
@@ -1513,7 +1533,7 @@ export default function CollectionDetailPage() {
                     {slot.figurine && slot.owned && (
                       <Tooltip title="Double-click to increase quantity">
                         <Chip
-                          label="Collected"
+                          label={isAnnounced ? "Preordered" : "Collected"}
                           size="small"
                           sx={{
                             position: "absolute",
@@ -1586,25 +1606,6 @@ export default function CollectionDetailPage() {
                           </IconButton>
                         </span>
                       </Tooltip>
-                    )}
-
-                    {isAnnounced && (
-                      <Chip
-                        label="Not released yet"
-                        size="small"
-                        sx={{
-                          position: "absolute",
-                          top: 34,
-                          left: 8,
-                          height: 18,
-                          fontSize: "0.6rem",
-                          fontWeight: 800,
-                          bgcolor: alpha(theme.palette.background.paper, 0.3),
-                          color: theme.palette.secondary.light,
-                          border: `1px solid ${alpha(theme.palette.secondary.light, 0.38)}`,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.24)",
-                        }}
-                      />
                     )}
 
                     <Box sx={{ position: "absolute", left: 10, right: 10, bottom: 10 }}>
