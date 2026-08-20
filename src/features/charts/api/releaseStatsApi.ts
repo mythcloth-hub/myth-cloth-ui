@@ -10,10 +10,13 @@ export type ReleaseYearSummary = {
   lineUp: ReleaseYearLineup[];
 };
 
+export type ReleaseStatus = "ANNOUNCED" | "RELEASED";
+
 export type ReleaseFigurine = {
   id: number;
   name: string;
   url?: string;
+  releaseStatus?: ReleaseStatus;
 };
 
 export type ReleaseMonthLineup = {

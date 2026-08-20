@@ -10,11 +10,14 @@ import {
   Stack,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 import {
   getReleaseYearDetail,
   getReleaseYearsSummary,
+  type ReleaseStatus,
   type ReleaseYearMonthDetail,
   type ReleaseYearSummary,
 } from "../api/releaseStatsApi";
@@ -94,14 +97,17 @@ function YearBarChart({
     );
   }
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const sortedYears = getVisibleYears(years);
   const maxTotal = Math.max(
     ...sortedYears.map((year) => getYearReleaseTotal(year)),
     1,
   );
   const allLineups = Array.from(new Set(sortedYears.flatMap((y) => y.lineUp.map((l) => l.line))));
-  const BAR_MAX_H = 200;
-  const LABEL_H = 44;
+  const BAR_MAX_H = isMobile ? 130 : 200;
+  const LABEL_H = isMobile ? 34 : 44;
   const selectedYearData = selectedYear ? sortedYears.find((year) => year.year === selectedYear) : null;
   const selectedYearTotal = selectedYearData ? getYearReleaseTotal(selectedYearData) : null;
   const [animateBars, setAnimateBars] = useState(false);
@@ -109,12 +115,19 @@ function YearBarChart({
   useEffect(() => {
     setAnimateBars(false);
 
-    const frameId = window.requestAnimationFrame(() => {
-      setAnimateBars(true);
+    // wait two frames so the browser commits the 0-height state before animating, avoiding a stuck first paint
+    let innerFrameId = 0;
+    const outerFrameId = window.requestAnimationFrame(() => {
+      innerFrameId = window.requestAnimationFrame(() => {
+        setAnimateBars(true);
+      });
     });
 
-    return () => window.cancelAnimationFrame(frameId);
-  }, [sortedYears]);
+    return () => {
+      window.cancelAnimationFrame(outerFrameId);
+      window.cancelAnimationFrame(innerFrameId);
+    };
+  }, [years]);
 
   return (
     <Box
@@ -141,14 +154,14 @@ function YearBarChart({
         }}
       >
         <Box>
-          <Typography variant="overline" sx={{ color: "rgba(212, 175, 55, 0.9)", letterSpacing: 2.2 }}>
+          <Typography variant="overline" sx={{ color: "rgba(212, 175, 55, 0.9)", letterSpacing: { xs: 1.4, md: 2.2 }, fontSize: { xs: "0.65rem", md: "0.75rem" } }}>
             SANCTUARY RELEASE MAP
           </Typography>
-          <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.1 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.15, fontSize: { xs: "1.15rem", md: "1.5rem" } }}>
             Track every era of Myth Cloth releases at a glance
           </Typography>
         </Box>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ width: { xs: "100%", sm: "auto" } }}>
           <Chip
             label={`${sortedYears.length} active years`}
             sx={{
@@ -171,13 +184,14 @@ function YearBarChart({
       </Box>
 
       {/* Chart area */}
-      <Box sx={{ overflowX: "auto", position: "relative", zIndex: 1 }}>
+      <Box sx={{ overflowX: "auto", overflowY: "hidden", WebkitOverflowScrolling: "touch", position: "relative", zIndex: 1 }}>
         <Box
           sx={{
             display: "flex",
             alignItems: "flex-end",
-            gap: "6px",
+            gap: { xs: "4px", md: "6px" },
             width: "100%",
+            minWidth: "fit-content",
             height: BAR_MAX_H + LABEL_H,
             px: { xs: 2, md: 3 },
             pt: 2,
@@ -224,8 +238,8 @@ function YearBarChart({
                 <Box
                   onClick={() => onSelectYear(yearItem.year)}
                   sx={{
-                    flex: "1 0 42px",
-                    minWidth: 42,
+                    flex: { xs: "0 0 30px", md: "1 0 42px" },
+                    minWidth: { xs: 30, md: 42 },
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
@@ -279,7 +293,7 @@ function YearBarChart({
                       mt: 1,
                       writingMode: "vertical-rl",
                       transform: "rotate(180deg)",
-                      fontSize: "0.65rem",
+                      fontSize: { xs: "0.58rem", md: "0.65rem" },
                       lineHeight: 1,
                       height: LABEL_H - 4,
                       color: isSelected ? "text.primary" : "text.secondary",
@@ -343,9 +357,11 @@ function FigurineImageCard({
   figurine,
   lineupColor,
 }: {
-  figurine: { id: number; name: string; url?: string };
+  figurine: { id: number; name: string; url?: string; releaseStatus?: ReleaseStatus };
   lineupColor: string;
 }) {
+  const isAnnounced = figurine.releaseStatus === "ANNOUNCED";
+
   return (
     <Card
       sx={{
@@ -353,14 +369,14 @@ function FigurineImageCard({
         flexShrink: 0,
         position: "relative",
         bgcolor: "rgba(255,255,255,0.04)",
-        border: `1px solid ${lineupColor}44`,
+        border: isAnnounced ? "1px dashed rgba(212,175,55,0.6)" : `1px solid ${lineupColor}44`,
         borderRadius: 3,
         overflow: "hidden",
         boxShadow: "0 18px 36px rgba(0,0,0,0.22)",
         transition: "transform 0.18s, box-shadow 0.18s, border-color 0.18s",
         "&:hover": {
           transform: "translateY(-6px)",
-          borderColor: `${lineupColor}88`,
+          borderColor: isAnnounced ? "rgba(212,175,55,0.9)" : `${lineupColor}88`,
           boxShadow: `0 24px 50px ${lineupColor}22`,
         },
       }}
@@ -371,13 +387,20 @@ function FigurineImageCard({
             component="img"
             image={figurine.url}
             alt={figurine.name}
-            sx={{ height: 180, objectFit: "cover", objectPosition: "top" }}
+            sx={{
+              height: 180,
+              objectFit: "cover",
+              objectPosition: "top",
+              filter: isAnnounced ? "grayscale(0.65) brightness(0.85)" : "none",
+            }}
           />
           <Box
             sx={{
               position: "absolute",
               inset: 0,
-              background: `linear-gradient(180deg, transparent 0%, transparent 45%, ${lineupColor}22 100%)`,
+              background: isAnnounced
+                ? "linear-gradient(180deg, transparent 0%, transparent 40%, rgba(212,175,55,0.28) 100%)"
+                : `linear-gradient(180deg, transparent 0%, transparent 45%, ${lineupColor}22 100%)`,
             }}
           />
         </Box>
@@ -401,7 +424,14 @@ function FigurineImageCard({
         <Box sx={{ width: 28, height: 3, borderRadius: 999, bgcolor: lineupColor, mb: 1 }} />
         <Typography
           variant="caption"
-          sx={{ display: "block", lineHeight: 1.35, fontWeight: 700, fontSize: "0.75rem", textAlign: "center" }}
+          sx={{
+            display: "block",
+            lineHeight: 1.35,
+            fontWeight: 700,
+            fontSize: "0.75rem",
+            textAlign: "center",
+            color: isAnnounced ? "text.secondary" : "text.primary",
+          }}
         >
           {figurine.name}
         </Typography>
