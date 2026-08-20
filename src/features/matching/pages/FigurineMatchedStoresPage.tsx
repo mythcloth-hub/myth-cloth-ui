@@ -192,12 +192,13 @@ export default function FigurineMatchedStoresPage() {
                 sx={{
                   height: "100%",
                   borderRadius: 1,
-                  background: "rgba(255,255,255,0.03)",
+                  background: item.matchedFigurineCount > 0 ? "rgba(255,255,255,0.03)" : "rgba(244,67,54,0.06)",
+                  border: item.matchedFigurineCount > 0 ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(244,67,54,0.55)",
                   cursor: "pointer",
                   transition: "transform 0.2s, box-shadow 0.2s",
                   "&:hover": {
                     transform: "translateY(-3px)",
-                    boxShadow: "0 12px 36px rgba(79,195,247,0.16)",
+                    boxShadow: item.matchedFigurineCount > 0 ? "0 12px 36px rgba(79,195,247,0.16)" : "0 12px 36px rgba(244,67,54,0.18)",
                   },
                 }}
               >
