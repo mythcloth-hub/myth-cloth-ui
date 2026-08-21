@@ -32,6 +32,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
 import {
   addFigurineToCollection,
   getCollectionSummary,
@@ -150,6 +151,7 @@ export default function CollectionDetailPage() {
   const [flippedFigurineId, setFlippedFigurineId] = useState<number | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [albumZoom, setAlbumZoom] = useState(1);
+  const [includeRestocks, setIncludeRestocks] = useState(false);
   const [figurineBackDetails, setFigurineBackDetails] = useState<Record<number, FigurineBackDetail>>({});
   const [figurineBackNameLoadingId, setFigurineBackNameLoadingId] = useState<number | null>(null);
   const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
@@ -191,7 +193,7 @@ export default function CollectionDetailPage() {
 
   useEffect(() => {
     loadCollection();
-  }, [id, pageIndex]);
+  }, [id, pageIndex, includeRestocks]);
 
   useEffect(() => {
     if (loading) return;
@@ -277,10 +279,11 @@ export default function CollectionDetailPage() {
       setFigurineBackNameLoadingId(null);
 
       const [summaryResult, figurinesResult] = await Promise.allSettled([
-        getCollectionSummary(data.id),
+        getCollectionSummary(data.id, { includeRestocks }),
         getCollectionFigurinesPaginated(data.id, {
           page: pageIndex,
           size: COLLECTION_FIGURINES_PAGE_SIZE,
+          includeRestocks,
         }),
       ]);
 
@@ -502,6 +505,13 @@ export default function CollectionDetailPage() {
 
   const handleResetZoom = () => {
     setAlbumZoom(1);
+  };
+
+  const handleToggleIncludeRestocks = () => {
+    setIncludeRestocks((current) => !current);
+    if (page > 1) {
+      setSearchParams({}, { replace: true });
+    }
   };
 
   useEffect(() => {
@@ -1001,6 +1011,48 @@ export default function CollectionDetailPage() {
                     <ZoomInIcon fontSize="small" />
                   </IconButton>
                 </span>
+              </Tooltip>
+
+              <Box
+                sx={{
+                  width: "1px",
+                  alignSelf: "stretch",
+                  my: 0.2,
+                  bgcolor: alpha(theme.palette.divider, 0.4),
+                }}
+              />
+
+              <Tooltip title={includeRestocks ? "Restocks included — click to exclude" : "Restocks excluded — click to include"}>
+                <IconButton
+                  size="small"
+                  onClick={handleToggleIncludeRestocks}
+                  aria-pressed={includeRestocks}
+                  sx={{
+                    color: includeRestocks ? theme.palette.info.light : theme.palette.text.secondary,
+                    bgcolor: includeRestocks
+                      ? alpha(theme.palette.info.main, 0.22)
+                      : alpha(theme.palette.background.paper, 0.2),
+                    border: `1px solid ${alpha(
+                      includeRestocks ? theme.palette.info.main : theme.palette.divider,
+                      includeRestocks ? 0.5 : 0.24
+                    )}`,
+                    transition: "color 220ms ease, background-color 220ms ease, border-color 220ms ease",
+                    "&:active": { transform: "scale(0.92)" },
+                    "& .MuiSvgIcon-root": {
+                      transition: "transform 520ms cubic-bezier(0.2, 0.9, 0.2, 1)",
+                      transform: includeRestocks ? "rotate(180deg)" : "rotate(0deg)",
+                    },
+                    ...(includeRestocks && {
+                      animation: "restockToggleGlow 1600ms ease-in-out infinite",
+                      "@keyframes restockToggleGlow": {
+                        "0%, 100%": { boxShadow: `0 0 0 0 ${alpha(theme.palette.info.main, 0.34)}` },
+                        "50%": { boxShadow: `0 0 0 4px ${alpha(theme.palette.info.main, 0)}` },
+                      },
+                    }),
+                  }}
+                >
+                  <AutorenewOutlinedIcon fontSize="small" />
+                </IconButton>
               </Tooltip>
             </Stack>
 

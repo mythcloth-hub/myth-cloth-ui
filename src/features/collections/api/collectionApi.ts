@@ -238,11 +238,12 @@ export async function getCollectionFigurines(collectionId: number): Promise<Coll
 
 export async function getCollectionFigurinesPaginated(
   collectionId: number,
-  params?: { page?: number; size?: number }
+  params?: { page?: number; size?: number; includeRestocks?: boolean }
 ): Promise<PaginatedCollectionFigurinesResponse> {
   const queryParams = {
     ...(typeof params?.page === "number" ? { page: params.page } : {}),
     ...(typeof params?.size === "number" ? { size: params.size } : {}),
+    ...(typeof params?.includeRestocks === "boolean" ? { includeRestocks: params.includeRestocks } : {}),
   };
 
   const response = await httpClient.get<CollectionFigurineApiResponse[] | PaginatedCollectionFigurinesApiResponse>(
@@ -255,8 +256,15 @@ export async function getCollectionFigurinesPaginated(
   return normalizePaginatedCollectionFigurinesResponse(response.data, params?.page, params?.size);
 }
 
-export async function getCollectionSummary(collectionId: number): Promise<CollectionSummaryResponse> {
-  const response = await httpClient.get<CollectionSummaryApiResponse>(`${API_BASE}/${collectionId}/summary`);
+export async function getCollectionSummary(
+  collectionId: number,
+  params?: { includeRestocks?: boolean }
+): Promise<CollectionSummaryResponse> {
+  const response = await httpClient.get<CollectionSummaryApiResponse>(`${API_BASE}/${collectionId}/summary`, {
+    params: {
+      ...(typeof params?.includeRestocks === "boolean" ? { includeRestocks: params.includeRestocks } : {}),
+    },
+  });
   return normalizeCollectionSummary(response.data);
 }
 
