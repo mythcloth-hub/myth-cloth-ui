@@ -348,8 +348,9 @@ function YearExtremeCard({
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} sx={{ mt: 1 }}>
         <Box
           sx={{
+            // Full-width on mobile needs a taller box so portrait figurine art isn't squashed
             width: { xs: "100%", sm: 84 },
-            height: 84,
+            height: { xs: 200, sm: 84 },
             flexShrink: 0,
             borderRadius: 2,
             overflow: "hidden",
@@ -514,7 +515,8 @@ export default function PricingPage() {
     >
       <Box
         sx={{
-          position: "sticky",
+          // Static on mobile: the stacked chips/metric cards make this block too tall to stay pinned without hiding the rest of the page
+          position: { xs: "static", md: "sticky" },
           top: 0,
           zIndex: 9,
           bgcolor: "background.default",
@@ -545,7 +547,15 @@ export default function PricingPage() {
           }}
         >
           {summary && (
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
+            // flexWrap must stay off while direction is "column" (xs), otherwise column-wrap kicks in and splits chips into truncated columns
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={1}
+              useFlexGap
+              flexWrap={{ xs: "nowrap", sm: "wrap" }}
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              sx={{ mt: 1.5 }}
+            >
               <Chip label={`${summary.firstYear} - ${summary.lastYear}`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
               <Chip label={`${formatCount(summary.totalReleases)} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
               <Chip label={`${formatCurrency(summary.weightedAverage, selectedCurrency)} weighted avg`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
@@ -644,7 +654,8 @@ export default function PricingPage() {
               <Box
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: { xs: "1fr", lg: "1.15fr 0.85fr" },
+                  // minmax(0, ...) lets grid items shrink below their content's intrinsic width (e.g. the release bars chart)
+                  gridTemplateColumns: { xs: "minmax(0, 1fr)", lg: "minmax(0, 1.15fr) minmax(0, 0.85fr)" },
                   gap: 1.5,
                 }}
               >

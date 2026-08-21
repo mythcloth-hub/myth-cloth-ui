@@ -1124,8 +1124,14 @@ export default function CollectionDetailPage() {
                   Figurine purchases are tracked separately from the current collection quantities.
                 </Typography>
               </Box>
-              <Box>
-                <Stack direction="row" spacing={0.8}>
+              <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
+                <Stack
+                  direction="row"
+                  spacing={0.8}
+                  useFlexGap
+                  flexWrap="wrap"
+                  sx={{ "& .MuiButton-root": { whiteSpace: "nowrap" } }}
+                >
                   <Button
                     variant="text"
                     onClick={() => setShowRecentPurchasesSummary((current) => !current)}
@@ -1860,6 +1866,18 @@ export default function CollectionDetailPage() {
                           borderRadius: 0.45,
                           px: 0.35,
                           pb: 0.2,
+                          // Too many actions to fit a narrow mobile card: scroll instead of clipping them off
+                          overflowX: "auto",
+                          overflowY: "hidden",
+                          scrollbarWidth: "thin",
+                          scrollbarColor: `${alpha(theme.palette.text.primary, 0.24)} transparent`,
+                          WebkitOverflowScrolling: "touch",
+                          "& > *": { flexShrink: 0 },
+                          "&::-webkit-scrollbar": { height: 4 },
+                          "&::-webkit-scrollbar-thumb": {
+                            backgroundColor: alpha(theme.palette.text.primary, 0.24),
+                            borderRadius: 99,
+                          },
                         }}
                       >
                         {backDetail?.tamashiiUrl && (
