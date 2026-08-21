@@ -7,6 +7,9 @@ import {
   Alert,
   Box,
   Button,
+  Card,
+  CardContent,
+  CardMedia,
   Chip,
   CircularProgress,
   Divider,
@@ -1948,45 +1951,45 @@ export default function FigurineDetailPage() {
                     scrollbarWidth: "none",
                   }}
                 >
-                  {relatedFigurines.map((related) => (
-                    <Box
+                  {relatedFigurines.map((related) => {
+                    const relatedStatusCfg = related.releaseStatus ? RELEASE_STATUS_CONFIG[related.releaseStatus] : null;
+
+                    return (
+                    <Card
                       key={related.id}
                       onClick={() => navigate(`/figurines/${related.id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          navigate(`/figurines/${related.id}`);
+                        }
+                      }}
                       sx={{
                         flex: "0 0 auto",
-                        width: 120,
+                        width: 140,
                         scrollSnapAlign: "start",
                         cursor: "pointer",
-                        borderRadius: 2,
-                        overflow: "hidden",
-                        border: "1px solid rgba(212,175,55,0.15)",
-                        bgcolor: "rgba(255,255,255,0.03)",
-                        transition: "transform 0.18s ease, border-color 0.18s ease",
+                        borderTop: relatedStatusCfg ? `2px solid ${relatedStatusCfg.borderColor}` : undefined,
+                        transition: "transform 0.2s, box-shadow 0.2s",
                         "&:hover": {
-                          transform: "translateY(-2px)",
-                          borderColor: "rgba(212,175,55,0.5)",
+                          transform: "translateY(-3px)",
+                          boxShadow: "0 12px 40px rgba(212, 175, 55, 0.25)",
                         },
                       }}
                     >
-                      <Box
-                        sx={{
-                          position: "relative",
-                          width: "100%",
-                          paddingTop: "125%",
-                          bgcolor: "#0a0b14",
-                        }}
-                      >
+                      <Box sx={{ position: "relative", paddingTop: "120%", bgcolor: "#0a0b14" }}>
                         {related.officialImageUrls?.[0] ? (
-                          <Box
+                          <CardMedia
                             component="img"
-                            src={related.officialImageUrls[0]}
+                            image={related.officialImageUrls[0]}
                             alt={related.displayableName}
                             sx={{
                               position: "absolute",
                               top: 0, left: 0,
                               width: "100%", height: "100%",
-                              objectFit: "contain",
-                              background: "#181a22",
+                              objectFit: "cover",
                             }}
                           />
                         ) : (
@@ -1999,30 +2002,60 @@ export default function FigurineDetailPage() {
                               color: "text.secondary",
                             }}
                           >
-                            <ImageNotSupportedOutlinedIcon sx={{ fontSize: 28, opacity: 0.3 }} />
+                            <ImageNotSupportedOutlinedIcon sx={{ fontSize: 32, opacity: 0.3 }} />
                           </Box>
                         )}
+
+                        {/* Bottom gradient overlay */}
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            bottom: 0, left: 0, right: 0,
+                            height: "40%",
+                            background: "linear-gradient(transparent, rgba(10, 11, 20, 0.92))",
+                          }}
+                        />
+
+                        <Box sx={{ position: "absolute", bottom: 6, left: 8, right: 8 }}>
+                          <Typography
+                            variant="caption"
+                            noWrap
+                            sx={{
+                              color: "primary.main",
+                              fontWeight: 700,
+                              fontSize: "0.6rem",
+                              letterSpacing: "0.06em",
+                              textTransform: "uppercase",
+                              display: "block",
+                            }}
+                          >
+                            {related.lineUp.description}
+                          </Typography>
+                        </Box>
                       </Box>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          px: 0.75,
-                          py: 0.6,
-                          color: "text.primary",
-                          fontWeight: 600,
-                          fontSize: "0.72rem",
-                          lineHeight: 1.25,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                        }}
-                      >
-                        {related.displayableName}
-                      </Typography>
-                    </Box>
-                  ))}
+
+                      <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
+                        <Typography
+                          variant="caption"
+                          fontWeight={700}
+                          noWrap
+                          title={related.displayableName}
+                          sx={{ color: "text.primary", display: "block", fontSize: "0.72rem", lineHeight: 1.3 }}
+                        >
+                          {related.name}
+                        </Typography>
+                        {relatedStatusCfg && (
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.4 }}>
+                            <Box sx={{ width: 5, height: 5, borderRadius: "50%", bgcolor: relatedStatusCfg.color, opacity: 0.7, flexShrink: 0 }} />
+                            <Typography variant="caption" noWrap sx={{ fontSize: "0.58rem", color: "text.disabled", letterSpacing: "0.03em" }}>
+                              {relatedStatusCfg.label}
+                            </Typography>
+                          </Box>
+                        )}
+                      </CardContent>
+                    </Card>
+                    );
+                  })}
                 </Box>
 
                 <IconButton

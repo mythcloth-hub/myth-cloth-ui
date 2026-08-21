@@ -935,6 +935,7 @@ export default function CollectionDetailPage() {
               alignItems="center"
               justifyContent="space-between"
               sx={{
+                display: { xs: "none", md: "flex" },
                 p: 0.45,
                 borderRadius: 1.2,
                 border: `1px solid ${alpha(theme.palette.divider, 0.18)}`,
@@ -1103,7 +1104,7 @@ export default function CollectionDetailPage() {
       )}
 
       {hasPermission("purchases:read") && (
-        <Box sx={{ mb: 2.2 }}>
+        <Box sx={{ display: { xs: "none", md: "block" }, mb: 2.2 }}>
           <Card
             sx={{
               p: 1.6,
