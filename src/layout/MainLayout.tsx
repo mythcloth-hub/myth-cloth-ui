@@ -105,8 +105,8 @@ const NAV_SECTIONS: NavSection[] = [
     heading: "Explore",
     items: [
       { label: "Releases", path: "/releases", icon: <RocketLaunchOutlinedIcon />, permission: "stats:read" },
-      { label: "Pricing",  path: "/pricing",  icon: <SellOutlinedIcon />,          permission: "stats:read" },
-      { label: "Charts",   path: "/charts",   icon: <QueryStatsOutlinedIcon />,      permission: "stats:read" }
+      { label: "Charts",   path: "/charts",   icon: <QueryStatsOutlinedIcon />,      permission: "stats:read" },
+      { label: "Pricing",  path: "/pricing",  icon: <SellOutlinedIcon />,          permission: "stats:read" }
     ],
   },
   {

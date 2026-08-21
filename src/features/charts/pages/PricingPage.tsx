@@ -446,6 +446,7 @@ export default function PricingPage() {
   const { selectedCurrency } = useDisplayCurrency();
   const [priceData, setPriceData] = useState<ReleaseYearPriceStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSlowLoadNotice, setShowSlowLoadNotice] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
@@ -478,6 +479,19 @@ export default function PricingPage() {
       active = false;
     };
   }, [selectedCurrency]);
+
+  useEffect(() => {
+    if (!loading) {
+      setShowSlowLoadNotice(false);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowSlowLoadNotice(true);
+    }, 7000); // show the message if loading takes longer than 7 seconds
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loading]);
 
   const summary = useMemo(() => buildSummary(priceData), [priceData]);
   const selectedYearData = useMemo(() => {
@@ -578,6 +592,25 @@ export default function PricingPage() {
         <Alert severity="error" sx={{ mb: 3 }}>
           {errorMessage}
         </Alert>
+      )}
+
+      {loading && showSlowLoadNotice && (
+        <Box
+          sx={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1300,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+            px: 2,
+          }}
+        >
+          <Alert severity="info" sx={{ maxWidth: 640, width: "100%", pointerEvents: "auto" }}>
+            We’re currently loading the pricing analysis and retrieving the latest information. This may take a little longer than usual. Please keep this page open while we finish loading the data.
+          </Alert>
+        </Box>
       )}
 
       <Paper
