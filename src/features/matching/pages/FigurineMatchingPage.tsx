@@ -67,6 +67,7 @@ export default function FigurineMatchingPage() {
   const [items, setItems] = useState<UnmatchedStoreListing[]>([]);
   const [figurineOptions, setFigurineOptions] = useState<FigurineSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSlowLoadNotice, setShowSlowLoadNotice] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectionByListingId, setSelectionByListingId] = useState<Record<number, FigurineSummary | null>>({});
   const [confirmDialogItem, setConfirmDialogItem] = useState<UnmatchedStoreListing | null>(null);
@@ -110,6 +111,19 @@ export default function FigurineMatchingPage() {
 
     void loadData();
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      setShowSlowLoadNotice(false);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowSlowLoadNotice(true);
+    }, 7000); // show the message if loading takes longer than 7 seconds
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loading]);
 
   const groupedListings = useMemo(() => {
     const groups = new Map<number, {
@@ -205,6 +219,24 @@ export default function FigurineMatchingPage() {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
         <CircularProgress sx={{ color: "#d4af37" }} />
+        {showSlowLoadNotice && (
+          <Box
+            sx={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1300,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "none",
+              px: 2,
+            }}
+          >
+            <Alert severity="info" sx={{ maxWidth: 640, width: "100%", pointerEvents: "auto" }}>
+              We’re currently loading the unmatched store listings and catalog candidates. This may take a little longer than usual. Please keep this page open while we finish loading the data.
+            </Alert>
+          </Box>
+        )}
       </Box>
     );
   }
