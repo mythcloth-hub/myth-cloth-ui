@@ -40,6 +40,7 @@ import {
   getFigurineAverageRealtimePrice,
   getFigurineById,
   getFigurineHistoricalPrices,
+  getFigurines,
   getStores,
   type FigurineHistoricalPricePoint,
   type StoreSummary,
@@ -153,6 +154,9 @@ export default function FigurineDetailPage() {
   const [historicalLoading, setHistoricalLoading] = useState(false);
   const [historicalError, setHistoricalError] = useState<string | null>(null);
   const historicalRequestIdRef = useRef(0);
+  const [relatedFigurines, setRelatedFigurines] = useState<Figurine[]>([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
+  const relatedScrollRef = useRef<HTMLDivElement | null>(null);
   const [hoveredHistoricalPoint, setHoveredHistoricalPoint] = useState<{
     storeName: string;
     checkedAt: string;
@@ -394,6 +398,68 @@ export default function FigurineDetailPage() {
       setPinnedHistoricalPoint(null);
     }
   }, [hasRealtimeAveragePrice]);
+
+  useEffect(() => {
+    if (!figurine) {
+      setRelatedFigurines([]);
+      return;
+    }
+
+    let isActive = true;
+    const currentId = figurine.id;
+    const groupId = figurine.group?.id;
+    const lineUpId = figurine.lineUp?.id;
+
+    const fetchRelated = async () => {
+      const seenIds = new Set<number>([currentId]);
+      const collected: Figurine[] = [];
+
+      const appendResults = (items: Figurine[]) => {
+        items.forEach((item) => {
+          if (!seenIds.has(item.id)) {
+            seenIds.add(item.id);
+            collected.push(item);
+          }
+        });
+      };
+
+      if (groupId) {
+        const groupResult = await getFigurines(0, 13, { groupId: String(groupId) });
+        appendResults(groupResult.content ?? []);
+      }
+
+      // Fall back to lineup siblings when the group has too few entries.
+      if (collected.length < 4 && lineUpId) {
+        const lineUpResult = await getFigurines(0, 13, { lineUpId: String(lineUpId) });
+        appendResults(lineUpResult.content ?? []);
+      }
+
+      return collected.slice(0, 16);
+    };
+
+    setRelatedLoading(true);
+    fetchRelated()
+      .then((items) => {
+        if (isActive) setRelatedFigurines(items);
+      })
+      .catch(() => {
+        if (isActive) setRelatedFigurines([]);
+      })
+      .finally(() => {
+        if (isActive) setRelatedLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [figurine]);
+
+  const scrollRelated = (direction: "left" | "right") => {
+    const el = relatedScrollRef.current;
+    if (!el) return;
+    const amount = Math.min(el.clientWidth * 0.8, 480);
+    el.scrollBy({ left: direction === "left" ? -amount : amount, behavior: "smooth" });
+  };
 
   const activeHistoricalPoint = pinnedHistoricalPoint ?? hoveredHistoricalPoint;
 
@@ -1832,6 +1898,150 @@ export default function FigurineDetailPage() {
                   })}
                 </Box>
               </Box>
+            )}
+          </Box>
+        </Box>
+      )}
+
+      {/* Related figurines carousel */}
+      {(relatedLoading || relatedFigurines.length > 0) && (
+        <Box sx={{ mt: { xs: 3, md: 4 } }}>
+          <Divider sx={{ borderColor: "rgba(212,175,55,0.1)", mb: 1.5 }} />
+          <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}>
+            Related Figurines
+          </Typography>
+
+          <Box sx={{ position: "relative", mt: 1 }}>
+            {relatedLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+                <CircularProgress size={26} />
+              </Box>
+            ) : (
+              <>
+                <IconButton
+                  onClick={() => scrollRelated("left")}
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    left: -6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    zIndex: 2,
+                    bgcolor: "background.paper",
+                    border: "1px solid rgba(212,175,55,0.25)",
+                    "&:hover": { bgcolor: "rgba(212,175,55,0.12)" },
+                  }}
+                >
+                  <ChevronLeftIcon fontSize="small" />
+                </IconButton>
+
+                <Box
+                  ref={relatedScrollRef}
+                  sx={{
+                    display: "flex",
+                    gap: 1.25,
+                    overflowX: "auto",
+                    scrollSnapType: "x mandatory",
+                    px: 3,
+                    py: 0.5,
+                    "&::-webkit-scrollbar": { display: "none" },
+                    scrollbarWidth: "none",
+                  }}
+                >
+                  {relatedFigurines.map((related) => (
+                    <Box
+                      key={related.id}
+                      onClick={() => navigate(`/figurines/${related.id}`)}
+                      sx={{
+                        flex: "0 0 auto",
+                        width: 120,
+                        scrollSnapAlign: "start",
+                        cursor: "pointer",
+                        borderRadius: 2,
+                        overflow: "hidden",
+                        border: "1px solid rgba(212,175,55,0.15)",
+                        bgcolor: "rgba(255,255,255,0.03)",
+                        transition: "transform 0.18s ease, border-color 0.18s ease",
+                        "&:hover": {
+                          transform: "translateY(-2px)",
+                          borderColor: "rgba(212,175,55,0.5)",
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: "relative",
+                          width: "100%",
+                          paddingTop: "125%",
+                          bgcolor: "#0a0b14",
+                        }}
+                      >
+                        {related.officialImageUrls?.[0] ? (
+                          <Box
+                            component="img"
+                            src={related.officialImageUrls[0]}
+                            alt={related.displayableName}
+                            sx={{
+                              position: "absolute",
+                              top: 0, left: 0,
+                              width: "100%", height: "100%",
+                              objectFit: "contain",
+                              background: "#181a22",
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: 0, left: 0,
+                              width: "100%", height: "100%",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              color: "text.secondary",
+                            }}
+                          >
+                            <ImageNotSupportedOutlinedIcon sx={{ fontSize: 28, opacity: 0.3 }} />
+                          </Box>
+                        )}
+                      </Box>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          px: 0.75,
+                          py: 0.6,
+                          color: "text.primary",
+                          fontWeight: 600,
+                          fontSize: "0.72rem",
+                          lineHeight: 1.25,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                        }}
+                      >
+                        {related.displayableName}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+
+                <IconButton
+                  onClick={() => scrollRelated("right")}
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    right: -6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    zIndex: 2,
+                    bgcolor: "background.paper",
+                    border: "1px solid rgba(212,175,55,0.25)",
+                    "&:hover": { bgcolor: "rgba(212,175,55,0.12)" },
+                  }}
+                >
+                  <ChevronRightIcon fontSize="small" />
+                </IconButton>
+              </>
             )}
           </Box>
         </Box>
