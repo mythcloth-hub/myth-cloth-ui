@@ -56,12 +56,17 @@ import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDown
 import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined";
 import { useAppTheme } from "../theme/ThemeContext";
 import { THEME_META, type ThemeId } from "../theme/themes";
-import { alpha, useTheme } from "@mui/material/styles";
+import { alpha, keyframes, useTheme } from "@mui/material/styles";
 import { useDisplayCurrency } from "../currency/CurrencyContext";
 import { SUPPORTED_CURRENCIES, type SupportedCurrency } from "../currency/currency";
 import { countryCodeToFlag } from "../utils/countryFlag";
 
 const DRAWER_WIDTH = 230;
+
+const pulseAttention = keyframes`
+  0%, 100% { opacity: 1; text-shadow: 0 0 0 rgba(212, 175, 55, 0); }
+  50% { opacity: 0.55; text-shadow: 0 0 10px rgba(212, 175, 55, 0.9); }
+`;
 
 const CURRENCY_META: Record<SupportedCurrency, { countryCode: string; symbol: string }> = {
   JPY: { countryCode: "JP", symbol: "JPY" },
@@ -350,6 +355,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       enter: 180 + Math.min(level, 4) * 45,
       exit: 120 + Math.min(level, 4) * 25,
     };
+    const shouldDrawAttention = item.label === "Myth Cloth" && !isAuthenticated;
 
     return (
       <Box key={itemKey}>
@@ -394,7 +400,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               primary={item.label}
               slotProps={{
                 primary: {
-                  sx: { fontSize: "0.875rem", fontWeight: active || activeDescendant ? 600 : 400 },
+                  sx: {
+                    fontSize: "0.875rem",
+                    fontWeight: active || activeDescendant || shouldDrawAttention ? 600 : 400,
+                    ...(shouldDrawAttention && {
+                      color: "#d4af37",
+                      animation: `${pulseAttention} 1.6s ease-in-out infinite`,
+                    }),
+                  },
                 },
               }}
             />
