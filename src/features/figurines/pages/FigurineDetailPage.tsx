@@ -648,6 +648,8 @@ export default function FigurineDetailPage() {
       <Grid container spacing={{ xs: 2, md: 4 }}>
         {/* ── Left column: images ── */}
         <Grid size={{ xs: 12, md: 5 }}>
+          {/* Sticky on desktop so the image stays in view while the taller right column scrolls */}
+          <Box sx={{ position: { md: "sticky" }, top: { md: 88 } }}>
           {/* Main image */}
           <Box
             sx={{
@@ -814,6 +816,7 @@ export default function FigurineDetailPage() {
               ))}
             </Box>
           )}
+          </Box>
         </Grid>
 
         {/* ── Right column: info ── */}
@@ -1222,463 +1225,6 @@ export default function FigurineDetailPage() {
             </>
           )}
 
-          {/* Historical prices */}
-          {hasRealtimeAveragePrice && canReadHistoricalPrices && (
-            <>
-              <Divider sx={{ borderColor: "rgba(212,175,55,0.1)", mt: 2, mb: 1.5 }} />
-              <Typography
-                variant="overline"
-                sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}
-              >
-                Historical Prices
-              </Typography>
-
-              <Box sx={{ mt: 0.9 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", sm: "row" },
-                    gap: 1,
-                    alignItems: { xs: "stretch", sm: "center" },
-                    justifyContent: "space-between",
-                    mb: 1.25,
-                  }}
-                >
-                  <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 260 }, maxWidth: { xs: "100%", sm: 320 } }}>
-                    <InputLabel id="historical-store-select-label">Store</InputLabel>
-                    <Select
-                      labelId="historical-store-select-label"
-                      value={selectedHistoricalStoreId === null ? "ALL" : String(selectedHistoricalStoreId)}
-                      label="Store"
-                      onChange={handleHistoricalStoreChange}
-                    >
-                      <MenuItem value="ALL">All Stores</MenuItem>
-                      {historicalStores.map((store) => (
-                        <MenuItem key={store.id} value={String(store.id)}>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
-                            {store.logoUrl ? (
-                              <Box
-                                component="img"
-                                src={store.logoUrl}
-                                alt={store.name}
-                                sx={{ width: 18, height: 18, objectFit: "contain", flexShrink: 0 }}
-                              />
-                            ) : (
-                              <Box sx={{ width: 18, height: 18, borderRadius: "50%", bgcolor: "action.selected", flexShrink: 0 }} />
-                            )}
-                            <Typography variant="body2" sx={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-                              {store.name}
-                            </Typography>
-                          </Box>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-
-                {historicalLoading ? (
-                  <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-                    <CircularProgress size={26} />
-                  </Box>
-                ) : historicalError ? (
-                  <Alert severity="error">{historicalError}</Alert>
-                ) : normalizedHistoricalPrices.length === 0 ? (
-                  <Alert severity="info">No historical prices available for the selected store.</Alert>
-                ) : (
-                  <Box
-                    sx={{
-                      position: "relative",
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                      bgcolor: "background.paper",
-                      p: { xs: 1, sm: 1.25 },
-                    }}
-                    onClick={() => {
-                      if (pinnedHistoricalPoint) {
-                        setPinnedHistoricalPoint(null);
-                      }
-                    }}
-                  >
-                    <Box
-                      component="svg"
-                      key={`history-chart-${historicalCurrency}`}
-                      viewBox="0 0 920 260"
-                      sx={{
-                        width: "100%",
-                        height: { xs: 220, sm: 260 },
-                        display: "block",
-                      }}
-                    >
-                      {(() => {
-                        if (!chartBounds) {
-                          return null;
-                        }
-
-                        const chartWidth = 920;
-                        const chartHeight = 260;
-                        const paddingRight = 14;
-                        const paddingTop = 16;
-                        const paddingBottom = 36;
-                        const safeMaxX = chartBounds.maxX === chartBounds.minX ? chartBounds.minX + 1 : chartBounds.maxX;
-                        const safeMaxY = chartBounds.maxY === chartBounds.minY ? chartBounds.minY + 1 : chartBounds.maxY;
-                        const rawYTickValues = Array.from({ length: 5 }, (_, idx) => {
-                          const ratio = idx / 4;
-                          return chartBounds.minY + (safeMaxY - chartBounds.minY) * (1 - ratio);
-                        });
-                        const rawYTickLabels = rawYTickValues.map((value) => {
-                          return isSmallScreen
-                            ? formatAmountCompact(value, historicalCurrency)
-                            : formatAmount(value, historicalCurrency);
-                        });
-                        const estimatedCharWidthPx = 6.2;
-                        const maxTickLabelChars = rawYTickLabels.reduce((max, label) => Math.max(max, label.length), 0);
-                        const paddingLeft = Math.min(176, Math.max(76, Math.ceil(maxTickLabelChars * estimatedCharWidthPx + 14)));
-                        const innerWidth = chartWidth - paddingLeft - paddingRight;
-                        const innerHeight = chartHeight - paddingTop - paddingBottom;
-
-                        const toX = (ts: number) => {
-                          const ratio = (ts - chartBounds.minX) / (safeMaxX - chartBounds.minX);
-                          return paddingLeft + ratio * innerWidth;
-                        };
-
-                        const toY = (price: number) => {
-                          const ratio = (price - chartBounds.minY) / (safeMaxY - chartBounds.minY);
-                          return paddingTop + (1 - ratio) * innerHeight;
-                        };
-
-                        const yTicks = rawYTickValues.map((_, idx) => {
-                          const ratio = idx / 4;
-                          return {
-                            y: paddingTop + ratio * innerHeight,
-                            label: rawYTickLabels[idx],
-                          };
-                        });
-
-                        const xTicks = Array.from({ length: 5 }, (_, idx) => {
-                          const ratio = idx / 4;
-                          const ts = chartBounds.minX + (safeMaxX - chartBounds.minX) * ratio;
-                          const formattedDate = new Intl.DateTimeFormat("en-US", {
-                            month: "short",
-                            day: "2-digit",
-                          }).format(new Date(ts));
-                          return {
-                            x: paddingLeft + ratio * innerWidth,
-                            label: formattedDate,
-                          };
-                        });
-
-                        return (
-                          <>
-                            {yTicks.map((tick, idx) => (
-                              <g key={`y-tick-${idx}`}>
-                                <line
-                                  x1={paddingLeft}
-                                  y1={tick.y}
-                                  x2={chartWidth - paddingRight}
-                                  y2={tick.y}
-                                  stroke={theme.palette.divider}
-                                  strokeWidth="1"
-                                  strokeDasharray={idx === yTicks.length - 1 ? "0" : "3 4"}
-                                />
-                                <text
-                                  x={paddingLeft - 8}
-                                  y={tick.y + 3}
-                                  textAnchor="end"
-                                  fontSize="10"
-                                  fill={theme.palette.text.secondary}
-                                >
-                                  {tick.label}
-                                </text>
-                              </g>
-                            ))}
-
-                            {xTicks.map((tick, idx) => (
-                              <text
-                                key={`x-tick-${idx}`}
-                                x={tick.x}
-                                y={chartHeight - 12}
-                                textAnchor="middle"
-                                fontSize="10"
-                                fill={theme.palette.text.secondary}
-                              >
-                                {tick.label}
-                              </text>
-                            ))}
-
-                            {isAllStoresSelected && normalizedHistoricalPrices.length > 1 && (() => {
-                              const combinedPoints = normalizedHistoricalPrices.map((point) => ({
-                                x: toX(point.checkedAtTs),
-                                y: toY(point.price),
-                              }));
-
-                              const combinedPath = combinedPoints
-                                .map((point, idx) => `${idx === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-                                .join(" ");
-
-                              return (
-                                <path
-                                  d={combinedPath}
-                                  fill="none"
-                                  stroke={theme.palette.text.primary}
-                                  strokeWidth="2.4"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  opacity="0.55"
-                                />
-                              );
-                            })()}
-
-                            {historySeries.map((series, seriesIdx) => {
-                              const color = chartColorPalette[seriesIdx % chartColorPalette.length];
-                              const points = series.points.map((point) => ({
-                                ...point,
-                                x: toX(point.checkedAtTs),
-                                y: toY(point.price),
-                              }));
-
-                              const path = points
-                                .map((point, idx) => `${idx === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-                                .join(" ");
-
-                              return (
-                                <g key={series.storeName}>
-                                  {!isAllStoresSelected && points.length > 1 && (
-                                    <path
-                                      d={path}
-                                      fill="none"
-                                      stroke={color}
-                                      strokeWidth="2.2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                  )}
-                                  {points.map((point, idx) => (
-                                    <circle
-                                      key={`${series.storeName}-${idx}`}
-                                      cx={point.x}
-                                      cy={point.y}
-                                      r={activeHistoricalPoint?.storeName === series.storeName && activeHistoricalPoint?.checkedAt === point.checkedAt ? "5.4" : "3.8"}
-                                      fill={color}
-                                      stroke={theme.palette.background.paper}
-                                      strokeWidth="1.3"
-                                      style={{ cursor: "pointer" }}
-                                      onMouseEnter={() => {
-                                        if (pinnedHistoricalPoint) {
-                                          return;
-                                        }
-
-                                        setHoveredHistoricalPoint({
-                                          storeName: series.storeName,
-                                          storeLogoUrl: series.storeLogoUrl,
-                                          storeProductUrl: series.storeProductUrl,
-                                          checkedAt: point.checkedAt,
-                                          price: point.price,
-                                          color,
-                                          x: point.x,
-                                          y: point.y,
-                                        });
-                                      }}
-                                      onMouseLeave={() => {
-                                        if (!pinnedHistoricalPoint) {
-                                          setHoveredHistoricalPoint(null);
-                                        }
-                                      }}
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        const nextPoint = {
-                                          storeName: series.storeName,
-                                          storeLogoUrl: series.storeLogoUrl,
-                                          storeProductUrl: series.storeProductUrl,
-                                          checkedAt: point.checkedAt,
-                                          price: point.price,
-                                          color,
-                                          x: point.x,
-                                          y: point.y,
-                                        };
-
-                                        if (
-                                          pinnedHistoricalPoint?.storeName === nextPoint.storeName
-                                          && pinnedHistoricalPoint?.checkedAt === nextPoint.checkedAt
-                                        ) {
-                                          setPinnedHistoricalPoint(null);
-                                          return;
-                                        }
-
-                                        setPinnedHistoricalPoint(nextPoint);
-                                        setHoveredHistoricalPoint(nextPoint);
-                                      }}
-                                      onTouchStart={(event) => {
-                                        event.stopPropagation();
-                                        const nextPoint = {
-                                          storeName: series.storeName,
-                                          storeLogoUrl: series.storeLogoUrl,
-                                          storeProductUrl: series.storeProductUrl,
-                                          checkedAt: point.checkedAt,
-                                          price: point.price,
-                                          color,
-                                          x: point.x,
-                                          y: point.y,
-                                        };
-                                        setPinnedHistoricalPoint(nextPoint);
-                                        setHoveredHistoricalPoint(nextPoint);
-                                      }}
-                                    >
-                                      <title>
-                                        {`${series.storeName} • ${formatAmount(point.price, historicalCurrency)} • ${new Intl.DateTimeFormat("en-US", {
-                                          month: "short",
-                                          day: "2-digit",
-                                          year: "numeric",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        }).format(new Date(point.checkedAt))}`}
-                                      </title>
-                                    </circle>
-                                  ))}
-                                </g>
-                              );
-                            })}
-
-                            {activeHistoricalPoint && (
-                              <g>
-                                <line
-                                  x1={activeHistoricalPoint.x}
-                                  y1={paddingTop}
-                                  x2={activeHistoricalPoint.x}
-                                  y2={paddingTop + innerHeight}
-                                  stroke={activeHistoricalPoint.color}
-                                  strokeWidth="1"
-                                  strokeDasharray="4 4"
-                                  opacity="0.7"
-                                />
-                                <line
-                                  x1={paddingLeft}
-                                  y1={activeHistoricalPoint.y}
-                                  x2={chartWidth - paddingRight}
-                                  y2={activeHistoricalPoint.y}
-                                  stroke={activeHistoricalPoint.color}
-                                  strokeWidth="1"
-                                  strokeDasharray="4 4"
-                                  opacity="0.5"
-                                />
-                              </g>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </Box>
-
-                    {activeHistoricalPoint && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: { xs: 8, sm: 10 },
-                          right: { xs: 8, sm: 10 },
-                          zIndex: 2,
-                          minWidth: 170,
-                          maxWidth: 230,
-                          px: 1,
-                          py: 0.8,
-                          borderRadius: 1,
-                          border: "1px solid",
-                          borderColor: "divider",
-                          bgcolor: "background.default",
-                          boxShadow: theme.shadows[3],
-                        }}
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.7 }}>
-                          <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: activeHistoricalPoint.color, flexShrink: 0 }} />
-                          {activeHistoricalPoint.storeLogoUrl ? (
-                            <Box
-                              component="img"
-                              src={activeHistoricalPoint.storeLogoUrl}
-                              alt={activeHistoricalPoint.storeName}
-                              sx={{ width: 16, height: 16, objectFit: "contain", flexShrink: 0 }}
-                            />
-                          ) : null}
-                          <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700, letterSpacing: "0.03em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {activeHistoricalPoint.storeName}
-                          </Typography>
-                        </Box>
-                        <Typography sx={{ mt: 0.35, color: "text.primary", fontWeight: 800, fontSize: "0.86rem", lineHeight: 1.15 }}>
-                          {formatAmount(activeHistoricalPoint.price, historicalCurrency)}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.68rem", display: "block", mt: 0.15 }}>
-                          {new Intl.DateTimeFormat("en-US", {
-                            month: "short",
-                            day: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }).format(new Date(activeHistoricalPoint.checkedAt))}
-                        </Typography>
-                        {activeHistoricalPoint.storeProductUrl && (
-                          <Button
-                            component="a"
-                            href={activeHistoricalPoint.storeProductUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            size="small"
-                            variant="text"
-                            endIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
-                            sx={{
-                              mt: 0.35,
-                              px: 0,
-                              minWidth: 0,
-                              justifyContent: "flex-start",
-                              fontSize: "0.68rem",
-                              fontWeight: 700,
-                              textTransform: "none",
-                            }}
-                          >
-                            Open product
-                          </Button>
-                        )}
-                      </Box>
-                    )}
-
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
-                      {historySeries.map((series, idx) => {
-                        const color = chartColorPalette[idx % chartColorPalette.length];
-                        return (
-                          <Box
-                            key={`${series.storeName}-legend`}
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 0.6,
-                              px: 0.75,
-                              py: 0.45,
-                              border: "1px solid",
-                              borderColor: "divider",
-                              borderRadius: 1,
-                              bgcolor: "background.default",
-                              maxWidth: "100%",
-                            }}
-                          >
-                            <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: color, flexShrink: 0 }} />
-                            {series.storeLogoUrl ? (
-                              <Box
-                                component="img"
-                                src={series.storeLogoUrl}
-                                alt={series.storeName}
-                                sx={{ width: 16, height: 16, objectFit: "contain", flexShrink: 0 }}
-                              />
-                            ) : null}
-                            <Typography variant="caption" sx={{ color: "text.secondary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {series.storeName}
-                            </Typography>
-                          </Box>
-                        );
-                      })}
-                    </Box>
-                  </Box>
-                )}
-              </Box>
-            </>
-          )}
-
           {/* Events timeline */}
           {figurine.events && figurine.events.length > 0 && (
             <>
@@ -1833,6 +1379,463 @@ export default function FigurineDetailPage() {
           )}
         </Grid>
       </Grid>
+
+      {/* Historical prices — full width, below the images/info columns */}
+      {hasRealtimeAveragePrice && canReadHistoricalPrices && (
+        <Box sx={{ mt: { xs: 3, md: 4 } }}>
+          <Divider sx={{ borderColor: "rgba(212,175,55,0.1)", mb: 1.5 }} />
+          <Typography
+            variant="overline"
+            sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}
+          >
+            Historical Prices
+          </Typography>
+
+          <Box sx={{ mt: 0.9 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 1,
+                alignItems: { xs: "stretch", sm: "center" },
+                justifyContent: "space-between",
+                mb: 1.25,
+              }}
+            >
+              <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 260 }, maxWidth: { xs: "100%", sm: 320 } }}>
+                <InputLabel id="historical-store-select-label">Store</InputLabel>
+                <Select
+                  labelId="historical-store-select-label"
+                  value={selectedHistoricalStoreId === null ? "ALL" : String(selectedHistoricalStoreId)}
+                  label="Store"
+                  onChange={handleHistoricalStoreChange}
+                >
+                  <MenuItem value="ALL">All Stores</MenuItem>
+                  {historicalStores.map((store) => (
+                    <MenuItem key={store.id} value={String(store.id)}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+                        {store.logoUrl ? (
+                          <Box
+                            component="img"
+                            src={store.logoUrl}
+                            alt={store.name}
+                            sx={{ width: 18, height: 18, objectFit: "contain", flexShrink: 0 }}
+                          />
+                        ) : (
+                          <Box sx={{ width: 18, height: 18, borderRadius: "50%", bgcolor: "action.selected", flexShrink: 0 }} />
+                        )}
+                        <Typography variant="body2" sx={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {store.name}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            {historicalLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                <CircularProgress size={26} />
+              </Box>
+            ) : historicalError ? (
+              <Alert severity="error">{historicalError}</Alert>
+            ) : normalizedHistoricalPrices.length === 0 ? (
+              <Alert severity="info">No historical prices available for the selected store.</Alert>
+            ) : (
+              <Box
+                sx={{
+                  position: "relative",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 2,
+                  bgcolor: "background.paper",
+                  p: { xs: 1, sm: 1.25 },
+                }}
+                onClick={() => {
+                  if (pinnedHistoricalPoint) {
+                    setPinnedHistoricalPoint(null);
+                  }
+                }}
+              >
+                <Box
+                  component="svg"
+                  key={`history-chart-${historicalCurrency}`}
+                  viewBox="0 0 920 260"
+                  sx={{
+                    width: "100%",
+                    height: { xs: 240, sm: 300, md: 340 },
+                    display: "block",
+                  }}
+                >
+                  {(() => {
+                    if (!chartBounds) {
+                      return null;
+                    }
+
+                    const chartWidth = 920;
+                    const chartHeight = 260;
+                    const paddingRight = 14;
+                    const paddingTop = 16;
+                    const paddingBottom = 36;
+                    const safeMaxX = chartBounds.maxX === chartBounds.minX ? chartBounds.minX + 1 : chartBounds.maxX;
+                    const safeMaxY = chartBounds.maxY === chartBounds.minY ? chartBounds.minY + 1 : chartBounds.maxY;
+                    const rawYTickValues = Array.from({ length: 5 }, (_, idx) => {
+                      const ratio = idx / 4;
+                      return chartBounds.minY + (safeMaxY - chartBounds.minY) * (1 - ratio);
+                    });
+                    const rawYTickLabels = rawYTickValues.map((value) => {
+                      return isSmallScreen
+                        ? formatAmountCompact(value, historicalCurrency)
+                        : formatAmount(value, historicalCurrency);
+                    });
+                    const estimatedCharWidthPx = 6.2;
+                    const maxTickLabelChars = rawYTickLabels.reduce((max, label) => Math.max(max, label.length), 0);
+                    const paddingLeft = Math.min(176, Math.max(76, Math.ceil(maxTickLabelChars * estimatedCharWidthPx + 14)));
+                    const innerWidth = chartWidth - paddingLeft - paddingRight;
+                    const innerHeight = chartHeight - paddingTop - paddingBottom;
+
+                    const toX = (ts: number) => {
+                      const ratio = (ts - chartBounds.minX) / (safeMaxX - chartBounds.minX);
+                      return paddingLeft + ratio * innerWidth;
+                    };
+
+                    const toY = (price: number) => {
+                      const ratio = (price - chartBounds.minY) / (safeMaxY - chartBounds.minY);
+                      return paddingTop + (1 - ratio) * innerHeight;
+                    };
+
+                    const yTicks = rawYTickValues.map((_, idx) => {
+                      const ratio = idx / 4;
+                      return {
+                        y: paddingTop + ratio * innerHeight,
+                        label: rawYTickLabels[idx],
+                      };
+                    });
+
+                    const xTicks = Array.from({ length: 5 }, (_, idx) => {
+                      const ratio = idx / 4;
+                      const ts = chartBounds.minX + (safeMaxX - chartBounds.minX) * ratio;
+                      const formattedDate = new Intl.DateTimeFormat("en-US", {
+                        month: "short",
+                        day: "2-digit",
+                      }).format(new Date(ts));
+                      return {
+                        x: paddingLeft + ratio * innerWidth,
+                        label: formattedDate,
+                      };
+                    });
+
+                    return (
+                      <>
+                        {yTicks.map((tick, idx) => (
+                          <g key={`y-tick-${idx}`}>
+                            <line
+                              x1={paddingLeft}
+                              y1={tick.y}
+                              x2={chartWidth - paddingRight}
+                              y2={tick.y}
+                              stroke={theme.palette.divider}
+                              strokeWidth="1"
+                              strokeDasharray={idx === yTicks.length - 1 ? "0" : "3 4"}
+                            />
+                            <text
+                              x={paddingLeft - 8}
+                              y={tick.y + 3}
+                              textAnchor="end"
+                              fontSize="10"
+                              fill={theme.palette.text.secondary}
+                            >
+                              {tick.label}
+                            </text>
+                          </g>
+                        ))}
+
+                        {xTicks.map((tick, idx) => (
+                          <text
+                            key={`x-tick-${idx}`}
+                            x={tick.x}
+                            y={chartHeight - 12}
+                            textAnchor="middle"
+                            fontSize="10"
+                            fill={theme.palette.text.secondary}
+                          >
+                            {tick.label}
+                          </text>
+                        ))}
+
+                        {isAllStoresSelected && normalizedHistoricalPrices.length > 1 && (() => {
+                          const combinedPoints = normalizedHistoricalPrices.map((point) => ({
+                            x: toX(point.checkedAtTs),
+                            y: toY(point.price),
+                          }));
+
+                          const combinedPath = combinedPoints
+                            .map((point, idx) => `${idx === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+                            .join(" ");
+
+                          return (
+                            <path
+                              d={combinedPath}
+                              fill="none"
+                              stroke={theme.palette.text.primary}
+                              strokeWidth="2.4"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              opacity="0.55"
+                            />
+                          );
+                        })()}
+
+                        {historySeries.map((series, seriesIdx) => {
+                          const color = chartColorPalette[seriesIdx % chartColorPalette.length];
+                          const points = series.points.map((point) => ({
+                            ...point,
+                            x: toX(point.checkedAtTs),
+                            y: toY(point.price),
+                          }));
+
+                          const path = points
+                            .map((point, idx) => `${idx === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+                            .join(" ");
+
+                          return (
+                            <g key={series.storeName}>
+                              {!isAllStoresSelected && points.length > 1 && (
+                                <path
+                                  d={path}
+                                  fill="none"
+                                  stroke={color}
+                                  strokeWidth="2.2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              )}
+                              {points.map((point, idx) => (
+                                <circle
+                                  key={`${series.storeName}-${idx}`}
+                                  cx={point.x}
+                                  cy={point.y}
+                                  r={activeHistoricalPoint?.storeName === series.storeName && activeHistoricalPoint?.checkedAt === point.checkedAt ? "5.4" : "3.8"}
+                                  fill={color}
+                                  stroke={theme.palette.background.paper}
+                                  strokeWidth="1.3"
+                                  style={{ cursor: "pointer" }}
+                                  onMouseEnter={() => {
+                                    if (pinnedHistoricalPoint) {
+                                      return;
+                                    }
+
+                                    setHoveredHistoricalPoint({
+                                      storeName: series.storeName,
+                                      storeLogoUrl: series.storeLogoUrl,
+                                      storeProductUrl: series.storeProductUrl,
+                                      checkedAt: point.checkedAt,
+                                      price: point.price,
+                                      color,
+                                      x: point.x,
+                                      y: point.y,
+                                    });
+                                  }}
+                                  onMouseLeave={() => {
+                                    if (!pinnedHistoricalPoint) {
+                                      setHoveredHistoricalPoint(null);
+                                    }
+                                  }}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    const nextPoint = {
+                                      storeName: series.storeName,
+                                      storeLogoUrl: series.storeLogoUrl,
+                                      storeProductUrl: series.storeProductUrl,
+                                      checkedAt: point.checkedAt,
+                                      price: point.price,
+                                      color,
+                                      x: point.x,
+                                      y: point.y,
+                                    };
+
+                                    if (
+                                      pinnedHistoricalPoint?.storeName === nextPoint.storeName
+                                      && pinnedHistoricalPoint?.checkedAt === nextPoint.checkedAt
+                                    ) {
+                                      setPinnedHistoricalPoint(null);
+                                      return;
+                                    }
+
+                                    setPinnedHistoricalPoint(nextPoint);
+                                    setHoveredHistoricalPoint(nextPoint);
+                                  }}
+                                  onTouchStart={(event) => {
+                                    event.stopPropagation();
+                                    const nextPoint = {
+                                      storeName: series.storeName,
+                                      storeLogoUrl: series.storeLogoUrl,
+                                      storeProductUrl: series.storeProductUrl,
+                                      checkedAt: point.checkedAt,
+                                      price: point.price,
+                                      color,
+                                      x: point.x,
+                                      y: point.y,
+                                    };
+                                    setPinnedHistoricalPoint(nextPoint);
+                                    setHoveredHistoricalPoint(nextPoint);
+                                  }}
+                                >
+                                  <title>
+                                    {`${series.storeName} • ${formatAmount(point.price, historicalCurrency)} • ${new Intl.DateTimeFormat("en-US", {
+                                      month: "short",
+                                      day: "2-digit",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    }).format(new Date(point.checkedAt))}`}
+                                  </title>
+                                </circle>
+                              ))}
+                            </g>
+                          );
+                        })}
+
+                        {activeHistoricalPoint && (
+                          <g>
+                            <line
+                              x1={activeHistoricalPoint.x}
+                              y1={paddingTop}
+                              x2={activeHistoricalPoint.x}
+                              y2={paddingTop + innerHeight}
+                              stroke={activeHistoricalPoint.color}
+                              strokeWidth="1"
+                              strokeDasharray="4 4"
+                              opacity="0.7"
+                            />
+                            <line
+                              x1={paddingLeft}
+                              y1={activeHistoricalPoint.y}
+                              x2={chartWidth - paddingRight}
+                              y2={activeHistoricalPoint.y}
+                              stroke={activeHistoricalPoint.color}
+                              strokeWidth="1"
+                              strokeDasharray="4 4"
+                              opacity="0.5"
+                            />
+                          </g>
+                        )}
+                      </>
+                    );
+                  })()}
+                </Box>
+
+                {activeHistoricalPoint && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: { xs: 8, sm: 10 },
+                      right: { xs: 8, sm: 10 },
+                      zIndex: 2,
+                      minWidth: 170,
+                      maxWidth: 230,
+                      px: 1,
+                      py: 0.8,
+                      borderRadius: 1,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      bgcolor: "background.default",
+                      boxShadow: theme.shadows[3],
+                    }}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.7 }}>
+                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: activeHistoricalPoint.color, flexShrink: 0 }} />
+                      {activeHistoricalPoint.storeLogoUrl ? (
+                        <Box
+                          component="img"
+                          src={activeHistoricalPoint.storeLogoUrl}
+                          alt={activeHistoricalPoint.storeName}
+                          sx={{ width: 16, height: 16, objectFit: "contain", flexShrink: 0 }}
+                        />
+                      ) : null}
+                      <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700, letterSpacing: "0.03em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {activeHistoricalPoint.storeName}
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ mt: 0.35, color: "text.primary", fontWeight: 800, fontSize: "0.86rem", lineHeight: 1.15 }}>
+                      {formatAmount(activeHistoricalPoint.price, historicalCurrency)}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.68rem", display: "block", mt: 0.15 }}>
+                      {new Intl.DateTimeFormat("en-US", {
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }).format(new Date(activeHistoricalPoint.checkedAt))}
+                    </Typography>
+                    {activeHistoricalPoint.storeProductUrl && (
+                      <Button
+                        component="a"
+                        href={activeHistoricalPoint.storeProductUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="small"
+                        variant="text"
+                        endIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
+                        sx={{
+                          mt: 0.35,
+                          px: 0,
+                          minWidth: 0,
+                          justifyContent: "flex-start",
+                          fontSize: "0.68rem",
+                          fontWeight: 700,
+                          textTransform: "none",
+                        }}
+                      >
+                        Open product
+                      </Button>
+                    )}
+                  </Box>
+                )}
+
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+                  {historySeries.map((series, idx) => {
+                    const color = chartColorPalette[idx % chartColorPalette.length];
+                    return (
+                      <Box
+                        key={`${series.storeName}-legend`}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.6,
+                          px: 0.75,
+                          py: 0.45,
+                          border: "1px solid",
+                          borderColor: "divider",
+                          borderRadius: 1,
+                          bgcolor: "background.default",
+                          maxWidth: "100%",
+                        }}
+                      >
+                        <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: color, flexShrink: 0 }} />
+                        {series.storeLogoUrl ? (
+                          <Box
+                            component="img"
+                            src={series.storeLogoUrl}
+                            alt={series.storeName}
+                            sx={{ width: 16, height: 16, objectFit: "contain", flexShrink: 0 }}
+                          />
+                        ) : null}
+                        <Typography variant="caption" sx={{ color: "text.secondary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {series.storeName}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      )}
 
       <Snackbar
         open={Boolean(errorMessage)}
