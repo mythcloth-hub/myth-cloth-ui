@@ -174,6 +174,8 @@ export default function CollectionDetailPage() {
   const loadBackendPurchasesForCollection = async (
     items: AlbumFigurine[]
   ): Promise<PurchaseRecord[]> => {
+    if (!hasPermission("purchases:read")) return [];
+
     const responses = await getPurchaseSummaryLineItems();
     const figurineIdsInCollection = new Set(items.map((item) => item.id));
     const figurineNameById = toFigurineNameById(items);
@@ -1191,14 +1193,12 @@ export default function CollectionDetailPage() {
                   >
                     {showRecentPurchasesSummary ? "Hide Summary" : "Show Summary"}
                   </Button>
-                  {hasPermission("purchases:read") && (
-                    <Button
-                      variant="text"
-                      onClick={() => navigate(`/purchases?collectionId=${collection.id}`)}
-                    >
-                      Open Purchases
-                    </Button>
-                  )}
+                  <Button
+                    variant="text"
+                    onClick={() => navigate(`/purchases?collectionId=${collection.id}`)}
+                  >
+                    Open Purchases
+                  </Button>
                   {hasPermission("purchases:create") && (
                     <Button
                       variant="contained"
@@ -1806,9 +1806,29 @@ export default function CollectionDetailPage() {
                                 color: isAnnounced ? theme.palette.secondary.light : backTextPrimary,
                               }}
                             />
-                            <Typography variant="caption" sx={{ color: backTextSecondary, fontWeight: 800 }}>
-                              #{slot.figurine.id}
-                            </Typography>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 28,
+                                height: 28,
+                                p: 0.35,
+                                borderRadius: "50%",
+                                aspectRatio: "1 / 1",
+                                bgcolor: alpha(theme.palette.primary.main, isDarkTheme ? 0.32 : 0.18),
+                                border: `1px solid ${alpha(theme.palette.primary.main, isDarkTheme ? 0.6 : 0.42)}`,
+                                boxShadow: `inset 0 1px 2px ${alpha(theme.palette.common.white, isDarkTheme ? 0.14 : 0.5)}`,
+                                flexShrink: 0,
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{ color: backTextSecondary, fontWeight: 900, fontSize: "0.62rem", lineHeight: 1 }}
+                              >
+                                {slot.figurine.id}
+                              </Typography>
+                            </Box>
                           </Stack>
 
                           <Typography

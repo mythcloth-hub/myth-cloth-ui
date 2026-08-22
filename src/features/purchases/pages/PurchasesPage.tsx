@@ -525,23 +525,25 @@ export default function PurchasesPage() {
           }}
         >
           <Stack direction={{ xs: "column", md: "row" }} spacing={1.2} alignItems={{ md: "center" }}>
-            <FormControl size="small" sx={{ minWidth: 260 }} disabled={loadingCollections}>
-              <InputLabel>Collection View</InputLabel>
-              <Select
-                value={selectedCollectionId}
-                label="Collection View"
-                onChange={(event) => handleCollectionChange(event.target.value)}
-              >
-                {collections.map((collection) => (
-                  <MenuItem key={collection.id} value={String(collection.id)}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <span aria-hidden="true">📦</span>
-                      <span>{collection.name}</span>
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {collections.length > 0 && (
+              <FormControl size="small" sx={{ minWidth: 260 }} disabled={loadingCollections}>
+                <InputLabel>Collection View</InputLabel>
+                <Select
+                  value={selectedCollectionId}
+                  label="Collection View"
+                  onChange={(event) => handleCollectionChange(event.target.value)}
+                >
+                  {collections.map((collection) => (
+                    <MenuItem key={collection.id} value={String(collection.id)}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <span aria-hidden="true">📦</span>
+                        <span>{collection.name}</span>
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
             {hasPermission("purchases:create") && (
               <Button
                 variant="contained"
