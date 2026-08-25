@@ -142,7 +142,7 @@ export default function RoleListPage() {
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow="Administration · Security"
+          eyebrow="Administration • Security"
           title="Roles"
           subtitle="Manage role definitions used to control access across the application."
           actions={canCreateRoles ? (

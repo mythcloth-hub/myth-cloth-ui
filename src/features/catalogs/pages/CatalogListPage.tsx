@@ -138,7 +138,7 @@ export default function CatalogListPage() {
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow={`Catalogs · ${plural.toLowerCase()}`}
+          eyebrow={`Administration • Catalogs`}
           title={plural}
           subtitle={`Manage ${plural.toLowerCase()} used throughout the collection experience.`}
           actions={hasPermission("catalogs:create") ? (

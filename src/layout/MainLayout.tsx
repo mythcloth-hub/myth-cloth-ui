@@ -13,21 +13,15 @@ import {
   CircularProgress,
   Divider,
   Drawer,
-  FormControl,
   IconButton,
-  InputLabel,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  MenuItem,
-  Select,
   Toolbar,
-  Tooltip,
   Typography,
 } from "@mui/material";
-import type { SelectChangeEvent } from "@mui/material/Select";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
@@ -51,15 +45,16 @@ import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 import LibraryBooksOutlinedIcon from "@mui/icons-material/LibraryBooksOutlined";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
+import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
+import SettingsSuggestOutlinedIcon from "@mui/icons-material/SettingsSuggestOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import GavelOutlinedIcon from "@mui/icons-material/GavelOutlined";
+import ContactMailOutlinedIcon from "@mui/icons-material/ContactMailOutlined";
 import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined";
-import { useAppTheme } from "../theme/ThemeContext";
-import { THEME_META, type ThemeId } from "../theme/themes";
 import { alpha, keyframes, useTheme } from "@mui/material/styles";
-import { useDisplayCurrency } from "../currency/CurrencyContext";
-import { SUPPORTED_CURRENCIES, type SupportedCurrency } from "../currency/currency";
-import { countryCodeToFlag } from "../utils/countryFlag";
 
 const DRAWER_WIDTH = 230;
 
@@ -67,15 +62,6 @@ const pulseAttention = keyframes`
   0%, 100% { opacity: 1; text-shadow: 0 0 0 rgba(212, 175, 55, 0); }
   50% { opacity: 0.55; text-shadow: 0 0 10px rgba(212, 175, 55, 0.9); }
 `;
-
-const CURRENCY_META: Record<SupportedCurrency, { countryCode: string; symbol: string }> = {
-  JPY: { countryCode: "JP", symbol: "JPY" },
-  MXN: { countryCode: "MX", symbol: "MXN" },
-  EUR: { countryCode: "EU", symbol: "EUR" },
-  USD: { countryCode: "US", symbol: "USD" },
-  CNY: { countryCode: "CN", symbol: "CNY" },
-  CAD: { countryCode: "CA", symbol: "CAD" },
-};
 
 type NavItem = {
   label: string;
@@ -155,6 +141,30 @@ const NAV_SECTIONS: NavSection[] = [
       },
       { label: "Figurine Import", path: "/figurines/import", icon: <UploadFileOutlinedIcon />, permission: "figurines:import" }
     ]
+  },
+  {
+    heading: "Settings",
+    items: [
+      {
+        label: "Personal",
+        icon: <SettingsSuggestOutlinedIcon />,
+        expandOnly: true,
+        children: [
+          { label: "Your Account", path: "/account", icon: <ManageAccountsOutlinedIcon /> },
+          { label: "Preferences", path: "/settings/preferences", icon: <TuneOutlinedIcon /> }
+        ]
+      },
+      {
+        label: "Information",
+        icon: <InfoOutlinedIcon />,
+        expandOnly: true,
+        children: [
+          { label: "Terms & Conditions", path: "/terms", icon: <GavelOutlinedIcon /> },
+          { label: "Contact", path: "/contact", icon: <ContactMailOutlinedIcon /> },
+          { label: "About", path: "/about", icon: <InfoOutlinedIcon /> }
+        ]
+      }
+    ]
   }
 ];
 
@@ -197,8 +207,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { isAuthenticated, session, hasPermission, loginWithFacebook, loginWithGoogle, loginWithDemo, facebookEnabled, googleEnabled, demoEnabled, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { themeId, setThemeId } = useAppTheme();
-  const { selectedCurrency, setSelectedCurrency } = useDisplayCurrency();
   const theme = useTheme();
   const [isDemoSigningIn, setIsDemoSigningIn] = useState(false);
   const navScrollRef = useRef<HTMLDivElement | null>(null);
@@ -350,7 +358,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     const canNavigate = Boolean(item.path) && !(hasChildren && item.expandOnly);
     const active = isActive(item.path);
     const activeDescendant = hasActiveDescendant(item);
-    const expanded = expandedItems[itemKey] ?? activeDescendant;
+    const expanded = activeDescendant ? true : (expandedItems[itemKey] ?? false);
     const collapseTimeout = {
       enter: 180 + Math.min(level, 4) * 45,
       exit: 120 + Math.min(level, 4) * 25,
@@ -435,11 +443,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     logout();
     navigate("/");
     onNavigate?.();
-  };
-
-  const handleCurrencyChange = (event: SelectChangeEvent<string>) => {
-    const value = event.target.value;
-    setSelectedCurrency(value ? (value as SupportedCurrency) : null);
   };
 
   const handleDemoLogin = async () => {
@@ -584,155 +587,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             />
           </Box>
         )}
-      </Box>
-
-      {/* Theme switcher */}
-      <Box sx={{ px: 2, pb: 1.25, pt: 0.75, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-        <Box sx={{ mt: 1, mb: 1.25, px: 1 }}>
-          <Typography
-            variant="overline"
-            sx={{
-              display: "block",
-              color: "text.secondary",
-              fontSize: "0.62rem",
-              letterSpacing: "0.1em",
-              lineHeight: 1,
-              mb: 1.15,
-            }}
-          >
-            Display Currency
-          </Typography>
-
-          <FormControl
-            size="small"
-            fullWidth
-            sx={{
-              "& .MuiInputBase-root": {
-                minHeight: 34,
-                fontSize: "0.8rem",
-              },
-              "& .MuiInputLabel-root": {
-                fontSize: "0.78rem",
-              },
-            }}
-          >
-            <InputLabel id="global-display-currency-label">Currency</InputLabel>
-            <Select
-              labelId="global-display-currency-label"
-              label="Currency"
-              value={selectedCurrency ?? ""}
-              onChange={handleCurrencyChange}
-              renderValue={(value) => {
-                if (!value) {
-                  return (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                      <Typography component="span" sx={{ fontSize: "0.9rem", lineHeight: 1 }}>
-                        🌐
-                      </Typography>
-                      <Typography component="span" sx={{ fontSize: "0.82rem" }}>
-                        Auto
-                      </Typography>
-                    </Box>
-                  );
-                }
-
-                const code = value as SupportedCurrency;
-                const meta = CURRENCY_META[code];
-
-                return (
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                    <Typography component="span" sx={{ fontSize: "0.9rem", lineHeight: 1 }}>
-                      {countryCodeToFlag(meta.countryCode)}
-                    </Typography>
-                    <Typography component="span" sx={{ fontSize: "0.82rem", fontWeight: 700 }}>
-                      {code}
-                    </Typography>
-                  </Box>
-                );
-              }}
-            >
-              <MenuItem value="" sx={{ minHeight: 34 }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                    <Typography component="span" sx={{ fontSize: "0.95rem", lineHeight: 1 }}>
-                      🌐
-                    </Typography>
-                    <Typography component="span" sx={{ fontSize: "0.82rem" }}>
-                      Auto
-                    </Typography>
-                  </Box>
-                  <Typography component="span" sx={{ fontSize: "0.72rem", color: "text.secondary" }}>
-                    Store
-                  </Typography>
-                </Box>
-              </MenuItem>
-              {SUPPORTED_CURRENCIES.map((currency) => {
-                const meta = CURRENCY_META[currency];
-                return (
-                  <MenuItem key={currency} value={currency} sx={{ minHeight: 34 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                        <Typography component="span" sx={{ fontSize: "0.95rem", lineHeight: 1 }}>
-                          {countryCodeToFlag(meta.countryCode)}
-                        </Typography>
-                        <Typography component="span" sx={{ fontSize: "0.82rem", fontWeight: 700 }}>
-                          {currency}
-                        </Typography>
-                      </Box>
-                      <Typography component="span" sx={{ fontSize: "0.72rem", color: "text.secondary" }}>
-                        {meta.symbol}
-                      </Typography>
-                    </Box>
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-        </Box>
-
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mt: 1, mb: 0.6 }}>
-          <Typography
-            variant="overline"
-            sx={{
-              display: "block",
-              px: 1,
-              color: "text.secondary",
-              fontSize: "0.62rem",
-              letterSpacing: "0.1em",
-              lineHeight: 1,
-            }}
-          >
-            Theme
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap", px: 1 }}>
-          {(Object.keys(THEME_META) as ThemeId[]).map((id) => {
-            const meta = THEME_META[id];
-            const active = themeId === id;
-            return (
-              <Tooltip key={id} title={`${meta.label}: ${meta.description}`} placement="right" arrow>
-                <Box
-                  onClick={() => setThemeId(id)}
-                  sx={{
-                    width: 16,
-                    height: 16,
-                    borderRadius: "50%",
-                    cursor: "pointer",
-                    backgroundColor: meta.preview,
-                    border: "1.5px solid",
-                    borderColor: active ? "primary.main" : "rgba(255,255,255,0.22)",
-                    boxShadow: active ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.18)}` : "none",
-                    transition: "transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease",
-                    "&:hover": {
-                      transform: "scale(1.06)",
-                      borderColor: active ? "primary.main" : "rgba(255,255,255,0.5)",
-                    },
-                  }}
-                />
-              </Tooltip>
-            );
-          })}
-        </Box>
       </Box>
 
       {/* Auth section: Facebook (and Google in future) */}

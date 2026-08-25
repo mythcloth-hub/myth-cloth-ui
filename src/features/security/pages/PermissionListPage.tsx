@@ -142,7 +142,7 @@ export default function PermissionListPage() {
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow="Administration · Security"
+          eyebrow="Administration • Security"
           title="Permissions"
           subtitle="Manage granular permissions that are assigned to roles and protected features."
           actions={canCreatePermissions ? (

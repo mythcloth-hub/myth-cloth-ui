@@ -75,7 +75,7 @@ const HOME_LINKS: HomeLink[] = [
     description: "Resolve unmatched listings and connect them to the right catalog entries.",
     path: "/figurine-matching",
     icon: <CompareOutlinedIcon />,
-    permission: "stats:read",
+    permission: "figurines:stores:read",
   },
   {
     label: "Anniversaries",
@@ -105,7 +105,7 @@ const FEATURED_PATHS = ["/figurines", "/collections", "/charts", "/releases"];
 const START_STEPS = [
   {
     title: "Browse your catalog",
-    description: "Start with Myth Cloth to review your figurines, filters, and collection search state.",
+    description: "Start with Myth Cloth to explore versions, apply advanced filters, and quickly find released, unreleased, and prototype figurines.",
     icon: <WorkspacePremiumOutlinedIcon fontSize="small" />,
   },
   {
@@ -115,7 +115,7 @@ const START_STEPS = [
   },
   {
     title: "Explore trends",
-    description: "Open charts, releases, and pricing when you want context instead of raw lists.",
+    description: "Open charts, releases, and pricing to monitor market movement, restocks, and real-time prices when signed in.",
     icon: <ExploreOutlinedIcon fontSize="small" />,
   },
 ];
@@ -153,7 +153,7 @@ export default function HomePage() {
           compact
           eyebrow="Home"
           title="Welcome to Saint Collections"
-          subtitle="Keep track of your Myth Cloth, discover what's new, follow prices, and stay on top of your collection journey."
+          subtitle="Track your Myth Cloth collection, monitor restocks and versions, filter unreleased and prototype figurines, and follow real-time prices with a signed-in account."
           actions={
             <Box sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" }, width: "100%" }}>
               <Button
@@ -199,18 +199,37 @@ export default function HomePage() {
                 Welcome to your collection
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 760 }}>
-                Explore what you own, discover what’s new, follow the market, and keep your collection moving forward.
+                Explore what you own, discover what is new, track restocks, and filter by version, release status, and category to keep your collection moving forward.
               </Typography>
             </Box>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap flexWrap="wrap">
               <Chip label={isAuthenticated ? "Signed in" : "Browsing unlocked areas"} icon={<HomeOutlinedIcon />} />
               <Chip label={`${visibleLinks.length} quick destinations`} variant="outlined" />
-              <Chip label="Home is now the default start page" variant="outlined" />
+              <Chip label="Real-time prices for signed-in users" variant="outlined" />
             </Stack>
           </Stack>
 
           <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+
+          {!isAuthenticated && (
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: 1.25,
+                border: "1px solid rgba(212,175,55,0.28)",
+                background: "linear-gradient(180deg, rgba(212,175,55,0.12), rgba(212,175,55,0.05))",
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "primary.main", mb: 0.4 }}>
+                Sign in to unlock the full experience
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Log in from the account section in the left menu to access real-time price tracking, richer market insights,
+                and personalized collection workflows.
+              </Typography>
+            </Box>
+          )}
 
           {isAuthenticated && session && (
             <Box

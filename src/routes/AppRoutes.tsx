@@ -27,6 +27,11 @@ import PermissionFormPage from "../features/security/pages/PermissionFormPage";
 import RolePermissionsPage from "../features/security/pages/RolePermissionsPage";
 import FigurineLoaderPage from "../features/figurines/pages/FigurineLoaderPage";
 import HomePage from "../features/home/pages/HomePage";
+import AccountPage from "../features/info/pages/AccountPage";
+import AboutPage from "../features/info/pages/AboutPage";
+import TermsPage from "../features/info/pages/TermsPage";
+import ContactPage from "../features/info/pages/ContactPage";
+import PreferencesPage from "../features/info/pages/PreferencesPage";
 
 export default function AppRoutes() {
   return (
@@ -67,6 +72,11 @@ export default function AppRoutes() {
           <Route path="/security/permissions/edit/:id" element={<PermissionFormPage />} />
           <Route path="/security/role-permissions" element={<RolePermissionsPage />} />
           <Route path="/figurines/import" element={<FigurineLoaderPage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/settings/preferences" element={<PreferencesPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
