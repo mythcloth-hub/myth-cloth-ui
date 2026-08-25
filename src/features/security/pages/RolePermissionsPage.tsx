@@ -135,7 +135,7 @@ export default function RolePermissionsPage() {
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow="Administration · Security"
+          eyebrow="Administration • Security"
           title="Role Permissions"
           subtitle="Assign permissions to roles and keep access aligned across the application."
         />
