@@ -11,7 +11,7 @@ export default function ContactPage() {
         <AppPageHeader
           eyebrow="Settings • Information"
           title="Contact"
-          subtitle="Need help with access, data, or behavior? We use one shared inbox for both support and bug reports."
+          subtitle="Need help with access, data, or behavior? Reach out through the channels below."
           compact
         />
       </Box>
@@ -23,7 +23,7 @@ export default function ContactPage() {
             <Typography variant="h6" sx={{ fontWeight: 800 }}>General Support</Typography>
           </Stack>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 0.6 }}>
-            For account, permissions, onboarding, and bug reports, contact:
+            For account, permissions, and onboarding questions, contact:
           </Typography>
           <Link href="mailto:support@saintcollections.com" underline="hover">support@saintcollections.com</Link>
         </Paper>
@@ -31,12 +31,12 @@ export default function ContactPage() {
         <Paper sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
             <BugReportOutlinedIcon color="primary" fontSize="small" />
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>Bug Reports (Same Inbox)</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>Bug Reports</Typography>
           </Stack>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 0.6 }}>
-            Send bug details to the same support email, including route, browser/device, and reproduction steps:
+            Include route, browser/device, and reproduction steps when reporting UI or data issues:
           </Typography>
-          <Link href="mailto:support@saintcollections.com" underline="hover">support@saintcollections.com</Link>
+          <Link href="mailto:bugs@saintcollections.com" underline="hover">bugs@saintcollections.com</Link>
         </Paper>
 
         <Paper sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>

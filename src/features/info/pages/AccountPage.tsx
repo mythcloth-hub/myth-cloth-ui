@@ -1,4 +1,6 @@
-import { Avatar, Box, Chip, Divider, Paper, Stack, Typography } from "@mui/material";
+import { Avatar, Box, Button, Chip, Divider, Paper, Stack, Typography } from "@mui/material";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import { useNavigate } from "react-router-dom";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import PaletteOutlinedIcon from "@mui/icons-material/PaletteOutlined";
 import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
@@ -6,7 +8,13 @@ import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
 
 export default function AccountPage() {
-  const { isAuthenticated, session } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated, session, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
@@ -46,6 +54,17 @@ export default function AccountPage() {
                 <Chip label={`Role: ${session.role ?? "Not assigned"}`} color="primary" variant="outlined" />
                 <Chip label={`${session.permissions.length} permissions`} variant="outlined" />
               </Stack>
+
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<LogoutOutlinedIcon />}
+                  onClick={handleLogout}
+                >
+                  Log out
+                </Button>
+              </Box>
             </Stack>
           ) : (
             <Typography color="text.secondary">

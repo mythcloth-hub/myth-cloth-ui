@@ -643,16 +643,22 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             <Button
               onClick={handleLogout}
               startIcon={<LogoutOutlinedIcon />}
-              variant="outlined"
+              variant="text"
               sx={{
-                ...authButtonBaseSx,
-                mt: 1.1,
-                color: theme.palette.error.main,
-                borderColor: alpha(theme.palette.error.main, 0.55),
-                backgroundColor: alpha(theme.palette.error.main, 0.08),
+                mt: 0.75,
+                px: 0.5,
+                py: 0.35,
+                minHeight: 0,
+                width: "auto",
+                alignSelf: "flex-start",
+                justifyContent: "flex-start",
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "0.78rem",
+                color: "text.secondary",
                 "&:hover": {
-                  borderColor: alpha(theme.palette.error.main, 0.9),
-                  backgroundColor: alpha(theme.palette.error.main, 0.16),
+                  color: theme.palette.error.main,
+                  backgroundColor: alpha(theme.palette.error.main, 0.08),
                 },
               }}
             >
