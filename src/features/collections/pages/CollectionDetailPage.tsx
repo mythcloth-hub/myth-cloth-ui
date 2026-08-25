@@ -22,10 +22,11 @@ import {
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import AddIcon from "@mui/icons-material/Add";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -990,6 +991,7 @@ export default function CollectionDetailPage() {
               <Button
                 size="small"
                 variant="text"
+                  startIcon={<AutorenewOutlinedIcon />}
                 onClick={handleResetZoom}
                 disabled={albumZoom === 1}
                 sx={{
@@ -1115,7 +1117,7 @@ export default function CollectionDetailPage() {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteFigurineDialog} disabled={isDeletingFigurine}>
+          <Button onClick={handleCloseDeleteFigurineDialog} disabled={isDeletingFigurine} startIcon={<CancelOutlinedIcon />}>
             Cancel
           </Button>
           <Button
@@ -1123,6 +1125,7 @@ export default function CollectionDetailPage() {
             color="error"
             variant="contained"
             disabled={isDeletingFigurine}
+            startIcon={<DeleteIcon />}
           >
             {isDeletingFigurine ? <CircularProgress size={20} color="inherit" /> : "Remove"}
           </Button>
@@ -1189,12 +1192,14 @@ export default function CollectionDetailPage() {
                 >
                   <Button
                     variant="text"
+                    startIcon={<VisibilityOutlinedIcon />}
                     onClick={() => setShowRecentPurchasesSummary((current) => !current)}
                   >
                     {showRecentPurchasesSummary ? "Hide Summary" : "Show Summary"}
                   </Button>
                   <Button
                     variant="text"
+                    startIcon={<ReceiptLongOutlinedIcon />}
                     onClick={() => navigate(`/purchases?collectionId=${collection.id}`)}
                   >
                     Open Purchases

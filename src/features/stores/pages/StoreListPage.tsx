@@ -18,6 +18,7 @@ import {
 	Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
@@ -293,8 +294,8 @@ export default function StoreListPage() {
 					</DialogContentText>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
-					<Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deleting}>
+					<Button onClick={() => setConfirmOpen(false)} startIcon={<CancelOutlinedIcon />}>Cancel</Button>
+					<Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deleting} startIcon={<DeleteIcon />}>
 						{deleting ? <CircularProgress size={20} color="inherit" /> : "Delete"}
 					</Button>
 				</DialogActions>

@@ -18,6 +18,9 @@ import {
 	Typography,
 } from "@mui/material";
 import axios from "axios";
+import AddIcon from "@mui/icons-material/Add";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 
 import { useAuth } from "../../../auth/AuthContext";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
@@ -353,8 +356,8 @@ export default function StoreFormPage() {
 						)}
 
 						<Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
-							<Button variant="outlined" onClick={() => navigate("/stores")}>Cancel</Button>
-							<Button type="submit" variant="contained" disabled={loading || Boolean(successMessage) || !canSubmit}>
+							<Button variant="outlined" startIcon={<CancelOutlinedIcon />} onClick={() => navigate("/stores")}>Cancel</Button>
+							<Button type="submit" variant="contained" disabled={loading || Boolean(successMessage) || !canSubmit} startIcon={isEdit ? <SaveOutlinedIcon /> : <AddIcon />}>
 								{isEdit ? "Update" : "Create"}
 							</Button>
 						</Box>

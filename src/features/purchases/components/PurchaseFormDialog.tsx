@@ -21,6 +21,8 @@ import {
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import axios from "axios";
 import {
@@ -815,12 +817,12 @@ export default function PurchaseFormDialog({
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={isSubmitting}>Cancel</Button>
+        <Button onClick={onClose} disabled={isSubmitting} startIcon={<CancelOutlinedIcon />}>Cancel</Button>
         <Button
           variant="contained"
           onClick={() => void handleSave()}
           disabled={isSubmitting}
-          startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
+          startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : submitLabel === "Record Purchase" ? <AddIcon /> : <SaveOutlinedIcon />}
         >
           {isSubmitting ? "Saving..." : submitLabel}
         </Button>

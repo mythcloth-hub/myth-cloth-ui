@@ -27,6 +27,7 @@ import RestoreOutlinedIcon from "@mui/icons-material/RestoreOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 
 import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
@@ -708,6 +709,7 @@ export default function FigurineMatchingPage() {
                         size="small"
                         variant="outlined"
                         color="success"
+                        startIcon={<CheckCircleOutlineOutlinedIcon fontSize="small" />}
                         disabled={item.ignored || !selectionByListingId[item.id] || savingMatch}
                         onClick={() => setConfirmDialogItem(item)}
                       >
@@ -805,9 +807,15 @@ export default function FigurineMatchingPage() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDialogItem(null)} disabled={savingMatch}>Cancel</Button>
-          <Button variant="contained" color="success" onClick={handleConfirmSelection} disabled={savingMatch}>
-            Yes, confirm
+          <Button onClick={() => setConfirmDialogItem(null)} disabled={savingMatch} startIcon={<CancelOutlinedIcon />}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleConfirmSelection}
+            disabled={savingMatch}
+            startIcon={savingMatch ? <CircularProgress size={18} color="inherit" /> : <CheckCircleOutlineOutlinedIcon />}
+          >
+            {savingMatch ? "Saving..." : "Yes, confirm"}
           </Button>
         </DialogActions>
       </Dialog>

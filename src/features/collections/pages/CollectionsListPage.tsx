@@ -22,10 +22,12 @@ import {
   Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditIcon from "@mui/icons-material/EditOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { alpha, useTheme } from "@mui/material/styles";
 import { deleteCollection, duplicateCollection, getCollections, updateCollection } from "../api/collectionApi";
@@ -754,8 +756,8 @@ export default function CollectionsListPage() {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deletingCollection}>Cancel</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deletingCollection}>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deletingCollection} startIcon={<CancelOutlinedIcon />}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deletingCollection} startIcon={<DeleteIcon />}>
             {deletingCollection ? "Deleting..." : "Delete"}
           </Button>
         </DialogActions>
@@ -816,10 +818,10 @@ export default function CollectionsListPage() {
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
-          <Button onClick={() => setEditDialogOpen(false)} disabled={savingEdit}>
+          <Button onClick={() => setEditDialogOpen(false)} disabled={savingEdit} startIcon={<CancelOutlinedIcon />}>
             Cancel
           </Button>
-          <Button onClick={handleSaveEdit} variant="contained" disabled={savingEdit}>
+          <Button onClick={handleSaveEdit} variant="contained" disabled={savingEdit} startIcon={savingEdit ? undefined : <SaveOutlinedIcon />}>
             {savingEdit ? "Saving..." : "Save Changes"}
           </Button>
         </DialogActions>

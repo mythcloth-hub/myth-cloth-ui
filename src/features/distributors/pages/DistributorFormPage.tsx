@@ -16,6 +16,9 @@ import {
   CircularProgress,
 } from "@mui/material";
 import axios from "axios";
+import AddIcon from "@mui/icons-material/Add";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 
 import { createDistributor, getDistributorById, updateDistributor } from "../api/distributorApi";
 import type { Distributor } from "../types/distributor";
@@ -235,10 +238,10 @@ export default function DistributorFormPage() {
             helperText={errors.website}
           />
           <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
-            <Button variant="outlined" onClick={() => navigate("/distributors")}>
+              <Button variant="outlined" startIcon={<CancelOutlinedIcon />} onClick={() => navigate("/distributors")}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" disabled={loading || Boolean(successMessage)}>
+            <Button type="submit" variant="contained" disabled={loading || Boolean(successMessage)} startIcon={isEdit ? <SaveOutlinedIcon /> : <AddIcon />}>
               {isEdit ? "Update" : "Create"}
             </Button>
           </Box>

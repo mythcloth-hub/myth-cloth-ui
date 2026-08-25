@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMediaQuery, useTheme } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import { Box, Typography, Tooltip, IconButton, Button, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CircularProgress } from "@mui/material";
@@ -192,8 +193,8 @@ export default function DistributorListPage() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deleting}>
+          <Button onClick={() => setConfirmOpen(false)} startIcon={<CancelOutlinedIcon />}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deleting} startIcon={<DeleteIcon />}>
             {deleting ? <CircularProgress size={20} color="inherit" /> : "Delete"}
           </Button>
         </DialogActions>

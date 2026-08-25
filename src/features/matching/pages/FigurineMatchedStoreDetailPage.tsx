@@ -25,10 +25,12 @@ import {
 } from "@mui/material";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import CompareArrowsOutlinedIcon from "@mui/icons-material/CompareArrowsOutlined";
+import ChecklistIcon from "@mui/icons-material/Checklist";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import CloseIcon from "@mui/icons-material/Close";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 
 import { useAuth } from "../../../auth/AuthContext";
 import { useDisplayCurrency } from "../../../currency/CurrencyContext";
@@ -909,6 +911,7 @@ export default function FigurineMatchedStoreDetailPage() {
                           <Button
                             size="small"
                             variant="outlined"
+                            startIcon={<OpenInNewOutlinedIcon />}
                             onClick={() => navigate(`/figurines/${item.figurineId}`)}
                           >
                             Open Figurine
@@ -1008,6 +1011,7 @@ export default function FigurineMatchedStoreDetailPage() {
             <Button
               size="small"
               variant="outlined"
+              startIcon={<ChecklistIcon fontSize="small" />}
               onClick={bulkSelection.selectAll}
               disabled={items.length === 0 || savingBulkUnmatch || savingManualMatch}
               sx={{ fontSize: "0.75rem" }}
@@ -1017,6 +1021,7 @@ export default function FigurineMatchedStoreDetailPage() {
             <Button
               size="small"
               variant="outlined"
+              startIcon={<CloseIcon fontSize="small" />}
               onClick={bulkSelection.clearAll}
               disabled={savingBulkUnmatch || savingManualMatch}
               color="inherit"
@@ -1069,12 +1074,13 @@ export default function FigurineMatchedStoreDetailPage() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setBulkUnmatchOpen(false)} disabled={savingBulkUnmatch}>
+          <Button onClick={() => setBulkUnmatchOpen(false)} disabled={savingBulkUnmatch} startIcon={<CancelOutlinedIcon />}>
             Cancel
           </Button>
           <Button
             variant="contained"
             color="warning"
+            startIcon={savingBulkUnmatch ? <CircularProgress size={18} color="inherit" /> : <CompareArrowsOutlinedIcon />}
             onClick={handleConfirmBulkUnmatch}
             disabled={bulkSelection.selectedCount === 0 || savingBulkUnmatch}
           >
@@ -1153,10 +1159,16 @@ export default function FigurineMatchedStoreDetailPage() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setManualMatchTarget(null)} disabled={savingManualMatch}>
+          <Button onClick={() => setManualMatchTarget(null)} disabled={savingManualMatch} startIcon={<CancelOutlinedIcon />}>
             Cancel
           </Button>
-          <Button variant="contained" color="warning" onClick={handleConfirmManualMatch} disabled={savingManualMatch}>
+          <Button
+            variant="contained"
+            color="warning"
+            startIcon={savingManualMatch ? <CircularProgress size={18} color="inherit" /> : <CompareArrowsOutlinedIcon />}
+            onClick={handleConfirmManualMatch}
+            disabled={savingManualMatch}
+          >
             Yes, send to manual matching
           </Button>
         </DialogActions>

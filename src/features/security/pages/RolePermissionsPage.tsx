@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
+import SyncAltOutlinedIcon from "@mui/icons-material/SyncAltOutlined";
 
 import { getAllRoles } from "../api/roleApi";
 import { getAllPermissions } from "../api/permissionApi";
@@ -189,6 +190,7 @@ export default function RolePermissionsPage() {
             variant="contained"
             onClick={handleSync}
             disabled={!selectedRoleId || submitting}
+            startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SyncAltOutlinedIcon />}
             sx={{ height: 56 }}
           >
             {submitting ? "Syncing..." : "Sync Permissions"}

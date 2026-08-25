@@ -1487,6 +1487,7 @@ export default function FigurineCollectionPage() {
             </Typography>
             <Button
               size="small"
+              startIcon={<ChecklistIcon fontSize="small" />}
               variant="outlined"
               onClick={bulkSelection.selectAll}
               sx={{ fontSize: "0.75rem" }}
@@ -1496,6 +1497,7 @@ export default function FigurineCollectionPage() {
             {totalCollectableElements > selectableItemsOnPageCount && (
               <Button
                 size="small"
+                startIcon={selectingAllPages ? undefined : <ChecklistIcon fontSize="small" />}
                 variant="outlined"
                 onClick={handleSelectAllPages}
                 disabled={selectingAllPages}
@@ -1506,6 +1508,7 @@ export default function FigurineCollectionPage() {
             )}
             <Button
               size="small"
+              startIcon={<ClearIcon fontSize="small" />}
               variant="outlined"
               onClick={bulkSelection.clearAll}
               color="inherit"

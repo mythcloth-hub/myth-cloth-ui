@@ -27,6 +27,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import AddIcon from "@mui/icons-material/Add";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -796,12 +798,12 @@ export default function FigurineFormPage() {
           </Grid>
 
           {/* ── Notes ── */}
-          <SectionLabel>Notes</SectionLabel>
+          <SectionLabel>Additional Information</SectionLabel>
           <TextField
-            label="Notes"
+            label="Additional Information"
             value={form.notes}
             onChange={(e) => setField("notes", e.target.value)}
-            fullWidth multiline rows={3}
+            fullWidth multiline rows={7}
             slotProps={{ htmlInput: { maxLength: 1500 } }}
           />
 
@@ -923,14 +925,34 @@ export default function FigurineFormPage() {
             <Paper
               key={i}
               variant="outlined"
-              sx={{ p: 2, borderColor: "rgba(212,175,55,0.15)", position: "relative" }}
+              sx={{
+                p: 2,
+                pt: form.distributors.length > 1 ? 7 : 2,
+                borderColor: "rgba(212,175,55,0.15)",
+                position: "relative",
+              }}
             >
               {form.distributors.length > 1 && (
                 <Tooltip title="Remove distributor">
                   <IconButton
-                    size="small"
                     onClick={() => removeDistributor(i)}
-                    sx={{ position: "absolute", top: 8, right: 8, color: "error.main" }}
+                    aria-label="Remove distributor"
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      width: 36,
+                      height: 36,
+                      color: "error.light",
+                      backgroundColor: "rgba(244, 67, 54, 0.12)",
+                      border: "1px solid rgba(244, 67, 54, 0.45)",
+                      zIndex: 1,
+                      "&:hover": {
+                        color: "error.contrastText",
+                        backgroundColor: "error.main",
+                        borderColor: "error.main",
+                      },
+                    }}
                   >
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>
@@ -1057,16 +1079,17 @@ export default function FigurineFormPage() {
               <Button
                 variant="outlined"
                 color="error"
+                startIcon={<DeleteOutlineIcon />}
                 onClick={() => setDeleteDialogOpen(true)}
                 sx={{ mr: "auto" }}
               >
                 Delete
               </Button>
             )}
-            <Button variant="outlined" onClick={() => isEdit ? navigate(-1) : navigate("/figurines")}>
+            <Button variant="outlined" startIcon={<CancelOutlinedIcon />} onClick={() => isEdit ? navigate(-1) : navigate("/figurines")}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" disabled={saving || Boolean(successMessage)}>
+            <Button type="submit" variant="contained" disabled={saving || Boolean(successMessage)} startIcon={saving ? undefined : isEdit ? <SaveOutlinedIcon /> : <AddIcon />}>
               {saving ? <CircularProgress size={20} color="inherit" /> : isEdit ? "Save Changes" : "Create"}
             </Button>
           </Box>
@@ -1221,7 +1244,7 @@ export default function FigurineFormPage() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEventsModalOpen(false)}>Close</Button>
+          <Button onClick={() => setEventsModalOpen(false)} startIcon={<CancelOutlinedIcon />}>Close</Button>
         </DialogActions>
       </Dialog>
 
@@ -1249,7 +1272,7 @@ export default function FigurineFormPage() {
           >
             Cancel
           </Button>
-          <Button onClick={handleDeleteEvent} color="error" variant="contained" disabled={deletingEventId !== null || pendingDeleteEventId == null}>
+          <Button onClick={handleDeleteEvent} color="error" variant="contained" disabled={deletingEventId !== null || pendingDeleteEventId == null} startIcon={<DeleteOutlineIcon />}>
             {deletingEventId !== null ? <CircularProgress size={18} color="inherit" /> : "Delete"}
           </Button>
         </DialogActions>
@@ -1312,8 +1335,10 @@ export default function FigurineFormPage() {
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={closeEventDialog}>Cancel</Button>
-            <Button onClick={handleEventFormSubmit} variant="contained">{editingEvent ? "Save" : "Add"}</Button>
+            <Button onClick={closeEventDialog} startIcon={<CancelOutlinedIcon />}>Cancel</Button>
+            <Button onClick={handleEventFormSubmit} variant="contained" startIcon={editingEvent ? <SaveOutlinedIcon /> : <AddIcon />}>
+              {editingEvent ? "Save" : "Add"}
+            </Button>
           </DialogActions>
         </Dialog>
       </LocalizationProvider>
@@ -1353,8 +1378,8 @@ export default function FigurineFormPage() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>Cancel</Button>
-          <Button onClick={handleDelete} color="error" variant="contained" disabled={deleting}>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deleting} startIcon={<CancelOutlinedIcon />}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained" disabled={deleting} startIcon={<DeleteOutlineIcon />}>
             {deleting ? <CircularProgress size={18} color="inherit" /> : "Delete"}
           </Button>
         </DialogActions>

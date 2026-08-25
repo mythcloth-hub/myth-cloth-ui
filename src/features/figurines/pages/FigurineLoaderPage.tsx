@@ -15,6 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -222,11 +223,16 @@ export default function FigurineLoaderPage() {
           </Alert>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseConfirm} disabled={submitting}>
+          <Button onClick={handleCloseConfirm} disabled={submitting} startIcon={<CancelOutlinedIcon />}>
             Cancel
           </Button>
-          <Button onClick={handleConfirmLoad} variant="contained" disabled={submitting}>
-            {submitting ? <CircularProgress size={20} color="inherit" /> : "Start Import"}
+          <Button
+            onClick={handleConfirmLoad}
+            variant="contained"
+            disabled={submitting}
+            startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <UploadFileOutlinedIcon />}
+          >
+            {submitting ? "Importing..." : "Start Import"}
           </Button>
         </DialogActions>
       </Dialog>

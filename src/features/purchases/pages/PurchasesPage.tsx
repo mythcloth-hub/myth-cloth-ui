@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Card,
+  CircularProgress,
   Divider,
   Dialog,
   DialogActions,
@@ -24,6 +25,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditIcon from "@mui/icons-material/EditOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import SyncAltOutlinedIcon from "@mui/icons-material/SyncAltOutlined";
@@ -851,11 +853,13 @@ export default function PurchasesPage() {
           <Button
             onClick={() => setSyncPurchaseTarget(null)}
             disabled={isSyncingPurchase}
+            startIcon={<CancelOutlinedIcon />}
           >
             Cancel
           </Button>
           <Button
             variant="contained"
+            startIcon={isSyncingPurchase ? <CircularProgress size={18} color="inherit" /> : <SyncAltOutlinedIcon />}
             onClick={() => {
               if (syncPurchaseTarget) {
                 void handleSyncPurchase(syncPurchaseTarget);
@@ -903,6 +907,7 @@ export default function PurchasesPage() {
           <Button
             onClick={() => setDeletePurchaseTarget(null)}
             disabled={isDeletingPurchase}
+            startIcon={<CancelOutlinedIcon />}
           >
             Cancel
           </Button>
@@ -915,6 +920,7 @@ export default function PurchasesPage() {
               }
             }}
             disabled={isDeletingPurchase}
+            startIcon={<DeleteIcon />}
           >
             {isDeletingPurchase ? "Deleting..." : "Delete"}
           </Button>

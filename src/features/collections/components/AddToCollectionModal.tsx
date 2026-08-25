@@ -21,6 +21,7 @@ import {
   Stack,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import { getCollections, assignFigurinesToCollections } from "../api/collectionApi";
 import type { Collection } from "../types/collection";
@@ -436,6 +437,7 @@ export default function AddToCollectionModal({
         }}
       >
         <Button
+          startIcon={<CancelOutlinedIcon />}
           onClick={onClose}
           disabled={creating}
           sx={{

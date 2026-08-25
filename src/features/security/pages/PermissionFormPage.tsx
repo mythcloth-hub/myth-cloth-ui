@@ -11,6 +11,9 @@ import {
   CircularProgress,
 } from "@mui/material";
 import axios from "axios";
+import AddIcon from "@mui/icons-material/Add";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 
 import { getPermissionById, createPermission, updatePermission } from "../api/permissionApi";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
@@ -142,13 +145,14 @@ export default function PermissionFormPage() {
               helperText={descriptionError ?? "Use format resource:action[:subaction...] (lowercase, numbers, '-' or '_')."}
             />
             <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
-              <Button variant="outlined" onClick={() => navigate("/security/permissions")}>
+              <Button variant="outlined" startIcon={<CancelOutlinedIcon />} onClick={() => navigate("/security/permissions")}>
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="contained"
                 disabled={loading || Boolean(successMessage)}
+                startIcon={isEdit ? <SaveOutlinedIcon /> : <AddIcon />}
               >
                 {isEdit ? "Update" : "Create"}
               </Button>

@@ -11,6 +11,9 @@ import {
   CircularProgress,
 } from "@mui/material";
 import axios from "axios";
+import AddIcon from "@mui/icons-material/Add";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 
 import { catalogApiMap } from "../api/catalogApi";
 import { CATALOG_META } from "../types/catalog";
@@ -134,13 +137,14 @@ export default function CatalogFormPage() {
               helperText={descriptionError}
             />
             <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
-              <Button variant="outlined" onClick={() => navigate(`/catalogs/${catalogType}`)}>
+              <Button variant="outlined" startIcon={<CancelOutlinedIcon />} onClick={() => navigate(`/catalogs/${catalogType}`)}>
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="contained"
                 disabled={loading || Boolean(successMessage)}
+                startIcon={isEdit ? <SaveOutlinedIcon /> : <AddIcon />}
               >
                 {isEdit ? "Update" : "Create"}
               </Button>
