@@ -473,12 +473,20 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         }}
         sx={{ px: 3, py: 2.5, borderBottom: "1px solid rgba(255,255,255,0.07)", cursor: "pointer" }}
       >
-        <Typography
-          variant="h6"
-          sx={{ color: "primary.main", fontWeight: 700, letterSpacing: 1, lineHeight: 1.2 }}
-        >
-          Saint Collections
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 0.45 }}>
+          <Box
+            component="img"
+            src="/logo-mark.svg"
+            alt="Saint Collections logo"
+            sx={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0 }}
+          />
+          <Typography
+            variant="h6"
+            sx={{ color: "primary.main", fontWeight: 700, letterSpacing: 1, lineHeight: 1.2 }}
+          >
+            Saint Collections
+          </Typography>
+        </Box>
         <Typography variant="caption" sx={{ color: "text.secondary" }}>
           Every collection tells a story. Track yours.
         </Typography>
@@ -823,13 +831,23 @@ export default function MainLayout() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography
-            variant="h6"
+          <Box
             onClick={() => navigate("/")}
-            sx={{ color: "primary.main", fontWeight: 700, cursor: "pointer" }}
+            sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
           >
-            MythCloth
-          </Typography>
+            <Box
+              component="img"
+              src="/logo-mark.svg"
+              alt="Saint Collections logo"
+              sx={{ width: 24, height: 24, borderRadius: "50%", flexShrink: 0 }}
+            />
+            <Typography
+              variant="h6"
+              sx={{ color: "primary.main", fontWeight: 700, fontSize: "1.05rem", lineHeight: 1.1 }}
+            >
+              Saint Collections
+            </Typography>
+          </Box>
         </Toolbar>
       </AppBar>
 
