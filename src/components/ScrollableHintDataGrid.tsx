@@ -21,15 +21,40 @@ export default function ScrollableHintDataGrid<R extends GridValidRowModel>(prop
     : { position: "relative" };
 
   const baseGridSx: SxProps<Theme> = {
+    borderRadius: { xs: 2, md: 2.25 },
+    overflow: "hidden",
+    border: (theme) => `1px solid ${theme.palette.divider}`,
+    backgroundColor: (theme) => theme.palette.background.paper,
+    "& .MuiDataGrid-main": {
+      borderRadius: "inherit",
+    },
+    "& .MuiDataGrid-columnHeaders": {
+      borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+    },
     "& .MuiDataGrid-virtualScroller": {
       scrollbarWidth: "none",
       msOverflowStyle: "none",
       "&::-webkit-scrollbar": {
         display: "none",
       },
+      "&::-webkit-scrollbar:horizontal": {
+        display: "block",
+        height: 8,
+      },
+      "&::-webkit-scrollbar-thumb:horizontal": {
+        backgroundColor: "rgba(255,255,255,0.28)",
+        borderRadius: 999,
+      },
+      "&::-webkit-scrollbar-track:horizontal": {
+        backgroundColor: "rgba(255,255,255,0.08)",
+      },
     },
-    "& .MuiDataGrid-scrollbar, & .MuiDataGrid-scrollbar--vertical, & .MuiDataGrid-scrollbar--horizontal": {
+    "& .MuiDataGrid-scrollbar, & .MuiDataGrid-scrollbar--vertical": {
       display: "none",
+    },
+    "& .MuiDataGrid-scrollbar--horizontal": {
+      display: { xs: "block", md: "none" },
+      minHeight: 8,
     },
   };
 
