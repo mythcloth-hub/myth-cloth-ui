@@ -132,7 +132,7 @@ export default function DistributorListPage() {
       headerAlign: "center",
       renderCell: (params) => (
         <>
-          {hasPermission("collections:update") && (
+          {hasPermission("distributors:update") && (
             <Tooltip title="Edit">
               <IconButton
                 size="small"
@@ -143,7 +143,7 @@ export default function DistributorListPage() {
               </IconButton>
             </Tooltip>
           )}
-          {hasPermission("collections:delete") && (
+          {hasPermission("distributors:delete") && (
             <Tooltip title="Delete">
               <IconButton
                 size="small"
@@ -166,7 +166,7 @@ export default function DistributorListPage() {
           eyebrow="Events & Partners"
           title="Distributors"
           subtitle="Manage distributor partners, countries, and reference links for release tracking."
-          actions={hasPermission("collections:create") ? (
+          actions={hasPermission("distributors:create") ? (
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/distributors/new")}>
               Add Distributor
             </Button>
@@ -181,7 +181,7 @@ export default function DistributorListPage() {
         loading={loading}
         getRowId={(row) => row.id}
         columnVisibilityModel={{ website: !isMobile }}
-        onRowDoubleClick={hasPermission("collections:update") ? (params) => navigate(`/distributors/edit/${params.row.id}`) : undefined}
+        onRowDoubleClick={hasPermission("distributors:update") ? (params) => navigate(`/distributors/edit/${params.row.id}`) : undefined}
         slots={{ noRowsOverlay: CustomNoRowsOverlay }}
         sx={{ "& .MuiDataGrid-row": { cursor: "pointer" } }}
       />

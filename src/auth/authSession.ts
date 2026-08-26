@@ -9,6 +9,7 @@ export type AuthSession = {
   tokenType: string;
   expiresInSeconds: number;
   expiresAtMs: number;
+  isDemo: boolean;
 };
 
 export type AuthApiResponse = {
@@ -70,13 +71,14 @@ function normalizePermissions(source: { permissions?: string[]; accessToken: str
   return getPermissionsFromToken(source.accessToken);
 }
 
-export function buildAuthSession(payload: AuthApiResponse): AuthSession {
+export function buildAuthSession(payload: AuthApiResponse, options?: { isDemo?: boolean }): AuthSession {
   return {
     ...payload,
     profilePictureUrl: payload.profilePictureUrl ?? payload.picture,
     permissions: normalizePermissions(payload),
     tokenType: payload.tokenType || "Bearer",
     expiresAtMs: Date.now() + payload.expiresInSeconds * 1000,
+    isDemo: options?.isDemo ?? false,
   };
 }
 
@@ -125,6 +127,7 @@ export function loadAuthSession(): AuthSession | null {
       tokenType: String(parsed.tokenType ?? "Bearer"),
       expiresInSeconds: Number(parsed.expiresInSeconds ?? 0),
       expiresAtMs: Number(parsed.expiresAtMs),
+      isDemo: Boolean(parsed.isDemo),
     };
 
     return hydrated;

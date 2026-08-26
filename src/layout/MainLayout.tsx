@@ -63,6 +63,16 @@ const pulseAttention = keyframes`
   50% { opacity: 0.55; text-shadow: 0 0 10px rgba(212, 175, 55, 0.9); }
 `;
 
+const demoBannerPulse = keyframes`
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 167, 38, 0.55); }
+  50% { box-shadow: 0 0 18px 4px rgba(255, 167, 38, 0.55); }
+`;
+
+const demoDotPulse = keyframes`
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.5; }
+`;
+
 type NavItem = {
   label: string;
   path?: string;
@@ -647,7 +657,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 </Typography>
               )}
             </Box>
-            
+
             <Button
               onClick={handleLogout}
               startIcon={<LogoutOutlinedIcon />}
@@ -797,10 +807,58 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+function DemoModeBanner() {
+  const theme = useTheme();
+
+  return (
+    <Box
+      role="status"
+      aria-live="polite"
+      sx={{
+        position: "sticky",
+        top: 0,
+        zIndex: (t) => t.zIndex.appBar + 1,
+        display: "flex",
+        alignItems: "center",
+        gap: 1.25,
+        px: { xs: 1.5, md: 2.5 },
+        py: 1,
+        borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.6)}`,
+        background: `linear-gradient(90deg, ${alpha(theme.palette.warning.main, 0.22)} 0%, ${alpha(theme.palette.warning.main, 0.1)} 100%)`,
+        backdropFilter: "blur(6px)",
+        animation: `${demoBannerPulse} 2s ease-in-out infinite`,
+      }}
+    >
+      <Box
+        sx={{
+          width: 10,
+          height: 10,
+          borderRadius: "50%",
+          flexShrink: 0,
+          backgroundColor: theme.palette.warning.main,
+          animation: `${demoDotPulse} 1.2s ease-in-out infinite`,
+        }}
+      />
+      <Typography
+        sx={{
+          fontSize: { xs: "0.76rem", md: "0.85rem" },
+          fontWeight: 700,
+          letterSpacing: "0.02em",
+          color: theme.palette.warning.main,
+          lineHeight: 1.35,
+        }}
+      >
+        Demo account active — you have the same permissions as a Collector. The rest of the app is read-only.
+      </Typography>
+    </Box>
+  );
+}
+
 export default function MainLayout() {
   useFacebookSDK();
   useGoogleSDK();
   const navigate = useNavigate();
+  const { isDemoSession } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const drawerSx = {
@@ -884,6 +942,7 @@ export default function MainLayout() {
           mt: { xs: 6, md: 0 },
         }}
       >
+        {isDemoSession && <DemoModeBanner />}
         <Outlet />
       </Box>
     </Box>

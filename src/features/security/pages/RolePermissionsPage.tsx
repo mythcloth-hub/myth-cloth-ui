@@ -24,6 +24,7 @@ import type { Permission } from "../types/permission";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
 import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
+import { useAuth } from "../../../auth/AuthContext";
 
 function CustomNoRowsOverlay() {
   return (
@@ -35,6 +36,8 @@ function CustomNoRowsOverlay() {
 }
 
 export default function RolePermissionsPage() {
+  const { hasPermission } = useAuth();
+  const canSyncRolePermissions = hasPermission("roles:permissions:sync");
   const [roles, setRoles] = useState<Role[]>([]);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
   const [assignedPermissions, setAssignedPermissions] = useState<Permission[]>([]);
@@ -143,7 +146,7 @@ export default function RolePermissionsPage() {
       </Box>
 
       <Paper sx={{ padding: { xs: 2, sm: 3 }, mb: 2 }}>
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr auto" }, gap: 2, alignItems: "end" }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: canSyncRolePermissions ? "1fr 1fr auto" : "1fr 1fr" }, gap: 2, alignItems: "end" }}>
           <FormControl fullWidth>
             <InputLabel id="role-select-label">Role</InputLabel>
             <Select
@@ -186,15 +189,17 @@ export default function RolePermissionsPage() {
             </Select>
           </FormControl>
 
-          <Button
-            variant="contained"
-            onClick={handleSync}
-            disabled={!selectedRoleId || submitting}
-            startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SyncAltOutlinedIcon />}
-            sx={{ height: 56 }}
-          >
-            {submitting ? "Syncing..." : "Sync Permissions"}
-          </Button>
+          {canSyncRolePermissions && (
+            <Button
+              variant="contained"
+              onClick={handleSync}
+              disabled={!selectedRoleId || submitting}
+              startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SyncAltOutlinedIcon />}
+              sx={{ height: 56 }}
+            >
+              {submitting ? "Syncing..." : "Sync Permissions"}
+            </Button>
+          )}
         </Box>
       </Paper>
 

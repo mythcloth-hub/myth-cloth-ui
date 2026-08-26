@@ -24,6 +24,7 @@ type AuthContextType = {
   facebookEnabled: boolean;
   googleEnabled: boolean;
   demoEnabled: boolean;
+  isDemoSession: boolean;
   hasPermission: (permission: string) => boolean;
   loginWithFacebook: () => void;
   loginWithGoogle: () => void;
@@ -37,6 +38,7 @@ export const AuthContext = createContext<AuthContextType>({
   facebookEnabled: true,
   googleEnabled: true,
   demoEnabled: false,
+  isDemoSession: false,
   hasPermission: () => false,
   loginWithFacebook: () => { },
   loginWithGoogle: () => { },
@@ -228,10 +230,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const authResponse = await loginWithDemoUser();
-      const nextSession = buildAuthSession(authResponse);
+      const nextSession = buildAuthSession(authResponse, { isDemo: true });
       saveAuthSession(nextSession);
       setSession(nextSession);
-      setNotice({ message: `Welcome, ${nextSession.displayName}!`, severity: "success" });
+      setNotice({
+        message: `Welcome, ${nextSession.displayName}!`,
+        severity: "info",
+      });
     } catch (err) {
       setNotice({ message: getApiErrorMessage(err, { action: "create", resource: "login session" }), severity: "error" });
     }
@@ -259,6 +264,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       facebookEnabled: Boolean(facebookAppId),
       googleEnabled: Boolean(googleClientId),
       demoEnabled: Boolean(demoAvailability?.enabled),
+      isDemoSession: Boolean(session?.isDemo),
       hasPermission,
       loginWithFacebook,
       loginWithGoogle,
