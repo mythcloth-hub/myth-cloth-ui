@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
@@ -37,19 +38,22 @@ function formatImportCompletedAt(dateTime: string): string {
 }
 
 function ImportHistoryNoRows() {
+  const { t } = useTranslation("figurines");
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 1 }}>
       <Typography variant="body1" color="text.secondary">
-        No figurine imports yet.
+        {t("import.emptyTitle")}
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        Run an import to start building the history.
+        {t("import.emptySubtitle")}
       </Typography>
     </Box>
   );
 }
 
 export default function FigurineLoaderPage() {
+  const { t } = useTranslation("figurines");
   const { hasPermission } = useAuth();
   const canLoadFigurines = hasPermission("figurines:import");
   const [submitting, setSubmitting] = useState(false);
@@ -84,7 +88,7 @@ export default function FigurineLoaderPage() {
     try {
       const status = await loadAllFigurines();
       if (status === 202) {
-        setSuccessMessage("All the figurines were imported.");
+        setSuccessMessage(t("import.successMessage"));
       }
     } catch (err) {
       console.error(err);
@@ -112,7 +116,7 @@ export default function FigurineLoaderPage() {
   const importColumns: GridColDef<FigurineImportRecord>[] = [
     {
       field: "status",
-      headerName: "Status",
+      headerName: t("import.columns.status"),
       width: 100,
       sortable: false,
       filterable: false,
@@ -121,11 +125,11 @@ export default function FigurineLoaderPage() {
       renderCell: (params) => {
         const hasError = Boolean(params.row.errorMessage);
         return hasError ? (
-          <Tooltip title="Import completed with errors">
+          <Tooltip title={t("import.statusWithErrors")}>
             <ErrorOutlineOutlinedIcon color="error" fontSize="small" />
           </Tooltip>
         ) : (
-          <Tooltip title="Import completed successfully">
+          <Tooltip title={t("import.statusSuccessful")}>
             <CheckCircleOutlineOutlinedIcon sx={{ color: "success.main" }} fontSize="small" />
           </Tooltip>
         );
@@ -133,25 +137,25 @@ export default function FigurineLoaderPage() {
     },
     {
       field: "imported",
-      headerName: "Imported",
+      headerName: t("import.columns.imported"),
       flex: 1,
       minWidth: 120,
     },
     {
       field: "errorMessage",
-      headerName: "Error Message",
+      headerName: t("import.columns.errorMessage"),
       flex: 2,
       minWidth: 220,
       valueGetter: (value) => value || "-",
       renderCell: (params) => (
-        <Tooltip title={params.row.errorMessage || "No errors"}>
+        <Tooltip title={params.row.errorMessage || t("import.noErrors")}>
           <span>{params.value}</span>
         </Tooltip>
       ),
     },
     {
       field: "completedAt",
-      headerName: "Completed At",
+      headerName: t("import.columns.completedAt"),
       flex: 2,
       minWidth: 220,
       valueGetter: (_value, row) => formatImportCompletedAt(row.completedAt),
@@ -167,9 +171,9 @@ export default function FigurineLoaderPage() {
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow="Administration"
-          title="Figurine Import"
-          subtitle="Trigger figurine imports from Google Sheets and review previous import runs."
+          eyebrow={t("import.eyebrow")}
+          title={t("import.title")}
+          subtitle={t("import.subtitle")}
           actions={canLoadFigurines ? (
             <Button
               variant="contained"
@@ -178,7 +182,7 @@ export default function FigurineLoaderPage() {
               onClick={handleLoadClick}
               disabled={submitting}
             >
-              {submitting ? "Importing..." : "Load All Figurines"}
+              {submitting ? t("import.importing") : t("import.loadButton")}
             </Button>
           ) : undefined}
         />
@@ -186,11 +190,11 @@ export default function FigurineLoaderPage() {
 
       <Stack spacing={2} sx={{ mb: 2 }}>
         <Typography color="text.secondary">
-          Use this page whenever you need to refresh figurines in the app. Each run is recorded in the import history list.
+          {t("import.description")}
         </Typography>
         {!canLoadFigurines && (
           <Alert severity="warning">
-            You do not have the required permission: figurines:import
+            {t("import.missingPermission")}
           </Alert>
         )}
       </Stack>
@@ -212,19 +216,18 @@ export default function FigurineLoaderPage() {
       />
 
       <Dialog open={confirmOpen} onClose={handleCloseConfirm}>
-        <DialogTitle>Load All Figurines</DialogTitle>
+        <DialogTitle>{t("import.confirm.title")}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            This will start importing all figurines from the spreadsheet.
-            You can run this process multiple times whenever you need to refresh data.
+            {t("import.confirm.body")}
           </DialogContentText>
           <Alert severity="warning" sx={{ mt: 2 }}>
-            Warning: this process will override existing figurines when the import runs.
+            {t("import.confirm.warning")}
           </Alert>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseConfirm} disabled={submitting} startIcon={<CancelOutlinedIcon />}>
-            Cancel
+            {t("import.confirm.cancel")}
           </Button>
           <Button
             onClick={handleConfirmLoad}
@@ -232,7 +235,7 @@ export default function FigurineLoaderPage() {
             disabled={submitting}
             startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <UploadFileOutlinedIcon />}
           >
-            {submitting ? "Importing..." : "Start Import"}
+            {submitting ? t("import.importing") : t("import.confirm.start")}
           </Button>
         </DialogActions>
       </Dialog>

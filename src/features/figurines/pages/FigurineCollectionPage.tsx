@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../../auth/AuthContext";
 import {
@@ -58,23 +59,89 @@ const PAGE_SIZE = 24;
 
 type Badge = { label: string; color: "warning" | "info" | "success" | "error" | "default" };
 
-const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { label: string; color: string; borderColor: string; hoverGlow: string }> = {
-  RELEASED:  { label: "Released",  color: "#4caf50", borderColor: "rgba(76,175,80,0.28)",   hoverGlow: "rgba(76,175,80,0.14)"   },
-  ANNOUNCED: { label: "Announced", color: "#42a5f5", borderColor: "rgba(66,165,245,0.28)",  hoverGlow: "rgba(66,165,245,0.14)"  },
-  RUMORED:   { label: "Rumored",   color: "#ff9800", borderColor: "rgba(255,152,0,0.32)",   hoverGlow: "rgba(255,152,0,0.14)"   },
-  PROTOTYPE: { label: "Prototype", color: "#90a4ae", borderColor: "rgba(144,164,174,0.30)", hoverGlow: "rgba(144,164,174,0.12)" },
-  UNRELEASED: { label: "Unreleased", color: "#ef5350", borderColor: "rgba(239,83,80,0.30)", hoverGlow: "rgba(239,83,80,0.14)" },
+const RELEASE_STATUS_CONFIG: Record<ReleaseStatus, { color: string; borderColor: string; hoverGlow: string }> = {
+  RELEASED:  { color: "#4caf50", borderColor: "rgba(76,175,80,0.28)",   hoverGlow: "rgba(76,175,80,0.14)"   },
+  ANNOUNCED: { color: "#42a5f5", borderColor: "rgba(66,165,245,0.28)",  hoverGlow: "rgba(66,165,245,0.14)"  },
+  RUMORED:   { color: "#ff9800", borderColor: "rgba(255,152,0,0.32)",   hoverGlow: "rgba(255,152,0,0.14)"   },
+  PROTOTYPE: { color: "#90a4ae", borderColor: "rgba(144,164,174,0.30)", hoverGlow: "rgba(144,164,174,0.12)" },
+  UNRELEASED: { color: "#ef5350", borderColor: "rgba(239,83,80,0.30)", hoverGlow: "rgba(239,83,80,0.14)" },
 };
+
+const STATUS_LABEL_KEYS = {
+  RELEASED: "status.labels.RELEASED",
+  ANNOUNCED: "status.labels.ANNOUNCED",
+  RUMORED: "status.labels.RUMORED",
+  PROTOTYPE: "status.labels.PROTOTYPE",
+  UNRELEASED: "status.labels.UNRELEASED",
+} as const;
 
 const STATUS_ORDER: ReleaseStatus[] = ["ANNOUNCED", "RELEASED", "PROTOTYPE", "UNRELEASED", "RUMORED"];
 
-const STATUS_HELPER_TEXT: Record<ReleaseStatus, string> = {
-  RELEASED: "Already available in the market.",
-  ANNOUNCED: "Future releases that were officially announced.",
-  RUMORED: "Unconfirmed releases with circulating information.",
-  PROTOTYPE: "Prototype-stage figures; design may still change.",
-  UNRELEASED: "Canceled or indefinitely unreleased figures.",
-};
+const STATUS_HELPER_KEYS = {
+  RELEASED: "status.helpers.RELEASED",
+  ANNOUNCED: "status.helpers.ANNOUNCED",
+  RUMORED: "status.helpers.RUMORED",
+  PROTOTYPE: "status.helpers.PROTOTYPE",
+  UNRELEASED: "status.helpers.UNRELEASED",
+} as const;
+
+const FLAG_FILTER_KEYS = [
+  "metalBody",
+  "originalColor",
+  "revival",
+  "plainCloth",
+  "battleDamaged",
+  "goldenArmor",
+  "gold24k",
+  "manga",
+  "multiPack",
+  "articulable",
+  "restocks",
+] as const;
+
+type FlagFilterKey = (typeof FLAG_FILTER_KEYS)[number];
+
+const FLAG_FILTER_LABEL_KEYS = {
+  metalBody: "filters.flags.metalBody",
+  originalColor: "filters.flags.originalColor",
+  revival: "filters.flags.revival",
+  plainCloth: "filters.flags.plainCloth",
+  battleDamaged: "filters.flags.battleDamaged",
+  goldenArmor: "filters.flags.goldenArmor",
+  gold24k: "filters.flags.gold24k",
+  manga: "filters.flags.manga",
+  multiPack: "filters.flags.multiPack",
+  articulable: "filters.flags.articulable",
+  restocks: "filters.flags.restocks",
+} as const satisfies Record<FlagFilterKey, string>;
+
+const FLAG_CHIP_LABEL_KEYS = {
+  metalBody: "filters.chipFlags.metalBody",
+  originalColor: "filters.chipFlags.originalColor",
+  revival: "filters.chipFlags.revival",
+  plainCloth: "filters.chipFlags.plainCloth",
+  battleDamaged: "filters.chipFlags.battleDamaged",
+  goldenArmor: "filters.chipFlags.goldenArmor",
+  gold24k: "filters.chipFlags.gold24k",
+  manga: "filters.chipFlags.manga",
+  multiPack: "filters.chipFlags.multiPack",
+  articulable: "filters.chipFlags.articulable",
+  restocks: "filters.chipFlags.restocks",
+} as const satisfies Record<FlagFilterKey, string>;
+
+const FLAG_CHIP_ORDER: FlagFilterKey[] = [
+  "revival",
+  "metalBody",
+  "originalColor",
+  "plainCloth",
+  "battleDamaged",
+  "goldenArmor",
+  "gold24k",
+  "manga",
+  "multiPack",
+  "articulable",
+  "restocks",
+];
 
 function getBadges(f: Figurine): Badge[] {
   const badges: Badge[] = [];
@@ -136,8 +203,10 @@ function FigurineCard({
   selectable?: boolean;
 }) {
   const imageUrl = figurine.officialImageUrls?.[0] ?? null;
+  const { t } = useTranslation("figurines");
   const badges = getBadges(figurine);
   const statusCfg = figurine.releaseStatus ? RELEASE_STATUS_CONFIG[figurine.releaseStatus] : null;
+  const statusLabel = figurine.releaseStatus ? t(STATUS_LABEL_KEYS[figurine.releaseStatus]) : null;
   const releaseDateLabel = getStatusDateLabel(figurine);
   const isAnnounced = figurine.releaseStatus === "ANNOUNCED";
   const isReleased = figurine.releaseStatus === "RELEASED";
@@ -248,7 +317,7 @@ function FigurineCard({
           >
             <ImageNotSupportedOutlinedIcon sx={{ fontSize: 48, opacity: 0.3 }} />
             <Typography variant="caption" sx={{ opacity: 0.4 }}>
-              No image
+              {t("card.noImage")}
             </Typography>
           </Box>
         )}
@@ -419,7 +488,7 @@ function FigurineCard({
           {(hasAnniversary || hasTamashiiNationsDistribution) && (
             <Box sx={{ ml: "auto", display: "inline-flex", alignItems: "center", gap: 0.45, flexShrink: 0 }}>
               {hasTamashiiNationsDistribution && (
-                <Tooltip title="Tamashii Nations commemorative figurine" arrow>
+                <Tooltip title={t("card.tamashiiTooltip")} arrow>
                   <span>
                     <CelebrationIcon
                       sx={{
@@ -435,7 +504,7 @@ function FigurineCard({
                 </Tooltip>
               )}
               {hasAnniversary && (
-                <Tooltip title={(figurine as any).anniversary?.description || "Anniversary Edition"} arrow>
+                <Tooltip title={(figurine as any).anniversary?.description || t("card.anniversaryTooltip")} arrow>
                   <span>
                     <AnniversaryIcon
                       sx={{
@@ -486,9 +555,9 @@ function FigurineCard({
               variant="caption"
               sx={{ fontSize: "0.62rem", color: "text.disabled", letterSpacing: "0.04em" }}
               noWrap
-              title={releaseDateLabel ? `${statusCfg.label} - ${releaseDateLabel}` : statusCfg.label}
+              title={releaseDateLabel ? t("card.statusWithDate", { status: statusLabel, date: releaseDateLabel }) : statusLabel ?? undefined}
             >
-              {releaseDateLabel ? `${statusCfg.label} - ${releaseDateLabel}` : statusCfg.label}
+              {releaseDateLabel ? t("card.statusWithDate", { status: statusLabel, date: releaseDateLabel }) : statusLabel}
             </Typography>
             {distributorFlags.length > 0 && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, ml: 0.5 }}>
@@ -505,15 +574,15 @@ function FigurineCard({
             <Tooltip
               title={
                 latestRestockLabel
-                  ? `Restocked ${restocks.length} time${restocks.length > 1 ? "s" : ""}. Latest: ${latestRestockLabel}.`
-                  : `Restocked ${restocks.length} time${restocks.length > 1 ? "s" : ""}.`
+                  ? t("restock.tooltipWithDate", { count: restocks.length, date: latestRestockLabel })
+                  : t("restock.tooltip", { count: restocks.length })
               }
               arrow
             >
               <Chip
                 size="small"
                 icon={<AutorenewIcon sx={{ fontSize: "0.78rem !important" }} />}
-                label={latestRestockLabel ? `Restock from ${latestRestockLabel}` : "Restock"}
+                label={latestRestockLabel ? t("restock.chipWithDate", { date: latestRestockLabel }) : t("restock.chip")}
                 sx={{
                   height: 20,
                   fontSize: "0.64rem",
@@ -551,6 +620,11 @@ function CardSkeleton() {
 // Removed SEARCH_BATCH and filter mode logic
 
 export default function FigurineCollectionPage() {
+  const { t } = useTranslation("figurines");
+  const translateReleaseStatus = (status: string) => {
+    const labelKey = STATUS_LABEL_KEYS[status as ReleaseStatus];
+    return labelKey ? t(labelKey) : status;
+  };
   const navigate = useNavigate();
   const location  = useLocation();
   const { hasPermission, isAuthenticated } = useAuth();
@@ -608,7 +682,7 @@ export default function FigurineCollectionPage() {
 
   const [errorMessage,   setErrorMessage]   = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(
-    (location.state as { deleted?: boolean } | null)?.deleted ? "Figurine deleted successfully." : null
+    (location.state as { deleted?: boolean } | null)?.deleted ? t("messages.deleted") : null
   );
   const [filtersOpen,    setFiltersOpen]    = useState(false);
   const [bulkAddModalOpen, setBulkAddModalOpen] = useState(false);
@@ -920,9 +994,9 @@ export default function FigurineCollectionPage() {
       >
         <Box sx={{ mt: 1.5, mb: 1.5 }}>
           <AppPageHeader
-            eyebrow="Collections"
-            title="Myth Cloth"
-            subtitle="Explore the complete Myth Cloth catalog. Browse released, prototype, announced, rumored, and unreleased figurines, with filters to quickly find what you're looking for."
+            eyebrow={t("header.eyebrow")}
+            title={t("header.title")}
+            subtitle={t("header.subtitle")}
             compact
             actions={
               <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexShrink: 0, flexWrap: "wrap" }}>
@@ -958,22 +1032,22 @@ export default function FigurineCollectionPage() {
                   },
                 }}
               >
-                <ToggleButton value="all">All</ToggleButton>
-                <ToggleButton value="owned">Owned</ToggleButton>
+                <ToggleButton value="all">{t("toolbar.ownershipAll")}</ToggleButton>
+                <ToggleButton value="owned">{t("toolbar.ownershipOwned")}</ToggleButton>
               </ToggleButtonGroup>
             )}
             {canReadCollections && collections.length > 0 && (
               <FormControl size="small" sx={{ minWidth: 190, flexShrink: 0 }}>
-              <InputLabel>Collection View</InputLabel>
+              <InputLabel>{t("toolbar.collectionView")}</InputLabel>
               <Select
-                label="Collection View"
+                label={t("toolbar.collectionView")}
                 value={selectedCollectionId}
                 onChange={(e) => setSelectedCollectionId(e.target.value)}
               >
                 <MenuItem value="">
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <span aria-hidden="true">📦</span>
-                    <em>All Figurines</em>
+                    <em>{t("toolbar.allFigurines")}</em>
                   </Box>
                 </MenuItem>
                 {collections.map((collection) => (
@@ -994,7 +1068,7 @@ export default function FigurineCollectionPage() {
                 startIcon={<AddIcon />}
                 onClick={() => navigate("/figurines/new")} 
                 sx={{ flexShrink: 0 }}>
-                  New Figurine
+                  {t("toolbar.newFigurine")}
               </Button>
             )}
               </Box>
@@ -1006,7 +1080,7 @@ export default function FigurineCollectionPage() {
         <Box sx={{ display: "flex", gap: 1.5, mb: 1.5, alignItems: "center" }}>
           <TextField
             size="small"
-            placeholder="Search by name…"
+            placeholder={t("toolbar.searchPlaceholder")}
             value={searchInput}
             onChange={handleSearchInputChange}
             sx={{ flex: 1, maxWidth: 480 }}
@@ -1034,7 +1108,7 @@ export default function FigurineCollectionPage() {
               startIcon={<TuneIcon fontSize="small" />}
               onClick={() => setFiltersOpen((o) => !o)}
             >
-              Filters
+              {t("toolbar.filters")}
             </Button>
           </Badge>
           {activeFilterCount > 0 && (
@@ -1043,7 +1117,7 @@ export default function FigurineCollectionPage() {
               onClick={clearAllFilters}
               sx={{ color: "text.secondary", whiteSpace: "nowrap", flexShrink: 0 }}
             >
-              Clear all
+              {t("toolbar.clearAll")}
             </Button>
           )}
         </Box>
@@ -1064,42 +1138,42 @@ export default function FigurineCollectionPage() {
             }}
           >
           <FormControl size="small" sx={{ flex: "1 1 150px" }}>
-            <InputLabel>Line Up</InputLabel>
-            <Select label="Line Up" value={lineup} onChange={(e) => handleLineupChange(e.target.value)}>
-              <MenuItem value=""><em>All</em></MenuItem>
+            <InputLabel>{t("filters.lineUp")}</InputLabel>
+            <Select label={t("filters.lineUp")} value={lineup} onChange={(e) => handleLineupChange(e.target.value)}>
+              <MenuItem value=""><em>{t("filters.all")}</em></MenuItem>
               {lineupOptions.map((opt) => (
                 <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
               ))}
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ flex: "1 1 150px" }}>
-            <InputLabel>Series</InputLabel>
-            <Select label="Series" value={series} onChange={(e) => handleSeriesChange(e.target.value)}>
-              <MenuItem value=""><em>All</em></MenuItem>
+            <InputLabel>{t("filters.series")}</InputLabel>
+            <Select label={t("filters.series")} value={series} onChange={(e) => handleSeriesChange(e.target.value)}>
+              <MenuItem value=""><em>{t("filters.all")}</em></MenuItem>
               {seriesOptions.map((opt) => (
                 <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
               ))}
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ flex: "1 1 150px" }}>
-            <InputLabel>Group</InputLabel>
-            <Select label="Group" value={group} onChange={(e) => handleGroupChange(e.target.value)}>
-              <MenuItem value=""><em>All</em></MenuItem>
+            <InputLabel>{t("filters.group")}</InputLabel>
+            <Select label={t("filters.group")} value={group} onChange={(e) => handleGroupChange(e.target.value)}>
+              <MenuItem value=""><em>{t("filters.all")}</em></MenuItem>
               {groupOptions.map((opt) => (
                 <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
               ))}
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ flex: "1 1 200px" }}>
-            <InputLabel>Distribution</InputLabel>
-            <Select label="Distribution" value={distribution} onChange={(e) => handleDistributionChange(e.target.value)}>
-              <MenuItem value=""><em>All</em></MenuItem>
+            <InputLabel>{t("filters.distribution")}</InputLabel>
+            <Select label={t("filters.distribution")} value={distribution} onChange={(e) => handleDistributionChange(e.target.value)}>
+              <MenuItem value=""><em>{t("filters.all")}</em></MenuItem>
               {distributionOptions.map((opt) => (
                 <MenuItem key={opt.id} value={String(opt.id)}>
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: 1 }}>
                     <span>{opt.description}</span>
                     {opt.description.trim().toLowerCase() === "tamashii nations" && (
-                      <Tooltip title="TAMASHII NATIONS' Annual Figure Festival - Commemorative Merchandise" arrow placement="top">
+                      <Tooltip title={t("filters.tamashiiTooltip")} arrow placement="top">
                         <CelebrationIcon
                           sx={{
                             fontSize: 17,
@@ -1126,51 +1200,42 @@ export default function FigurineCollectionPage() {
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ flex: "1 1 170px" }}>
-            <InputLabel>Anniversary</InputLabel>
-            <Select label="Anniversary" value={anniversary} onChange={(e) => handleAnniversaryChange(e.target.value)}>
-              <MenuItem value=""><em>All</em></MenuItem>
+            <InputLabel>{t("filters.anniversary")}</InputLabel>
+            <Select label={t("filters.anniversary")} value={anniversary} onChange={(e) => handleAnniversaryChange(e.target.value)}>
+              <MenuItem value=""><em>{t("filters.all")}</em></MenuItem>
               {anniversaryOptions.map((opt) => (
                 <MenuItem key={opt.id} value={String(opt.id)}>{opt.description}</MenuItem>
               ))}
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ flex: "1 1 170px" }}>
-            <InputLabel>Release Status</InputLabel>
-            <Select label="Release Status" value={releaseStatus} onChange={(e) => handleReleaseStatusChange(e.target.value)}>
-              <MenuItem value=""><em>All</em></MenuItem>
-              <MenuItem value="ANNOUNCED">Announced</MenuItem>
-              <MenuItem value="RELEASED">Released</MenuItem>
-              <MenuItem value="PROTOTYPE">Prototype</MenuItem>
-              <MenuItem value="UNRELEASED">Unreleased</MenuItem>
-              <MenuItem value="RUMORED">Rumored</MenuItem>
+            <InputLabel>{t("filters.releaseStatus")}</InputLabel>
+            <Select label={t("filters.releaseStatus")} value={releaseStatus} onChange={(e) => handleReleaseStatusChange(e.target.value)}>
+              <MenuItem value=""><em>{t("filters.all")}</em></MenuItem>
+              <MenuItem value="ANNOUNCED">{t("status.labels.ANNOUNCED")}</MenuItem>
+              <MenuItem value="RELEASED">{t("status.labels.RELEASED")}</MenuItem>
+              <MenuItem value="PROTOTYPE">{t("status.labels.PROTOTYPE")}</MenuItem>
+              <MenuItem value="UNRELEASED">{t("status.labels.UNRELEASED")}</MenuItem>
+              <MenuItem value="RUMORED">{t("status.labels.RUMORED")}</MenuItem>
             </Select>
           </FormControl>
-          {([
-            { key: "metalBody",     label: "Metal Body"     },
-            { key: "originalColor", label: "OCE" },
-            { key: "revival",       label: "Revival"        },
-            { key: "plainCloth",    label: "Plain Cloth"    },
-            { key: "battleDamaged", label: "Battle Damaged" },
-            { key: "goldenArmor",   label: "Golden Armor"   },
-            { key: "gold24k",       label: "Gold 24K"       },
-            { key: "manga",         label: "Manga Version"  },
-            { key: "multiPack",     label: "Multi-Pack"     },
-            { key: "articulable",   label: "Articulable"    },
-            { key: "restocks",      label: "Restocks"       },
-          ] as { key: string; label: string }[]).map(({ key, label }) => (
-            <FormControl key={key} size="small" sx={{ flex: "1 1 130px" }}>
-              <InputLabel>{label}</InputLabel>
-              <Select
-                label={label}
-                value={searchParams.get(key) ?? ""}
-                onChange={(e) => handleBoolChange(key, e.target.value)}
-              >
-                <MenuItem value=""><em>All</em></MenuItem>
-                <MenuItem value="true">Yes</MenuItem>
-                <MenuItem value="false">No</MenuItem>
-              </Select>
-            </FormControl>
-          ))}
+          {FLAG_FILTER_KEYS.map((key) => {
+            const label = t(FLAG_FILTER_LABEL_KEYS[key]);
+            return (
+              <FormControl key={key} size="small" sx={{ flex: "1 1 130px" }}>
+                <InputLabel>{label}</InputLabel>
+                <Select
+                  label={label}
+                  value={searchParams.get(key) ?? ""}
+                  onChange={(e) => handleBoolChange(key, e.target.value)}
+                >
+                  <MenuItem value=""><em>{t("filters.all")}</em></MenuItem>
+                  <MenuItem value="true">{t("filters.yes")}</MenuItem>
+                  <MenuItem value="false">{t("filters.no")}</MenuItem>
+                </Select>
+              </FormControl>
+            );
+          })}
           </Box>
         </Collapse>
 
@@ -1178,50 +1243,40 @@ export default function FigurineCollectionPage() {
         {activeFilterCount > 0 && (
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
             {lineup && (
-              <Chip size="small" label={`Line Up: ${lineupOptions.find((o) => String(o.id) === lineup)?.description ?? lineup}`} onDelete={() => handleLineupChange("")} />
+              <Chip size="small" label={t("filters.chips.lineUp", { value: lineupOptions.find((o) => String(o.id) === lineup)?.description ?? lineup })} onDelete={() => handleLineupChange("")} />
             )}
             {series && (
-              <Chip size="small" label={`Series: ${seriesOptions.find((o) => String(o.id) === series)?.description ?? series}`} onDelete={() => handleSeriesChange("")} />
+              <Chip size="small" label={t("filters.chips.series", { value: seriesOptions.find((o) => String(o.id) === series)?.description ?? series })} onDelete={() => handleSeriesChange("")} />
             )}
             {group && (
-              <Chip size="small" label={`Group: ${groupOptions.find((o) => String(o.id) === group)?.description ?? group}`} onDelete={() => handleGroupChange("")} />
+              <Chip size="small" label={t("filters.chips.group", { value: groupOptions.find((o) => String(o.id) === group)?.description ?? group })} onDelete={() => handleGroupChange("")} />
             )}
             {distribution && (
               <Chip
                 size="small"
-                label={`Distribution: ${distributionOptions.find((o) => String(o.id) === distribution)?.description ?? distribution}`}
+                label={t("filters.chips.distribution", { value: distributionOptions.find((o) => String(o.id) === distribution)?.description ?? distribution })}
                 onDelete={() => handleDistributionChange("")}
               />
             )}
             {anniversary && (
               <Chip
                 size="small"
-                label={`Anniversary: ${anniversaryOptions.find((o) => String(o.id) === anniversary)?.description ?? anniversary}`}
+                label={t("filters.chips.anniversary", { value: anniversaryOptions.find((o) => String(o.id) === anniversary)?.description ?? anniversary })}
                 onDelete={() => handleAnniversaryChange("")}
               />
             )}
             {releaseStatus && (
-              <Chip size="small" label={`Status: ${releaseStatus.charAt(0) + releaseStatus.slice(1).toLowerCase()}`} onDelete={() => handleReleaseStatusChange("")} />
+              <Chip size="small" label={t("filters.chips.status", { value: translateReleaseStatus(releaseStatus) })} onDelete={() => handleReleaseStatusChange("")} />
             )}
-            {([
-              { key: "revival",       label: "Revival",        value: revival       },
-              { key: "metalBody",     label: "Metal Body",     value: metalBody     },
-              { key: "originalColor", label: "Original Color", value: originalColor },
-              { key: "plainCloth",    label: "Plain Cloth",    value: plainCloth    },
-              { key: "battleDamaged", label: "Battle Damaged", value: battleDamaged },
-              { key: "goldenArmor",   label: "Golden Armor",   value: goldenArmor   },
-              { key: "gold24k",       label: "Gold 24K",       value: gold24k       },
-              { key: "manga",         label: "Manga",          value: manga         },
-              { key: "multiPack",     label: "Multi-Pack",     value: multiPack     },
-              { key: "articulable",   label: "Articulable",    value: articulable   },
-              { key: "restocks",      label: "Restocks",       value: restocks      },
-            ] as { key: string; label: string; value: string }[])
-              .filter(({ value }) => Boolean(value))
-              .map(({ key, label, value }) => (
+            {FLAG_CHIP_ORDER.filter((key) => Boolean(searchParams.get(key)))
+              .map((key) => (
                 <Chip
                   key={key}
                   size="small"
-                  label={`${label}: ${value === "true" ? "Yes" : "No"}`}
+                  label={t("filters.chips.flag", {
+                    label: t(FLAG_CHIP_LABEL_KEYS[key]),
+                    value: searchParams.get(key) === "true" ? t("filters.yes") : t("filters.no"),
+                  })}
                   onDelete={() => handleBoolChange(key, "")}
                 />
               ))}
@@ -1233,13 +1288,13 @@ export default function FigurineCollectionPage() {
             <Chip
               size="small"
               color="primary"
-              label={`Viewing: ${selectedCollection.name}`}
+              label={t("collectionContext.viewing", { name: selectedCollection.name })}
               onDelete={() => setSelectedCollectionId("")}
             />
             <Chip
               size="small"
               variant="outlined"
-              label={`${selectedCollection.totalFigurines} owned in this collection`}
+              label={t("collectionContext.owned", { count: selectedCollection.totalFigurines })}
             />
           </Box>
         )}
@@ -1249,7 +1304,20 @@ export default function FigurineCollectionPage() {
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mt: activeFilterCount > 0 ? 1 : 0 }}>
             <Typography variant="body2" color="text.secondary">
               {displayTotal > 0
-                ? `${displayTotal.toLocaleString()} figurine${displayTotal !== 1 ? "s" : ""}${query ? ` matching "${query}"` : ""} · page ${page} of ${displayPages}`
+                ? query
+                  ? t("results.summaryFiltered", {
+                      count: displayTotal,
+                      total: displayTotal.toLocaleString(),
+                      query,
+                      page,
+                      pages: displayPages,
+                    })
+                  : t("results.summary", {
+                      count: displayTotal,
+                      total: displayTotal.toLocaleString(),
+                      page,
+                      pages: displayPages,
+                    })
                 : null}
             </Typography>
             {displayPages > 1 && (
@@ -1291,7 +1359,7 @@ export default function FigurineCollectionPage() {
           }}
         >
           <Alert severity="info" sx={{ maxWidth: 640, width: "100%", pointerEvents: "auto" }}>
-            We’re currently loading the figurines and retrieving the latest information. This may take a little longer than usual. Please keep this page open while we finish loading the data.
+            {t("messages.slowLoad")}
           </Alert>
         </Box>
       )}
@@ -1329,7 +1397,7 @@ export default function FigurineCollectionPage() {
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: 0.5 }}>
                   <Chip
-                    label={cfg.label}
+                    label={t(STATUS_LABEL_KEYS[status])}
                     size="small"
                     sx={{
                       bgcolor: cfg.color,
@@ -1339,11 +1407,11 @@ export default function FigurineCollectionPage() {
                     }}
                   />
                   <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.72rem" }}>
-                    {sectionItems.length} figurine{sectionItems.length !== 1 ? "s" : ""}
+                    {t("figurineCount", { count: sectionItems.length })}
                   </Typography>
                 </Box>
                 <Typography variant="caption" sx={{ color: "text.disabled", display: "block", mb: 1.5 }}>
-                  {STATUS_HELPER_TEXT[status]}
+                  {t(STATUS_HELPER_KEYS[status])}
                 </Typography>
 
                 <Grid container spacing={{ xs: 1.5, sm: 2 }}>
@@ -1409,8 +1477,8 @@ export default function FigurineCollectionPage() {
         >
           <Typography variant="body1" color="text.secondary">
             {query || activeFilterCount > 0
-              ? "No figurines match the current filters."
-              : "No figurines in the collection yet."}
+              ? t("empty.filtered")
+              : t("empty.none")}
           </Typography>
         </Box>
       )}
@@ -1483,7 +1551,7 @@ export default function FigurineCollectionPage() {
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
             <Typography variant="body2" sx={{ fontWeight: 600, color: "#d4af37" }}>
-              ✓ {bulkSelection.selectedCount} figurine{bulkSelection.selectedCount !== 1 ? "s" : ""} selected
+              ✓ {t("selection.selected", { count: bulkSelection.selectedCount })}
             </Typography>
             <Button
               size="small"
@@ -1492,7 +1560,7 @@ export default function FigurineCollectionPage() {
               onClick={bulkSelection.selectAll}
               sx={{ fontSize: "0.75rem" }}
             >
-              This page ({selectableItemsOnPageCount})
+              {t("selection.thisPage", { count: selectableItemsOnPageCount })}
             </Button>
             {totalCollectableElements > selectableItemsOnPageCount && (
               <Button
@@ -1503,7 +1571,7 @@ export default function FigurineCollectionPage() {
                 disabled={selectingAllPages}
                 sx={{ fontSize: "0.75rem", color: "#d4af37", borderColor: "rgba(212,175,55,0.5)" }}
               >
-                {selectingAllPages ? "Loading…" : `All pages (${totalCollectableElements.toLocaleString()})`}
+                {selectingAllPages ? t("selection.loading") : t("selection.allPages", { total: totalCollectableElements.toLocaleString() })}
               </Button>
             )}
             <Button
@@ -1514,7 +1582,7 @@ export default function FigurineCollectionPage() {
               color="inherit"
               sx={{ fontSize: "0.75rem" }}
             >
-              Clear
+              {t("selection.clear")}
             </Button>
           </Box>
 
@@ -1532,7 +1600,7 @@ export default function FigurineCollectionPage() {
                 },
               }}
             >
-              Add to Collection
+              {t("selection.addToCollection")}
             </Button>
             <IconButton
               onClick={() => {

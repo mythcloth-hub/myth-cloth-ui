@@ -1,0 +1,26 @@
+export const SUPPORTED_LANGUAGES = ["en", "es"] as const;
+
+export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+
+export const DEFAULT_LANGUAGE: SupportedLanguage = "en";
+
+const SUPPORTED_LANGUAGE_SET = new Set<SupportedLanguage>(SUPPORTED_LANGUAGES);
+
+export const LANGUAGE_META: Record<SupportedLanguage, { label: string; englishLabel: string; countryCode: string }> = {
+  en: { label: "English", englishLabel: "English", countryCode: "US" },
+  es: { label: "Español", englishLabel: "Spanish", countryCode: "ES" },
+};
+
+export function isSupportedLanguage(value: string | null | undefined): value is SupportedLanguage {
+  return Boolean(value) && SUPPORTED_LANGUAGE_SET.has(value as SupportedLanguage);
+}
+
+/** Maps a full tag such as `es-MX` down to the base language we ship translations for. */
+export function normalizeLanguage(value: string | null | undefined): SupportedLanguage {
+  if (!value) {
+    return DEFAULT_LANGUAGE;
+  }
+
+  const base = value.split("-")[0].toLowerCase();
+  return isSupportedLanguage(base) ? base : DEFAULT_LANGUAGE;
+}

@@ -1,12 +1,15 @@
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import AppPageHeader from "../../../components/AppPageHeader";
+import { useTranslation } from "react-i18next";
 
 export default function AboutPage() {
+  const { t } = useTranslation("about");
+
   return (
     <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow="Settings • Information"
+          eyebrow={t("eyebrow")}
           title="About Saint Collections"
           subtitle="A professional collector workspace designed to organize figurines, monitor trends, and support informed collecting decisions."
           compact

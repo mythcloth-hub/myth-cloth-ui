@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthContext";
+import type { resources } from "../i18n";
 import Button from "@mui/material/Button";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -73,8 +75,11 @@ const demoDotPulse = keyframes`
   50% { transform: scale(1.35); opacity: 0.5; }
 `;
 
+type NavItemKey = keyof (typeof resources)["en"]["navigation"]["items"];
+type NavSectionKey = keyof (typeof resources)["en"]["navigation"]["sections"];
+
 type NavItem = {
-  label: string;
+  labelKey: NavItemKey;
   path?: string;
   icon: React.ReactNode;
   permission?: string;
@@ -83,95 +88,94 @@ type NavItem = {
 };
 
 type NavSection = {
-  heading: string;
+  headingKey?: NavSectionKey;
   items: NavItem[];
 };
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    heading: "",
     items: [
-      { label: "Home", path: "/", icon: <HomeOutlinedIcon /> },
+      { labelKey: "home", path: "/", icon: <HomeOutlinedIcon /> },
     ],
   },
   {
-    heading: "Collections",
+    headingKey: "collections",
     items: [
-      { label: "Myth Cloth",     path: "/figurines",   icon: <WorkspacePremiumOutlinedIcon /> },
-      { label: "My Collections", path: "/collections", icon: <Inventory2OutlinedIcon />, permission: "collections:read" },
-      { label: "Purchases",      path: "/purchases",   icon: <ShoppingBagOutlinedIcon />,    permission: "purchases:read" }
+      { labelKey: "mythCloth",     path: "/figurines",   icon: <WorkspacePremiumOutlinedIcon /> },
+      { labelKey: "myCollections", path: "/collections", icon: <Inventory2OutlinedIcon />, permission: "collections:read" },
+      { labelKey: "purchases",     path: "/purchases",   icon: <ShoppingBagOutlinedIcon />,    permission: "purchases:read" }
     ],
   },
   {
-    heading: "Explore",
+    headingKey: "explore",
     items: [
-      { label: "Releases", path: "/releases", icon: <RocketLaunchOutlinedIcon />, permission: "stats:read" },
-      { label: "Charts",   path: "/charts",   icon: <QueryStatsOutlinedIcon />,      permission: "stats:read" },
-      { label: "Pricing",  path: "/pricing",  icon: <SellOutlinedIcon />,          permission: "stats:read" }
+      { labelKey: "releases", path: "/releases", icon: <RocketLaunchOutlinedIcon />, permission: "stats:read" },
+      { labelKey: "charts",   path: "/charts",   icon: <QueryStatsOutlinedIcon />,      permission: "stats:read" },
+      { labelKey: "pricing",  path: "/pricing",  icon: <SellOutlinedIcon />,          permission: "stats:read" }
     ],
   },
   {
-    heading: "Figurine Matching",
+    headingKey: "matching",
     items: [
-      { label: "Manual Matching", path: "/figurine-matching",        icon: <CompareOutlinedIcon />, permission: "figurines:stores:read" },
-      { label: "Store Matching",  path: "/figurine-matching/stores", icon: <StoreOutlinedIcon />,    permission: "figurines:stores:read" }
+      { labelKey: "manualMatching", path: "/figurine-matching",        icon: <CompareOutlinedIcon />, permission: "figurines:stores:read" },
+      { labelKey: "storeMatching",  path: "/figurine-matching/stores", icon: <StoreOutlinedIcon />,    permission: "figurines:stores:read" }
     ],
   },
   {
-    heading: "Events & Partners",
+    headingKey: "eventsPartners",
     items: [
-      { label: "Anniversaries", path: "/anniversaries", icon: <CelebrationOutlinedIcon />,     permission: "anniversaries:read" },
-      { label: "Distributors",  path: "/distributors",  icon: <LocalShippingOutlinedIcon />,  permission: "distributors:read" }
+      { labelKey: "anniversaries", path: "/anniversaries", icon: <CelebrationOutlinedIcon />,     permission: "anniversaries:read" },
+      { labelKey: "distributors",  path: "/distributors",  icon: <LocalShippingOutlinedIcon />,  permission: "distributors:read" }
     ],
   },
   {
-    heading: "Administration",
+    headingKey: "administration",
     items: [
       {
-        label: "Catalogs",
+        labelKey: "catalogs",
         icon: <LibraryBooksOutlinedIcon />,
         expandOnly: true,
         children: [
-          { label: "Distributions", path: "/catalogs/distributions", icon: <HubOutlinedIcon />,         permission: "catalogs:read" },
-          { label: "Groups",        path: "/catalogs/groups",        icon: <GroupWorkOutlinedIcon />,      permission: "catalogs:read" },
-          { label: "Lineups",       path: "/catalogs/lineups",       icon: <ViewTimelineOutlinedIcon />,    permission: "catalogs:read" },
-          { label: "Series",        path: "/catalogs/series",        icon: <AutoStoriesOutlinedIcon />, permission: "catalogs:read" }
+          { labelKey: "distributions", path: "/catalogs/distributions", icon: <HubOutlinedIcon />,         permission: "catalogs:read" },
+          { labelKey: "groups",        path: "/catalogs/groups",        icon: <GroupWorkOutlinedIcon />,      permission: "catalogs:read" },
+          { labelKey: "lineups",       path: "/catalogs/lineups",       icon: <ViewTimelineOutlinedIcon />,    permission: "catalogs:read" },
+          { labelKey: "series",        path: "/catalogs/series",        icon: <AutoStoriesOutlinedIcon />, permission: "catalogs:read" }
         ]
       },
-      { label: "Stores", path: "/stores", icon: <StoreOutlinedIcon />, permission: "stores:create" },
+      { labelKey: "stores", path: "/stores", icon: <StoreOutlinedIcon />, permission: "stores:create" },
       { 
-        label: "Security",
+        labelKey: "security",
         icon: <SecurityOutlinedIcon />,
         expandOnly: true,
         children: [
-          { label: "Roles",            path: "/security/roles",            icon: <BadgeOutlinedIcon />, permission: "roles:read" },
-          { label: "Permissions",      path: "/security/permissions",      icon: <KeyOutlinedIcon />,               permission: "permissions:read" },
-          { label: "Role Permissions", path: "/security/role-permissions", icon: <VpnKeyOutlinedIcon />,               permission: "roles:permissions:read" }
+          { labelKey: "roles",            path: "/security/roles",            icon: <BadgeOutlinedIcon />, permission: "roles:read" },
+          { labelKey: "permissions",      path: "/security/permissions",      icon: <KeyOutlinedIcon />,               permission: "permissions:read" },
+          { labelKey: "rolePermissions", path: "/security/role-permissions", icon: <VpnKeyOutlinedIcon />,               permission: "roles:permissions:read" }
         ]
       },
-      { label: "Figurine Import", path: "/figurines/import", icon: <UploadFileOutlinedIcon />, permission: "figurines:import" }
+      { labelKey: "figurineImport", path: "/figurines/import", icon: <UploadFileOutlinedIcon />, permission: "figurines:import" }
     ]
   },
   {
-    heading: "Settings",
+    headingKey: "settings",
     items: [
       {
-        label: "Personal",
+        labelKey: "personal",
         icon: <SettingsSuggestOutlinedIcon />,
         expandOnly: true,
         children: [
-          { label: "Your Account", path: "/account", icon: <ManageAccountsOutlinedIcon /> },
-          { label: "Preferences", path: "/settings/preferences", icon: <TuneOutlinedIcon /> }
+          { labelKey: "yourAccount", path: "/settings/account", icon: <ManageAccountsOutlinedIcon /> },
+          { labelKey: "preferences", path: "/settings/preferences", icon: <TuneOutlinedIcon /> }
         ]
       },
       {
-        label: "Information",
+        labelKey: "information",
         icon: <InfoOutlinedIcon />,
         expandOnly: true,
         children: [
-          { label: "Terms & Conditions", path: "/terms", icon: <GavelOutlinedIcon /> },
-          { label: "Contact", path: "/contact", icon: <ContactMailOutlinedIcon /> },
-          { label: "About", path: "/about", icon: <InfoOutlinedIcon /> }
+          { labelKey: "terms", path: "/info/terms", icon: <GavelOutlinedIcon /> },
+          { labelKey: "contact", path: "/info/contact", icon: <ContactMailOutlinedIcon /> },
+          { labelKey: "about", path: "/info/about", icon: <InfoOutlinedIcon /> }
         ]
       }
     ]
@@ -215,6 +219,7 @@ function useGoogleSDK() {
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { isAuthenticated, session, hasPermission, loginWithFacebook, loginWithGoogle, loginWithDemo, facebookEnabled, googleEnabled, demoEnabled, logout } = useAuth();
+  const { t } = useTranslation(["navigation", "common", "auth"]);
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -363,7 +368,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   const renderNavItem = (item: NavItem, level: number, parentKey: string) => {
-    const itemKey = `${parentKey}/${item.path ?? item.label}`;
+    const itemKey = `${parentKey}/${item.path ?? item.labelKey}`;
     const hasChildren = Boolean(item.children?.length);
     const canNavigate = Boolean(item.path) && !(hasChildren && item.expandOnly);
     const active = isActive(item.path);
@@ -373,7 +378,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       enter: 180 + Math.min(level, 4) * 45,
       exit: 120 + Math.min(level, 4) * 25,
     };
-    const shouldDrawAttention = item.label === "Myth Cloth" && !isAuthenticated;
+    const shouldDrawAttention = item.labelKey === "mythCloth" && !isAuthenticated;
 
     return (
       <Box key={itemKey}>
@@ -415,7 +420,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               {item.icon}
             </ListItemIcon>
             <ListItemText
-              primary={item.label}
+              primary={t(`navigation:items.${item.labelKey}`)}
               slotProps={{
                 primary: {
                   sx: {
@@ -487,18 +492,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           <Box
             component="img"
             src="/logo-mark.svg"
-            alt="Saint Collections logo"
+            alt={t("common:brand.logoAlt")}
             sx={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0 }}
           />
           <Typography
             variant="h6"
             sx={{ color: "primary.main", fontWeight: 700, letterSpacing: 1, lineHeight: 1.2 }}
           >
-            Saint Collections
+            {t("common:brand.name")}
           </Typography>
         </Box>
         <Typography variant="caption" sx={{ color: "text.secondary" }}>
-          Every collection tells a story. Track yours.
+          {t("common:brand.tagline")}
         </Typography>
       </Box>
 
@@ -519,8 +524,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           }}
         >
           {visibleSections.map((section) => (
-            <Box key={section.heading || "main"}>
-            {section.heading && (
+            <Box key={section.headingKey ?? "main"}>
+            {section.headingKey && (
               <Typography
                 variant="overline"
                 sx={{
@@ -533,13 +538,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   letterSpacing: "0.1em",
                 }}
               >
-                {section.heading}
+                {t(`navigation:sections.${section.headingKey}`)}
               </Typography>
             )}
             <List dense disablePadding>
-              {section.items.map((item) => renderNavItem(item, 0, section.heading || "main"))}
+              {section.items.map((item) => renderNavItem(item, 0, section.headingKey ?? "main"))}
             </List>
-            {section.heading === "" && (
+            {!section.headingKey && (
               <Divider sx={{ borderColor: "rgba(255,255,255,0.07)", mx: 2, mt: 1 }} />
             )}
             </Box>
@@ -628,7 +633,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             fontWeight: 700,
           }}
         >
-          Current account
+          {t("auth:currentAccount")}
         </Typography>
 
         {isAuthenticated ? (
@@ -641,13 +646,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 letterSpacing: "0.03em",
               }}
             >
-              Signed in
+              {t("auth:signedIn")}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
               {session?.profilePictureUrl && (
                 <Avatar
                   src={session.profilePictureUrl}
-                  alt={session.displayName || "Profile picture"}
+                  alt={session.displayName || t("auth:profilePictureAlt")}
                   sx={{ width: 34, height: 34, flexShrink: 0 }}
                 />
               )}
@@ -680,7 +685,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 },
               }}
             >
-              Log out
+              {t("auth:logOut")}
             </Button>
           </Box>
         ) : (
@@ -708,7 +713,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     lineHeight: 1,
                   }}
                 >
-                  Setup required
+                  {t("auth:setupRequired")}
                 </Typography>
               </Box>
             )}
@@ -728,7 +733,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   },
                 }}
               >
-                Facebook
+                {t("auth:providers.facebook")}
               </Button>
             )}
             {!facebookEnabled && (
@@ -740,7 +745,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   mb: googleEnabled ? 0.8 : 0,
                 }}
               >
-                Facebook login unavailable: missing VITE_FACEBOOK_APP_ID.
+                {t("auth:facebookUnavailable")}
               </Typography>
             )}
             {googleEnabled && (
@@ -760,7 +765,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   },
                 }}
               >
-                Google
+                {t("auth:providers.google")}
               </Button>
             )}
             {demoEnabled && (
@@ -785,7 +790,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   },
                 }}
               >
-                {isDemoSigningIn ? "Signing in..." : "Demo"}
+                {isDemoSigningIn ? t("auth:signingIn") : t("auth:providers.demo")}
               </Button>
             )}
             {!googleEnabled && (
@@ -797,7 +802,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   mt: facebookEnabled ? 0.8 : 0,
                 }}
               >
-                Google login unavailable: missing VITE_GOOGLE_CLIENT_ID.
+                {t("auth:googleUnavailable")}
               </Typography>
             )}
           </Box>
@@ -809,6 +814,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 function DemoModeBanner() {
   const theme = useTheme();
+  const { t } = useTranslation("common");
 
   return (
     <Box
@@ -848,7 +854,7 @@ function DemoModeBanner() {
           lineHeight: 1.35,
         }}
       >
-        Demo account active — you have the same permissions as a Collector. The rest of the app is read-only.
+        {t("demoBanner")}
       </Typography>
     </Box>
   );
@@ -858,6 +864,7 @@ export default function MainLayout() {
   useFacebookSDK();
   useGoogleSDK();
   const navigate = useNavigate();
+  const { t } = useTranslation("common");
   const { isDemoSession } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -885,6 +892,7 @@ export default function MainLayout() {
           <IconButton
             edge="start"
             onClick={() => setMobileOpen(true)}
+            aria-label={t("actions.openNavigation")}
             sx={{ color: "primary.main", mr: 2 }}
           >
             <MenuIcon />
@@ -896,14 +904,14 @@ export default function MainLayout() {
             <Box
               component="img"
               src="/logo-mark.svg"
-              alt="Saint Collections logo"
+              alt={t("brand.logoAlt")}
               sx={{ width: 24, height: 24, borderRadius: "50%", flexShrink: 0 }}
             />
             <Typography
               variant="h6"
               sx={{ color: "primary.main", fontWeight: 700, fontSize: "1.05rem", lineHeight: 1.1 }}
             >
-              Saint Collections
+              {t("brand.name")}
             </Typography>
           </Box>
         </Toolbar>

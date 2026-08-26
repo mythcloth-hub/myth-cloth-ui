@@ -1,0 +1,21 @@
+{
+  "eyebrow": "Settings • Personal",
+  "title": "Preferences",
+  "subtitle": "Configure global visual and display options for the entire application.",
+  "language": {
+    "title": "Language",
+    "description": "Choose the language used for menus, labels and messages.",
+    "label": "Language"
+  },
+  "currency": {
+    "title": "Display Currency",
+    "description": "Choose how monetary values are shown across pages and reports.",
+    "label": "Currency",
+    "auto": "Auto",
+    "store": "Store"
+  },
+  "theme": {
+    "title": "Theme",
+    "description": "Pick the visual style that best matches your collecting workspace."
+  }
+}

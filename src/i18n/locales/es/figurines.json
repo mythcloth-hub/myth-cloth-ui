@@ -1,0 +1,153 @@
+{
+  "header": {
+    "eyebrow": "Colecciones",
+    "title": "Myth Cloth",
+    "subtitle": "Explora el catálogo completo de Myth Cloth. Navega entre figuras lanzadas, en prototipo, anunciadas, rumoreadas y no lanzadas, con filtros para encontrar rápidamente lo que buscas."
+  },
+  "toolbar": {
+    "ownershipAll": "Todas",
+    "ownershipOwned": "En colección",
+    "collectionView": "Vista de colección",
+    "allFigurines": "Todas las figuras",
+    "newFigurine": "Nueva Figura",
+    "searchPlaceholder": "Buscar por nombre…",
+    "filters": "Filtros",
+    "clearAll": "Limpiar todo"
+  },
+  "filters": {
+    "all": "Todos",
+    "yes": "Sí",
+    "no": "No",
+    "lineUp": "Línea",
+    "series": "Serie",
+    "group": "Grupo",
+    "distribution": "Distribución",
+    "anniversary": "Aniversario",
+    "releaseStatus": "Estado de Lanzamiento",
+    "tamashiiTooltip": "Festival Anual de Figuras de TAMASHII NATIONS - Mercancía Conmemorativa",
+    "flags": {
+      "metalBody": "Metal Body",
+      "originalColor": "OCE",
+      "revival": "Revival",
+      "plainCloth": "Plain Cloth",
+      "battleDamaged": "Battle Damaged",
+      "goldenArmor": "Golden Armor",
+      "gold24k": "Gold 24K",
+      "manga": "Versión Manga",
+      "multiPack": "Multi-Pack",
+      "articulable": "Articulable",
+      "restocks": "Reediciones"
+    },
+    "chipFlags": {
+      "metalBody": "Metal Body",
+      "originalColor": "Original Color",
+      "revival": "Revival",
+      "plainCloth": "Plain Cloth",
+      "battleDamaged": "Battle Damaged",
+      "goldenArmor": "Golden Armor",
+      "gold24k": "Gold 24K",
+      "manga": "Manga",
+      "multiPack": "Multi-Pack",
+      "articulable": "Articulable",
+      "restocks": "Reediciones"
+    },
+    "chips": {
+      "lineUp": "Línea: {{value}}",
+      "series": "Serie: {{value}}",
+      "group": "Grupo: {{value}}",
+      "distribution": "Distribución: {{value}}",
+      "anniversary": "Aniversario: {{value}}",
+      "status": "Estado: {{value}}",
+      "flag": "{{label}}: {{value}}"
+    }
+  },
+  "status": {
+    "labels": {
+      "RELEASED": "Lanzada",
+      "ANNOUNCED": "Anunciada",
+      "RUMORED": "Rumoreada",
+      "PROTOTYPE": "Prototipo",
+      "UNRELEASED": "No lanzada"
+    },
+    "helpers": {
+      "RELEASED": "Ya disponible en el mercado.",
+      "ANNOUNCED": "Próximos lanzamientos anunciados oficialmente.",
+      "RUMORED": "Lanzamientos sin confirmar, con información en circulación.",
+      "PROTOTYPE": "Figuras en etapa de prototipo; el diseño aún puede cambiar.",
+      "UNRELEASED": "Figuras canceladas o sin lanzamiento por tiempo indefinido."
+    }
+  },
+  "figurineCount_one": "{{count}} figura",
+  "figurineCount_other": "{{count}} figuras",
+  "card": {
+    "noImage": "Sin imagen",
+    "tamashiiTooltip": "Figura conmemorativa de Tamashii Nations",
+    "anniversaryTooltip": "Edición de Aniversario",
+    "statusWithDate": "{{status}} - {{date}}"
+  },
+  "restock": {
+    "chip": "Reedición",
+    "chipWithDate": "Reedición de {{date}}",
+    "tooltip_one": "Reeditada {{count}} vez.",
+    "tooltip_other": "Reeditada {{count}} veces.",
+    "tooltipWithDate_one": "Reeditada {{count}} vez. Última: {{date}}.",
+    "tooltipWithDate_other": "Reeditada {{count}} veces. Última: {{date}}."
+  },
+  "collectionContext": {
+    "viewing": "Viendo: {{name}}",
+    "owned_one": "{{count}} en esta colección",
+    "owned_other": "{{count}} en esta colección"
+  },
+  "results": {
+    "summary_one": "{{total}} figura · página {{page}} de {{pages}}",
+    "summary_other": "{{total}} figuras · página {{page}} de {{pages}}",
+    "summaryFiltered_one": "{{total}} figura que coincide con \"{{query}}\" · página {{page}} de {{pages}}",
+    "summaryFiltered_other": "{{total}} figuras que coinciden con \"{{query}}\" · página {{page}} de {{pages}}"
+  },
+  "empty": {
+    "filtered": "Ninguna figura coincide con los filtros actuales.",
+    "none": "Todavía no hay figuras en la colección."
+  },
+  "messages": {
+    "deleted": "Figura eliminada correctamente.",
+    "slowLoad": "Estamos cargando las figuras y obteniendo la información más reciente. Esto puede tardar un poco más de lo habitual. Mantén esta página abierta mientras terminamos de cargar los datos."
+  },
+  "selection": {
+    "selected_one": "{{count}} figura seleccionada",
+    "selected_other": "{{count}} figuras seleccionadas",
+    "thisPage": "Esta página ({{count}})",
+    "allPages": "Todas las páginas ({{total}})",
+    "loading": "Cargando…",
+    "clear": "Limpiar",
+    "addToCollection": "Agregar a Colección"
+  },
+  "import": {
+    "eyebrow": "Administración",
+    "title": "Importación de Figuras",
+    "subtitle": "Ejecuta importaciones de figuras desde Google Sheets y revisa las ejecuciones anteriores.",
+    "loadButton": "Importar Todas las Figuras",
+    "importing": "Importando...",
+    "description": "Usa esta página cuando necesites actualizar las figuras de la aplicación. Cada ejecución queda registrada en el historial de importaciones.",
+    "missingPermission": "No cuentas con el permiso requerido: figurines:import",
+    "successMessage": "Todas las figuras fueron importadas.",
+    "emptyTitle": "Todavía no hay importaciones de figuras.",
+    "emptySubtitle": "Ejecuta una importación para comenzar a construir el historial.",
+    "columns": {
+      "status": "Estado",
+      "imported": "Importadas",
+      "errorMessage": "Mensaje de Error",
+      "completedAt": "Completada El"
+    },
+    "statusWithErrors": "La importación finalizó con errores",
+    "statusSuccessful": "La importación finalizó correctamente",
+    "noErrors": "Sin errores",
+    "confirm": {
+      "title": "Importar Todas las Figuras",
+      "body": "Esto iniciará la importación de todas las figuras desde la hoja de cálculo. Puedes ejecutar este proceso las veces que necesites para actualizar los datos.",
+      "warning": "Advertencia: este proceso sobrescribirá las figuras existentes cuando se ejecute la importación.",
+      "cancel": "Cancelar",
+      "start": "Iniciar Importación"
+    }
+  }
+}
+

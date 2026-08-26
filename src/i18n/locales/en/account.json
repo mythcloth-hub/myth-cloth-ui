@@ -1,0 +1,18 @@
+{
+    "eyebrow": "Settings • Personal",
+    "title": "Your Account",
+    "subtitle": "Review your profile and authentication status. Theme and Display Currency are managed in Preferences.",
+    "info": {
+        "description": "You are currently browsing as a guest. Sign in from the sidebar to view your account details.",
+        "collectorId": "Collector ID",
+        "role": "Role",
+        "noRoleAssigned": "Not assigned",
+        "permissions": "Permissions",
+        "logOut": "Log out"
+    },
+    "preferences": {
+        "title": "Preferences",
+        "description-theme": "Theme is managed in Preferences and applies across the entire application.",
+        "description-currency": "Display Currency is managed in Preferences and applies across pages and reports."
+    }
+}

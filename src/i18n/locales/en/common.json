@@ -1,0 +1,11 @@
+{
+  "brand": {
+    "name": "Saint Collections",
+    "tagline": "Every collection tells a story. Track yours.",
+    "logoAlt": "Saint Collections logo"
+  },
+  "actions": {
+    "openNavigation": "Open navigation"
+  },
+  "demoBanner": "Demo account active — you have the same permissions as a Collector. The rest of the app is read-only."
+}
