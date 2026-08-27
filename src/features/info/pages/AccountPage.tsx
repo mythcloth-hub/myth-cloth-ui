@@ -11,7 +11,7 @@ import { useAuth } from "../../../auth/AuthContext";
 export default function AccountPage() {
   const navigate = useNavigate();
   const { isAuthenticated, session, logout } = useAuth();
-  const { t } = useTranslation("account");
+  const { t } = useTranslation("personal");
 
   const handleLogout = () => {
     logout();
@@ -22,9 +22,9 @@ export default function AccountPage() {
     <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow={t("eyebrow")}
-          title={t("title")}
-          subtitle={t("subtitle")}
+          eyebrow={t("yourAccount.eyebrow")}
+          title={t("yourAccount.title")}
+          subtitle={t("yourAccount.subtitle")}
           compact
         />
       </Box>
@@ -52,9 +52,9 @@ export default function AccountPage() {
               <Divider />
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap flexWrap="wrap">
-                <Chip icon={<VerifiedUserOutlinedIcon />} label={`${t("info.collectorId")}: ${session.collectorId}`} />
-                <Chip label={`${t("info.role")}: ${session.role ?? t("info.noRoleAssigned")}`} color="primary" variant="outlined" />
-                <Chip label={`${session.permissions.length} ${t("info.permissions")}`} variant="outlined" />
+                <Chip icon={<VerifiedUserOutlinedIcon />} label={`${t("yourAccount.profile.collectorId")}: ${session.collectorId}`} />
+                <Chip label={`${t("yourAccount.profile.role")}: ${session.role ?? t("yourAccount.profile.noRoleAssigned")}`} color="primary" variant="outlined" />
+                <Chip label={`${session.permissions.length} ${t("yourAccount.profile.permissions")}`} variant="outlined" />
               </Stack>
 
               <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -64,30 +64,30 @@ export default function AccountPage() {
                   startIcon={<LogoutOutlinedIcon />}
                   onClick={handleLogout}
                 >
-                  {t("info.logOut")}
+                  {t("yourAccount.profile.logOut")}
                 </Button>
               </Box>
             </Stack>
           ) : (
             <Typography color="text.secondary">
-              {t("info.description")}
+              {t("yourAccount.profile.guest")}
             </Typography>
           )}
         </Paper>
 
         <Paper sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
           <Stack spacing={1.5}>
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>{t("preferences.title")}</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>{t("yourAccount.preferences.title")}</Typography>
             <Stack direction="row" spacing={1} alignItems="center">
               <PaletteOutlinedIcon color="primary" fontSize="small" />
               <Typography variant="body2" color="text.secondary">
-                {t("preferences.description-theme")}
+                {t("yourAccount.preferences.descriptionTheme")}
               </Typography>
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
               <PublicOutlinedIcon color="primary" fontSize="small" />
               <Typography variant="body2" color="text.secondary">
-                {t("preferences.description-currency")}
+                {t("yourAccount.preferences.descriptionCurrency")}
               </Typography>
             </Stack>
           </Stack>

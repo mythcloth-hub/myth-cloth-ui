@@ -1,0 +1,11 @@
+{
+  "brand": {
+    "name": "Saint Collections",
+    "tagline": "Chaque collection raconte une histoire. Suivez la vôtre.",
+    "logoAlt": "Logo de Saint Collections"
+  },
+  "actions": {
+    "openNavigation": "Ouvrir la navigation"
+  },
+  "demoBanner": "Compte de démonstration actif — vous avez les mêmes permissions qu'un Collectionneur. Le reste de l'application est en lecture seule."
+}

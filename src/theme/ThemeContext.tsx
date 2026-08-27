@@ -1,8 +1,18 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
+
+import { enUS as coreEnUS } from "@mui/material/locale";
 import { esES as coreEsES } from "@mui/material/locale";
+import { frFR as coreFrFR } from "@mui/material/locale";
+
+import { enUS as dataGridEnUS } from "@mui/x-data-grid/locales";
 import { esES as dataGridEsES } from "@mui/x-data-grid/locales";
+import { frFR as dataGridFrFR } from "@mui/x-data-grid/locales";
+
+import { enUS as pickersEnUS } from "@mui/x-date-pickers/locales";
 import { esES as pickersEsES } from "@mui/x-date-pickers/locales";
+import { frFR as pickersFrFR } from "@mui/x-date-pickers/locales";
+
 import { THEMES, type ThemeId } from "./themes";
 import { useLanguage } from "../i18n/useLanguage";
 
@@ -22,6 +32,7 @@ export const useAppTheme = () => useContext(ThemeCtx);
 
 export function ThemeContextProvider({ children }: { children: ReactNode }) {
   const { language } = useLanguage();
+
   const [themeId, setThemeIdState] = useState<ThemeId>(
     () => (localStorage.getItem(LS_KEY) as ThemeId | null) ?? "cosmicGlass"
   );
@@ -38,10 +49,19 @@ export function ThemeContextProvider({ children }: { children: ReactNode }) {
   // MUI's own strings (DataGrid toolbar, pickers, pagination) ship as theme locale bundles.
   const theme = useMemo(() => {
     const base = THEMES[themeId];
-    if (language === "es") {
-      return createTheme(base, coreEsES, dataGridEsES, pickersEsES);
+
+    switch (language) {
+      case "es":
+      case "mx":
+        return createTheme(base, coreEsES, dataGridEsES, pickersEsES);
+
+      case "fr":
+        return createTheme(base, coreFrFR, dataGridFrFR, pickersFrFR);
+
+      case "en":
+      default:
+        return createTheme(base, coreEnUS, dataGridEnUS, pickersEnUS);
     }
-    return base;
   }, [themeId, language]);
 
   return (

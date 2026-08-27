@@ -1,0 +1,30 @@
+{
+  "import": {
+    "eyebrow": "Administración",
+    "title": "Migrar Figuras",
+    "subtitle": "Ejecuta la migración de figuras desde Google Sheets y revisa las ejecuciones anteriores.",
+    "loadButton": "Migrar Todas las Figuras",
+    "importing": "Migrando...",
+    "description": "Usa esta página cuando necesites actualizar las figuras de la aplicación. Cada ejecución queda registrada en el historial de importaciones.",
+    "missingPermission": "No tienes el permiso requerido: figurines:import",
+    "successMessage": "Todas las figuras fueron migradas.",
+    "emptyTitle": "Aún no hay migraciones de figuras.",
+    "emptySubtitle": "Ejecuta una migración para comenzar a construir el historial.",
+    "columns": {
+      "status": "Estado",
+      "imported": "Migradas",
+      "errorMessage": "Mensaje de Error",
+      "completedAt": "Fecha de Término"
+    },
+    "statusWithErrors": "Migración completada con errores",
+    "statusSuccessful": "Migración completada con éxito",
+    "noErrors": "Sin errores",
+    "confirm": {
+      "title": "Migrar Todas las Figuras",
+      "body": "Esto iniciará la migración de todas las figuras desde la hoja de cálculo. Puedes ejecutar este proceso varias veces siempre que necesites actualizar los datos.",
+      "warning": "Advertencia: este proceso sobrescribirá las figuras existentes cuando se ejecute la migración.",
+      "cancel": "Cancelar",
+      "start": "Iniciar Migración"
+    }
+  }
+}

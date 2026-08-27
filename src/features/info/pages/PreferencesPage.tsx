@@ -22,7 +22,7 @@ const CURRENCY_META: Record<SupportedCurrency, { countryCode: string; symbol: st
 
 export default function PreferencesPage() {
   const theme = useTheme();
-  const { t } = useTranslation("preferences");
+  const { t } = useTranslation("personal");
   const { selectedCurrency, setSelectedCurrency } = useDisplayCurrency();
   const { language, setLanguage } = useLanguage();
   const { themeId, setThemeId } = useAppTheme();
@@ -36,9 +36,9 @@ export default function PreferencesPage() {
     <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow={t("eyebrow")}
-          title={t("title")}
-          subtitle={t("subtitle")}
+          eyebrow={t("preferences.eyebrow")}
+          title={t("preferences.title")}
+          subtitle={t("preferences.subtitle")}
           compact
         />
       </Box>
@@ -46,10 +46,10 @@ export default function PreferencesPage() {
       <Stack spacing={2}>
         <Paper sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.2 }}>
-            {t("language.title")}
+            {t("preferences.language.title")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            {t("language.description")}
+            {t("preferences.language.description")}
           </Typography>
 
           <FormControl
@@ -63,10 +63,10 @@ export default function PreferencesPage() {
               },
             }}
           >
-            <InputLabel id="settings-language-label">{t("language.label")}</InputLabel>
+            <InputLabel id="settings-language-label">{t("preferences.language.label")}</InputLabel>
             <Select
               labelId="settings-language-label"
-              label={t("language.label")}
+              label={t("preferences.language.label")}
               value={language}
               onChange={(event: SelectChangeEvent<string>) => setLanguage(event.target.value as SupportedLanguage)}
               renderValue={(value) => {
@@ -109,10 +109,10 @@ export default function PreferencesPage() {
 
         <Paper sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.2 }}>
-            {t("currency.title")}
+            {t("preferences.currency.title")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            {t("currency.description")}
+            {t("preferences.currency.description")}
           </Typography>
 
           <FormControl
@@ -126,10 +126,10 @@ export default function PreferencesPage() {
               },
             }}
           >
-            <InputLabel id="settings-display-currency-label">{t("currency.label")}</InputLabel>
+            <InputLabel id="settings-display-currency-label">{t("preferences.currency.label")}</InputLabel>
             <Select
               labelId="settings-display-currency-label"
-              label={t("currency.label")}
+              label={t("preferences.currency.label")}
               value={selectedCurrency ?? ""}
               onChange={handleCurrencyChange}
               renderValue={(value) => {
@@ -140,7 +140,7 @@ export default function PreferencesPage() {
                         🌐
                       </Typography>
                       <Typography component="span" sx={{ fontSize: "0.9rem" }}>
-                        {t("currency.auto")}
+                        {t("preferences.currency.auto")}
                       </Typography>
                     </Box>
                   );
@@ -168,11 +168,11 @@ export default function PreferencesPage() {
                       🌐
                     </Typography>
                     <Typography component="span" sx={{ fontSize: "0.9rem" }}>
-                      {t("currency.auto")}
+                      {t("preferences.currency.auto")}
                     </Typography>
                   </Box>
                   <Typography component="span" sx={{ fontSize: "0.78rem", color: "text.secondary" }}>
-                    {t("currency.store")}
+                    {t("preferences.currency.store")}
                   </Typography>
                 </Box>
               </MenuItem>
@@ -202,10 +202,10 @@ export default function PreferencesPage() {
 
         <Paper sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.2 }}>
-            {t("theme.title")}
+            {t("preferences.theme.title")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            {t("theme.description")}
+            {t("preferences.theme.description")}
           </Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>

@@ -1,0 +1,51 @@
+{
+  "termsAndConditions": {
+    "eyebrow": "Settings • Information",
+    "title": "Terms & Conditions",
+    "subtitle": "Please read these terms before using Saint Collections. They explain what you can expect from the app and what we expect from you.",
+    "use": {
+      "title": "Acceptable Use",
+      "description": "Please use the application responsibly and only for lawful purposes. Do not attempt to misuse features, bypass permissions, or interfere with how the app works for others."
+    },
+    "dataResponsibility": {
+      "title": "Data Responsibility",
+      "description": "You are responsible for checking your import sources, keeping backups when needed, and verifying that your collection data is correct before making buying or business decisions."
+    },
+    "changes": {
+      "title": "Service Changes",
+      "description": "Features and screens may change over time as we improve the platform. By continuing to use the app after updates, you agree to the latest version of these terms."
+    }
+  },
+  "contact": {
+    "eyebrow": "Settings • Information",
+    "title": "Contact",
+    "subtitle": "Need help with access, data, or behavior? Reach out through the channels below.",
+    "generalSupport": {
+      "title": "General Support",
+      "description": "For account, permissions, and onboarding questions, contact:"
+    },
+    "bugReport": {
+      "title": "Bug Reports",
+      "description": "Include route, browser/device, and reproduction steps when reporting UI or data issues:"
+    },
+    "expectations": {
+      "title": "Response Expectations",
+      "description": "Standard support requests are typically answered within 1-2 business days."
+    }
+  },
+  "about": {
+    "eyebrow": "Settings • Information",
+    "title": "About Saint Collections",
+    "subtitle": "A professional collector workspace designed to organize figurines, monitor trends, and support informed collecting decisions.",
+    "ourMission": {
+      "title": "Our Mission",
+      "description": "Saint Collections helps collectors centralize inventory, discover release activity, and maintain accurate records across marketplaces. The platform combines catalog exploration, ownership tracking, analytics, and matching workflows in a single workspace."
+    },
+    "whatYouCanDo": {
+      "title": "What You Can Do",
+      "step1": "1. Browse and filter figurines by lineup, status, anniversary, and market attributes.",
+      "step2": "2. Track real-time prices from stores and compare market changes across listings.",
+      "step3": "3. Organize personal collections and use charts and matching tools to evaluate trends and align listings with your catalog."
+    }
+  }
+}

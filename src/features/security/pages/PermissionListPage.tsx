@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -29,15 +30,18 @@ import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
 import { useAuth } from "../../../auth/AuthContext";
 
 function CustomNoRowsOverlay() {
+  const { t } = useTranslation("security");
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 1 }}>
-      <Typography variant="body1" color="text.secondary">No permissions yet.</Typography>
-      <Typography variant="body2" color="text.secondary">Click + Add Permission to get started.</Typography>
+      <Typography variant="body1" color="text.secondary">{t("permissions.noPermissionsYet")}</Typography>
+      <Typography variant="body2" color="text.secondary">{t("permissions.chooseAndClick")}</Typography>
     </Box>
   );
 }
 
 export default function PermissionListPage() {
+  const { t } = useTranslation("security");
   const { hasPermission } = useAuth();
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,12 +104,12 @@ export default function PermissionListPage() {
   const columns: GridColDef[] = [
     {
       field: "description",
-      headerName: "Description",
+      headerName: t("permissions.columns.description"),
       flex: 3,
     },
     {
       field: "actions",
-      headerName: "Actions",
+      headerName: t("permissions.columns.actions"),
       width: 130,
       sortable: false,
       align: "center",
@@ -113,7 +117,7 @@ export default function PermissionListPage() {
       renderCell: (params) => (
         <>
           {canUpdatePermissions && (
-            <Tooltip title="Edit">
+            <Tooltip title={t("permissions.columns.editTooltip")}>
               <IconButton
                 size="small"
                 onClick={() => navigate(`/security/permissions/edit/${params.row.id}`)}
@@ -124,7 +128,7 @@ export default function PermissionListPage() {
             </Tooltip>
           )}
           {canDeletePermissions && (
-            <Tooltip title="Delete">
+            <Tooltip title={t("permissions.columns.deleteTooltip")}>
               <IconButton
                 size="small"
                 onClick={() => handleDeleteClick(params.row.id)}
@@ -143,12 +147,12 @@ export default function PermissionListPage() {
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow="Administration • Security"
-          title="Permissions"
-          subtitle="Manage granular permissions that are assigned to roles and protected features."
+          eyebrow={t("permissions.eyebrow")}
+          title={t("permissions.title")}
+          subtitle={t("permissions.subtitle")}
           actions={canCreatePermissions ? (
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/security/permissions/new")}>
-              Add Permission
+              {t("permissions.addPermissionButton")}
             </Button>
           ) : undefined}
         />
@@ -166,16 +170,16 @@ export default function PermissionListPage() {
       />
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <DialogTitle>Delete Permission</DialogTitle>
+        <DialogTitle>{t("permissions.deleteDialog.title")}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this permission? This action cannot be undone.
+            {t("permissions.deleteDialog.body")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)} startIcon={<CancelOutlinedIcon />}>Cancel</Button>
+          <Button onClick={() => setConfirmOpen(false)} startIcon={<CancelOutlinedIcon />}>{t("permissions.deleteDialog.cancelButton")}</Button>
           <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deleting} startIcon={<DeleteIcon />}>
-            {deleting ? <CircularProgress size={20} color="inherit" /> : "Delete"}
+            {deleting ? <CircularProgress size={20} color="inherit" /> : t("permissions.deleteDialog.deleteButton")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -187,7 +191,7 @@ export default function PermissionListPage() {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert severity="success" onClose={() => setSnackbarOpen(false)}>
-          Permission deleted successfully.
+          {t("permissions.deleteSuccessful")}
         </Alert>
       </Snackbar>
 

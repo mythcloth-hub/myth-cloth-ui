@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
@@ -27,15 +28,18 @@ import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
 import { useAuth } from "../../../auth/AuthContext";
 
 function CustomNoRowsOverlay() {
+  const { t } = useTranslation("security");
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 1 }}>
-      <Typography variant="body1" color="text.secondary">No permissions assigned to this role yet.</Typography>
-      <Typography variant="body2" color="text.secondary">Choose permissions and click Sync Permissions.</Typography>
+      <Typography variant="body1" color="text.secondary">{t("rolePermissions.noPermissionsYet")}</Typography>
+      <Typography variant="body2" color="text.secondary">{t("rolePermissions.chooseAndClick")}</Typography>
     </Box>
   );
 }
 
 export default function RolePermissionsPage() {
+  const { t } = useTranslation("security");
   const { hasPermission } = useAuth();
   const canSyncRolePermissions = hasPermission("roles:permissions:sync");
   const [roles, setRoles] = useState<Role[]>([]);
@@ -103,7 +107,7 @@ export default function RolePermissionsPage() {
   const columns: GridColDef[] = [
     {
       field: "description",
-      headerName: "Assigned Permission",
+      headerName: t("rolePermissions.columns.description"),
       flex: 1,
     },
   ];
@@ -126,7 +130,7 @@ export default function RolePermissionsPage() {
       const updated = await getPermissionsByRoleId(selectedRoleId);
       setAssignedPermissions(updated);
       setSelectedPermissionIds(updated.map((permission) => permission.id));
-      setSuccessMessage("Role permissions synchronized successfully.");
+      setSuccessMessage(t("rolePermissions.syncSuccessful"));
     } catch (err) {
       console.error(err);
       setErrorMessage(getApiErrorMessage(err, { action: "update", resource: "role permissions" }));
@@ -139,19 +143,19 @@ export default function RolePermissionsPage() {
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow="Administration • Security"
-          title="Role Permissions"
-          subtitle="Assign permissions to roles and keep access aligned across the application."
+          eyebrow={t("rolePermissions.eyebrow")}
+          title={t("rolePermissions.title")}
+          subtitle={t("rolePermissions.subtitle")}
         />
       </Box>
 
       <Paper sx={{ padding: { xs: 2, sm: 3 }, mb: 2 }}>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: canSyncRolePermissions ? "1fr 1fr auto" : "1fr 1fr" }, gap: 2, alignItems: "end" }}>
           <FormControl fullWidth>
-            <InputLabel id="role-select-label">Role</InputLabel>
+            <InputLabel id="role-select-label">{t("rolePermissions.roleLabel")}</InputLabel>
             <Select
               labelId="role-select-label"
-              label="Role"
+              label={t("rolePermissions.roleLabel")}
               value={selectedRoleId}
               onChange={(event) => {
                 setSelectedRoleId(event.target.value as number);
@@ -168,11 +172,11 @@ export default function RolePermissionsPage() {
           </FormControl>
 
           <FormControl fullWidth disabled={!selectedRoleId || loadingLookups || submitting}>
-            <InputLabel id="permission-select-label">Permissions</InputLabel>
+            <InputLabel id="permission-select-label">{t("rolePermissions.permissionLabel")}</InputLabel>
             <Select
               labelId="permission-select-label"
               multiple
-              label="Permissions"
+              label={t("rolePermissions.permissionLabel")}
               value={selectedPermissionIds}
               onChange={handlePermissionSelectionChange}
               renderValue={(selected) =>
@@ -197,7 +201,7 @@ export default function RolePermissionsPage() {
               startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SyncAltOutlinedIcon />}
               sx={{ height: 56 }}
             >
-              {submitting ? "Syncing..." : "Sync Permissions"}
+              {submitting ? t("rolePermissions.syncingButton") : t("rolePermissions.syncButton")}
             </Button>
           )}
         </Box>
@@ -209,7 +213,7 @@ export default function RolePermissionsPage() {
         </Box>
       ) : !selectedRoleId ? (
         <Paper sx={{ p: 3 }}>
-          <Typography color="text.secondary">Select a role to view and manage its permissions.</Typography>
+          <Typography color="text.secondary">{t("rolePermissions.selectRoleMessage")}</Typography>
         </Paper>
       ) : (
         <ScrollableHintDataGrid

@@ -1,0 +1,85 @@
+{
+  "roles": {
+    "eyebrow": "Administration • Security",
+    "title": "Roles",
+    "subtitle": "Manage role definitions used to control access across the application.",
+    "noRolesYet": "No roles yet.",
+    "chooseAndClick": "Click + Add Role to get started.",
+    "columns": {
+      "description": "Description",
+      "actions": "Actions",
+      "editTooltip": "Edit",
+      "deleteTooltip": "Delete"
+    },
+    "addRoleButton": "Add Role",
+    "deleteDialog": {
+      "title": "Delete Role",
+      "body": "Are you sure you want to delete this role? This action cannot be undone.",
+      "cancelButton": "Cancel",
+      "deleteButton": "Delete"
+    },
+    "deleteSuccessful": "Role deleted successfully.",
+    "form": {
+      "descriptionRequired": "Description is required",
+      "updatedSuccessful": "Role updated successfully.",
+      "createdSuccessful": "Role created successfully.",
+      "titleEdit": "Edit Role",
+      "titleCreate": "Add Role",
+      "descriptionField": "Description",
+      "cancelButton": "Cancel",
+      "updateButton": "Update",
+      "createButton": "Create"
+    }
+  },
+  "permissions": {
+    "eyebrow": "Administration • Security",
+    "title": "Permissions",
+    "subtitle": "Manage granular permissions that are assigned to roles and protected features.",
+    "noPermissionsYet": "No permissions yet.",
+    "chooseAndClick": "Click + Add Permission to get started.",
+    "columns": {
+      "description": "Assigned Permission",
+      "actions": "Actions",
+      "editTooltip": "Edit",
+      "deleteTooltip": "Delete"
+    },
+    "addPermissionButton": "Add Permission",
+    "deleteDialog": {
+      "title": "Delete Permission",
+      "body": "Are you sure you want to delete this permission? This action cannot be undone.",
+      "cancelButton": "Cancel",
+      "deleteButton": "Delete"
+    },
+    "deleteSuccessful": "Permission deleted successfully.",
+    "form": {
+      "descriptionRequired": "Description must not be blank.",
+      "descriptionTooLong": "Description must not exceed 200 characters.",
+      "descriptionPattern": "Description must follow 'resource:action[:subaction...]' (e.g., 'posts:create' or 'posts:create:comment') using lowercase letters, numbers, hyphens, or underscores.",
+      "updatedSuccessful": "Permission updated successfully.",
+      "createdSuccessful": "Permission created successfully.",
+      "titleEdit": "Edit Permission",
+      "titleCreate": "Add Permission",
+      "descriptionField": "Description",
+      "descriptionHelperText": "Use format resource:action[:subaction...] (lowercase, numbers, '-' or '_').",
+      "cancelButton": "Cancel",
+      "updateButton": "Update",
+      "createButton": "Create"
+    }
+  },
+  "rolePermissions": {
+    "eyebrow": "Administration • Security",
+    "title": "Role Permissions",
+    "subtitle": "Assign permissions to roles and keep access aligned across the application.",
+    "noPermissionsYet": "No permissions assigned to this role yet.",
+    "chooseAndClick": "Choose permissions and click Sync Permissions.",
+    "columns": {
+      "description": "Assigned Permission"
+    },
+    "syncSuccessful": "Role permissions synchronized successfully.",
+    "roleLabel": "Role",
+    "permissionLabel": "Permissions",
+    "syncingButton": "Syncing...",
+    "syncButton": "Sync Permissions",
+    "selectRoleMessage": "Select a role to view and manage its permissions."
+  }
+}

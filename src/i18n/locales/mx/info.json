@@ -1,0 +1,51 @@
+{
+  "termsAndConditions": {
+    "eyebrow": "Configuración • Información",
+    "title": "Términos y Condiciones",
+    "subtitle": "Por favor, lea estos términos antes de usar Saint Collections. Explican qué puede esperar de la aplicación y qué esperamos de ti.",
+    "use": {
+      "title": "Uso Aceptable",
+      "description": "Por favor, use la aplicación de manera responsable y solo para fines legales. No intente hacer un uso indebido de las funciones, eludir permisos o interferir con el funcionamiento de la aplicación para otros."
+    },
+    "dataResponsibility": {
+      "title": "Responsabilidad de los Datos",
+      "description": "Eres responsable de verificar tus fuentes de importación, mantener copias de seguridad cuando sea necesario y asegurarte de que los datos de tu colección sean correctos antes de tomar decisiones de compra o comerciales."
+    },
+    "changes": {
+      "title": "Cambios en el Servicio",
+      "description": "Las funciones y pantallas pueden cambiar con el tiempo a medida que mejoramos la plataforma. Al continuar usando la aplicación después de las actualizaciones, aceptas la versión más reciente de estos términos."
+    }
+  },
+  "contact": {
+    "eyebrow": "Configuración • Información",
+    "title": "Contacto",
+    "subtitle": "¿Necesitas ayuda con el acceso, los datos o el comportamiento? Comunícate a través de los canales a continuación.",
+    "generalSupport": {
+      "title": "Soporte General",
+      "description": "Para preguntas sobre la cuenta, permisos y incorporación, contacta a:"
+    },
+    "bugReport": {
+      "title": "Reportes de Errores",
+      "description": "Incluye la ruta, el navegador/dispositivo y los pasos de reproducción al informar problemas de UI o datos:"
+    },
+    "expectations": {
+      "title": "Expectativas de Respuesta",
+      "description": "Las solicitudes de soporte estándar generalmente se responden dentro de 1-2 días hábiles."
+    }
+  },
+  "about": {
+    "eyebrow": "Configuración • Información",
+    "title": "Acerca de Saint Collections",
+    "subtitle": "Un espacio profesional para coleccionistas, diseñado para organizar tus figuras, seguir tendencias y tomar decisiones más informadas sobre tu colección.",
+    "ourMission": {
+      "title": "Nuestra Misión",
+      "description": "Saint Collections ayuda a los coleccionistas a centralizar el catálogo, descubrir la actividad de lanzamientos y mantener registros precisos en los mercados. La plataforma combina la exploración del catálogo, el seguimiento de la figura, el análisis y los flujos de trabajo de coincidencia en un solo lugar."
+    },
+    "whatYouCanDo": {
+      "title": "Lo Que Puedes Hacer",
+      "step1": "1. Explora y filtra las figuras por línea, estado, aniversario y atributos del mercado.",
+      "step2": "2. Sigue los precios en tiempo real de las tiendas y compara los cambios del mercado entre los listados.",
+      "step3": "3. Organiza colecciones personales y utiliza gráficos y herramientas de coincidencia para evaluar tendencias y alinear los listados con tu catálogo."
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "sections": {
+    "collections": "Collections",
+    "explore": "Explorer",
+    "matching": "Correspondance des figurines",
+    "eventsPartners": "Événements et partenaires",
+    "administration": "Administration",
+    "settings": "Paramètres"
+  },
+  "items": {
+    "home": "Accueil",
+    "mythCloth": "Myth Cloth",
+    "myCollections": "Mes Collections",
+    "purchases": "Achats",
+    "releases": "Sorties",
+    "charts": "Classements",
+    "pricing": "Tarification",
+    "manualMatching": "Correspondance manuelle",
+    "storeMatching": "Correspondance en magasin",
+    "anniversaries": "Anniversaires",
+    "distributors": "Distributeurs",
+    "catalogs": "Catalogues",
+    "distributions": "Distributions",
+    "groups": "Groupes",
+    "lineups": "Alignements",
+    "series": "Séries",
+    "stores": "Magasins",
+    "security": "Sécurité",
+    "roles": "Rôles",
+    "permissions": "Autorisations",
+    "rolePermissions": "Autorisations par Rôle",
+    "figurineImport": "Importation de Figurines",
+    "personal": "Personnel",
+    "yourAccount": "Votre Compte",
+    "preferences": "Préférences",
+    "information": "Informations",
+    "terms": "Conditions générales",
+    "contact": "Contact",
+    "about": "À propos"
+  }
+}

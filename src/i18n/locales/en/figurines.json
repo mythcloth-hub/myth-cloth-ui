@@ -1,131 +1,9 @@
 {
-  "header": {
-    "eyebrow": "Collections",
-    "title": "Myth Cloth",
-    "subtitle": "Explore the complete Myth Cloth catalog. Browse released, prototype, announced, rumored, and unreleased figurines, with filters to quickly find what you're looking for."
-  },
-  "toolbar": {
-    "ownershipAll": "All",
-    "ownershipOwned": "Owned",
-    "collectionView": "Collection View",
-    "allFigurines": "All Figurines",
-    "newFigurine": "New Figurine",
-    "searchPlaceholder": "Search by name…",
-    "filters": "Filters",
-    "clearAll": "Clear all"
-  },
-  "filters": {
-    "all": "All",
-    "yes": "Yes",
-    "no": "No",
-    "lineUp": "Line Up",
-    "series": "Series",
-    "group": "Group",
-    "distribution": "Distribution",
-    "anniversary": "Anniversary",
-    "releaseStatus": "Release Status",
-    "tamashiiTooltip": "TAMASHII NATIONS' Annual Figure Festival - Commemorative Merchandise",
-    "flags": {
-      "metalBody": "Metal Body",
-      "originalColor": "OCE",
-      "revival": "Revival",
-      "plainCloth": "Plain Cloth",
-      "battleDamaged": "Battle Damaged",
-      "goldenArmor": "Golden Armor",
-      "gold24k": "Gold 24K",
-      "manga": "Manga Version",
-      "multiPack": "Multi-Pack",
-      "articulable": "Articulable",
-      "restocks": "Restocks"
-    },
-    "chipFlags": {
-      "metalBody": "Metal Body",
-      "originalColor": "Original Color",
-      "revival": "Revival",
-      "plainCloth": "Plain Cloth",
-      "battleDamaged": "Battle Damaged",
-      "goldenArmor": "Golden Armor",
-      "gold24k": "Gold 24K",
-      "manga": "Manga",
-      "multiPack": "Multi-Pack",
-      "articulable": "Articulable",
-      "restocks": "Restocks"
-    },
-    "chips": {
-      "lineUp": "Line Up: {{value}}",
-      "series": "Series: {{value}}",
-      "group": "Group: {{value}}",
-      "distribution": "Distribution: {{value}}",
-      "anniversary": "Anniversary: {{value}}",
-      "status": "Status: {{value}}",
-      "flag": "{{label}}: {{value}}"
-    }
-  },
-  "status": {
-    "labels": {
-      "RELEASED": "Released",
-      "ANNOUNCED": "Announced",
-      "RUMORED": "Rumored",
-      "PROTOTYPE": "Prototype",
-      "UNRELEASED": "Unreleased"
-    },
-    "helpers": {
-      "RELEASED": "Already available in the market.",
-      "ANNOUNCED": "Future releases that were officially announced.",
-      "RUMORED": "Unconfirmed releases with circulating information.",
-      "PROTOTYPE": "Prototype-stage figures; design may still change.",
-      "UNRELEASED": "Canceled or indefinitely unreleased figures."
-    }
-  },
-  "figurineCount_one": "{{count}} figurine",
-  "figurineCount_other": "{{count}} figurines",
-  "card": {
-    "noImage": "No image",
-    "tamashiiTooltip": "Tamashii Nations commemorative figurine",
-    "anniversaryTooltip": "Anniversary Edition",
-    "statusWithDate": "{{status}} - {{date}}"
-  },
-  "restock": {
-    "chip": "Restock",
-    "chipWithDate": "Restock from {{date}}",
-    "tooltip_one": "Restocked {{count}} time.",
-    "tooltip_other": "Restocked {{count}} times.",
-    "tooltipWithDate_one": "Restocked {{count}} time. Latest: {{date}}.",
-    "tooltipWithDate_other": "Restocked {{count}} times. Latest: {{date}}."
-  },
-  "collectionContext": {
-    "viewing": "Viewing: {{name}}",
-    "owned_one": "{{count}} owned in this collection",
-    "owned_other": "{{count}} owned in this collection"
-  },
-  "results": {
-    "summary_one": "{{total}} figurine · page {{page}} of {{pages}}",
-    "summary_other": "{{total}} figurines · page {{page}} of {{pages}}",
-    "summaryFiltered_one": "{{total}} figurine matching \"{{query}}\" · page {{page}} of {{pages}}",
-    "summaryFiltered_other": "{{total}} figurines matching \"{{query}}\" · page {{page}} of {{pages}}"
-  },
-  "empty": {
-    "filtered": "No figurines match the current filters.",
-    "none": "No figurines in the collection yet."
-  },
-  "messages": {
-    "deleted": "Figurine deleted successfully.",
-    "slowLoad": "We're currently loading the figurines and retrieving the latest information. This may take a little longer than usual. Please keep this page open while we finish loading the data."
-  },
-  "selection": {
-    "selected_one": "{{count}} figurine selected",
-    "selected_other": "{{count}} figurines selected",
-    "thisPage": "This page ({{count}})",
-    "allPages": "All pages ({{total}})",
-    "loading": "Loading…",
-    "clear": "Clear",
-    "addToCollection": "Add to Collection"
-  },
   "import": {
     "eyebrow": "Administration",
     "title": "Figurine Import",
     "subtitle": "Trigger figurine imports from Google Sheets and review previous import runs.",
-    "loadButton": "Load All Figurines",
+    "loadButton": "Import All Figurines",
     "importing": "Importing...",
     "description": "Use this page whenever you need to refresh figurines in the app. Each run is recorded in the import history list.",
     "missingPermission": "You do not have the required permission: figurines:import",
@@ -142,7 +20,7 @@
     "statusSuccessful": "Import completed successfully",
     "noErrors": "No errors",
     "confirm": {
-      "title": "Load All Figurines",
+      "title": "Import All Figurines",
       "body": "This will start importing all figurines from the spreadsheet. You can run this process multiple times whenever you need to refresh data.",
       "warning": "Warning: this process will override existing figurines when the import runs.",
       "cancel": "Cancel",
@@ -150,4 +28,3 @@
     }
   }
 }
-

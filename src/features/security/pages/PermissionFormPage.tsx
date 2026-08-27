@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -21,6 +22,7 @@ import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 const PERMISSION_DESCRIPTION_PATTERN = /^[a-z0-9_-]+(:[a-z0-9_-]+)+$/;
 
 export default function PermissionFormPage() {
+  const { t } = useTranslation("security");
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -50,18 +52,18 @@ export default function PermissionFormPage() {
     const normalizedDescription = description.trim();
 
     if (!normalizedDescription) {
-      setDescriptionError("Description must not be blank.");
+      setDescriptionError(t("permissions.form.descriptionRequired"));
       return false;
     }
 
     if (normalizedDescription.length > 200) {
-      setDescriptionError("Description must not exceed 200 characters.");
+      setDescriptionError(t("permissions.form.descriptionTooLong"));
       return false;
     }
 
     if (!PERMISSION_DESCRIPTION_PATTERN.test(normalizedDescription)) {
       setDescriptionError(
-        "Description must follow 'resource:action[:subaction...]' (e.g., 'posts:create' or 'posts:create:comment') using lowercase letters, numbers, hyphens, or underscores.",
+        t("permissions.form.descriptionPattern")
       );
       return false;
     }
@@ -80,7 +82,7 @@ export default function PermissionFormPage() {
       } else {
         await createPermission({ description: description.trim() });
       }
-      setSuccessMessage(isEdit ? "Permission updated successfully." : "Permission created successfully.");
+      setSuccessMessage(isEdit ? t("permissions.form.updatedSuccessful") : t("permissions.form.createdSuccessful"));
     } catch (err) {
       console.error(err);
       if (axios.isAxiosError(err)) {
@@ -108,7 +110,7 @@ export default function PermissionFormPage() {
         sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}
         gutterBottom
       >
-        {isEdit ? "Edit Permission" : "New Permission"}
+        {isEdit ? t("permissions.form.titleEdit") : t("permissions.form.titleCreate")}
       </Typography>
 
       {loadingForm ? (
@@ -129,7 +131,7 @@ export default function PermissionFormPage() {
               </Alert>
             )}
             <TextField
-              label="Description"
+              label={t("permissions.form.descriptionField")}
               name="description"
               value={description}
               onChange={(e) => {
@@ -142,11 +144,11 @@ export default function PermissionFormPage() {
               autoFocus
               slotProps={{ htmlInput: { maxLength: 200 } }}
               error={Boolean(descriptionError)}
-              helperText={descriptionError ?? "Use format resource:action[:subaction...] (lowercase, numbers, '-' or '_')."}
+              helperText={descriptionError ?? t("permissions.form.descriptionHelperText")}
             />
             <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
               <Button variant="outlined" startIcon={<CancelOutlinedIcon />} onClick={() => navigate("/security/permissions")}>
-                Cancel
+                {t("permissions.form.cancelButton")}
               </Button>
               <Button
                 type="submit"
@@ -154,7 +156,7 @@ export default function PermissionFormPage() {
                 disabled={loading || Boolean(successMessage)}
                 startIcon={isEdit ? <SaveOutlinedIcon /> : <AddIcon />}
               >
-                {isEdit ? "Update" : "Create"}
+                {isEdit ? t("permissions.form.updateButton") : t("permissions.form.createButton")}
               </Button>
             </Box>
           </Box>

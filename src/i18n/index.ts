@@ -4,28 +4,39 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import dayjs from "dayjs";
 import "dayjs/locale/en";
 import "dayjs/locale/es";
+import "dayjs/locale/fr";
 
-import enAuth from "./locales/en/auth.json";
-import enCollections from "./locales/en/collections.json";
 import enCommon from "./locales/en/common.json";
-import enFigurineDetail from "./locales/en/figurineDetail.json";
-import enFigurineForm from "./locales/en/figurineForm.json";
-import enFigurines from "./locales/en/figurines.json";
 import enNavigation from "./locales/en/navigation.json";
-import enAccount from "./locales/en/account.json";
-import enPreferences from "./locales/en/preferences.json";
-import enAbout from "./locales/en/about.json";
+import enAuth from "./locales/en/auth.json";
+import enFigurines from "./locales/en/figurines.json";
+import enSecurity from "./locales/en/security.json";
+import enPersonal from "./locales/en/personal.json";
+import enInfo from "./locales/en/info.json";
 
-import esAuth from "./locales/es/auth.json";
-import esCollections from "./locales/es/collections.json";
+import mxCommon from "./locales/mx/common.json";
+import mxNavigation from "./locales/mx/navigation.json";
+import mxAuth from "./locales/mx/auth.json";
+import mxFigurines from "./locales/mx/figurines.json";
+import mxSecurity from "./locales/mx/security.json";
+import mxPersonal from "./locales/mx/personal.json";
+import mxInfo from "./locales/mx/info.json";
+
 import esCommon from "./locales/es/common.json";
-import esFigurineDetail from "./locales/es/figurineDetail.json";
-import esFigurineForm from "./locales/es/figurineForm.json";
-import esFigurines from "./locales/es/figurines.json";
 import esNavigation from "./locales/es/navigation.json";
-import esAccount from "./locales/es/account.json";
-import esPreferences from "./locales/es/preferences.json";
-import esAbout from "./locales/es/about.json";
+import esAuth from "./locales/es/auth.json";
+import esFigurines from "./locales/es/figurines.json";
+import esSecurity from "./locales/es/security.json";
+import esPersonal from "./locales/es/personal.json";
+import esInfo from "./locales/es/info.json";
+
+import frCommon from "./locales/fr/common.json";
+import frNavigation from "./locales/fr/navigation.json";
+import frAuth from "./locales/fr/auth.json";
+import frFigurines from "./locales/fr/figurines.json";
+import frSecurity from "./locales/fr/security.json";
+import frPersonal from "./locales/fr/personal.json";
+import frInfo from "./locales/fr/info.json";
 
 import { DEFAULT_LANGUAGE, normalizeLanguage, SUPPORTED_LANGUAGES } from "./languages";
 
@@ -35,29 +46,41 @@ export const defaultNS = "common";
 
 export const resources = {
   en: {
-    auth: enAuth,
-    collections: enCollections,
     common: enCommon,
-    figurineDetail: enFigurineDetail,
-    figurineForm: enFigurineForm,
-    figurines: enFigurines,
     navigation: enNavigation,
-    account: enAccount,
-    preferences: enPreferences,
-    about: enAbout,
+    auth: enAuth,
+    figurines: enFigurines,
+    security: enSecurity,
+    personal: enPersonal,
+    info: enInfo,
+  },
+  mx: {
+    common: mxCommon,
+    navigation: mxNavigation,
+    auth: mxAuth,
+    figurines: mxFigurines,
+    security: mxSecurity,
+    personal: mxPersonal,
+    info: mxInfo,
   },
   es: {
-    auth: esAuth,
-    collections: esCollections,
     common: esCommon,
-    figurineDetail: esFigurineDetail,
-    figurineForm: esFigurineForm,
-    figurines: esFigurines,
     navigation: esNavigation,
-    account: esAccount,
-    preferences: esPreferences,
-    about: esAbout,
+    auth: esAuth,
+    figurines: esFigurines,
+    security: esSecurity,
+    personal: esPersonal,
+    info: esInfo,
   },
+  fr: {
+    common: frCommon,
+    navigation: frNavigation,
+    auth: frAuth,
+    figurines: frFigurines,
+    security: frSecurity,
+    personal: frPersonal,
+    info: frInfo,
+  }
 } as const;
 
 void i18n
@@ -66,10 +89,9 @@ void i18n
   .init({
     resources,
     defaultNS,
-    ns: ["account", "auth", "collections", "common", "figurineDetail", "figurineForm", "figurines", "navigation", "preferences"],
+    ns: ["common", "navigation", "auth", "figurines", "security", "personal", "info"],
     fallbackLng: DEFAULT_LANGUAGE,
     supportedLngs: [...SUPPORTED_LANGUAGES],
-    // Collapses regional tags (es-MX, es-AR) onto the base bundle we ship.
     load: "languageOnly",
     nonExplicitSupportedLngs: true,
     detection: {

@@ -1,4 +1,4 @@
-export const SUPPORTED_LANGUAGES = ["en", "es"] as const;
+export const SUPPORTED_LANGUAGES = ["en", "mx", "es", "fr"] as const;
 
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
@@ -8,7 +8,9 @@ const SUPPORTED_LANGUAGE_SET = new Set<SupportedLanguage>(SUPPORTED_LANGUAGES);
 
 export const LANGUAGE_META: Record<SupportedLanguage, { label: string; englishLabel: string; countryCode: string }> = {
   en: { label: "English", englishLabel: "English", countryCode: "US" },
+  mx: { label: "Español", englishLabel: "Spanish", countryCode: "MX" },
   es: { label: "Español", englishLabel: "Spanish", countryCode: "ES" },
+  fr: { label: "Français", englishLabel: "French", countryCode: "FR" },
 };
 
 export function isSupportedLanguage(value: string | null | undefined): value is SupportedLanguage {

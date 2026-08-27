@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -29,15 +30,18 @@ import ScrollableHintDataGrid from "../../../components/ScrollableHintDataGrid";
 import { useAuth } from "../../../auth/AuthContext";
 
 function CustomNoRowsOverlay() {
+  const { t } = useTranslation("security");
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 1 }}>
-      <Typography variant="body1" color="text.secondary">No roles yet.</Typography>
-      <Typography variant="body2" color="text.secondary">Click + Add Role to get started.</Typography>
+      <Typography variant="body1" color="text.secondary">{t("roles.noRolesYet")}</Typography>
+      <Typography variant="body2" color="text.secondary">{t("roles.chooseAndClick")}</Typography>
     </Box>
   );
 }
 
 export default function RoleListPage() {
+  const { t } = useTranslation("security");
   const { hasPermission } = useAuth();
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,12 +103,12 @@ export default function RoleListPage() {
   const columns: GridColDef[] = [
     {
       field: "description",
-      headerName: "Description",
+      headerName: t("roles.columns.description"),
       flex: 3,
     },
     {
       field: "actions",
-      headerName: "Actions",
+      headerName: t("roles.columns.actions"),
       width: 130,
       sortable: false,
       align: "center",
@@ -112,7 +116,7 @@ export default function RoleListPage() {
       renderCell: (params) => (
         <>
           {canUpdateRoles && (
-            <Tooltip title="Edit">
+            <Tooltip title={t("roles.columns.editTooltip")}>
               <IconButton
                 size="small"
                 onClick={() => navigate(`/security/roles/edit/${params.row.id}`)}
@@ -122,7 +126,7 @@ export default function RoleListPage() {
               </IconButton>
             </Tooltip>
           )}
-          <Tooltip title="Delete">
+          <Tooltip title={t("roles.columns.deleteTooltip")}>
             <span>
                 <IconButton
                 size="small"
@@ -143,12 +147,12 @@ export default function RoleListPage() {
     <Box sx={{ padding: { xs: 1, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow="Administration • Security"
-          title="Roles"
-          subtitle="Manage role definitions used to control access across the application."
+          eyebrow={t("roles.eyebrow")}
+          title={t("roles.title")}
+          subtitle={t("roles.subtitle")}
           actions={canCreateRoles ? (
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/security/roles/new")}>
-              Add Role
+              {t("roles.addRoleButton")}
             </Button>
           ) : undefined}
         />
@@ -166,16 +170,16 @@ export default function RoleListPage() {
       />
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <DialogTitle>Delete Role</DialogTitle>
+        <DialogTitle>{t("roles.deleteDialog.title")}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this role? This action cannot be undone.
+            {t("roles.deleteDialog.body")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)} startIcon={<CancelOutlinedIcon />}>Cancel</Button>
+          <Button onClick={() => setConfirmOpen(false)} startIcon={<CancelOutlinedIcon />}>{t("roles.deleteDialog.cancelButton")}</Button>
           <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deleting} startIcon={<DeleteIcon />}>
-            {deleting ? <CircularProgress size={20} color="inherit" /> : "Delete"}
+            {deleting ? <CircularProgress size={20} color="inherit" /> : t("roles.deleteDialog.deleteButton")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -187,7 +191,7 @@ export default function RoleListPage() {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert severity="success" onClose={() => setSnackbarOpen(false)}>
-          Role deleted successfully.
+          {t("roles.deleteSuccessful")}
         </Alert>
       </Snackbar>
 

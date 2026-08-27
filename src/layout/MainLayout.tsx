@@ -102,7 +102,7 @@ const NAV_SECTIONS: NavSection[] = [
     headingKey: "collections",
     items: [
       { labelKey: "mythCloth",     path: "/figurines",   icon: <WorkspacePremiumOutlinedIcon /> },
-      { labelKey: "myCollections", path: "/collections", icon: <Inventory2OutlinedIcon />, permission: "collections:read" },
+      { labelKey: "myCollections", path: "/collections", icon: <Inventory2OutlinedIcon />,     permission: "collections:read" },
       { labelKey: "purchases",     path: "/purchases",   icon: <ShoppingBagOutlinedIcon />,    permission: "purchases:read" }
     ],
   },
@@ -110,21 +110,21 @@ const NAV_SECTIONS: NavSection[] = [
     headingKey: "explore",
     items: [
       { labelKey: "releases", path: "/releases", icon: <RocketLaunchOutlinedIcon />, permission: "stats:read" },
-      { labelKey: "charts",   path: "/charts",   icon: <QueryStatsOutlinedIcon />,      permission: "stats:read" },
-      { labelKey: "pricing",  path: "/pricing",  icon: <SellOutlinedIcon />,          permission: "stats:read" }
+      { labelKey: "charts",   path: "/charts",   icon: <QueryStatsOutlinedIcon />,   permission: "stats:read" },
+      { labelKey: "pricing",  path: "/pricing",  icon: <SellOutlinedIcon />,         permission: "stats:read" }
     ],
   },
   {
     headingKey: "matching",
     items: [
       { labelKey: "manualMatching", path: "/figurine-matching",        icon: <CompareOutlinedIcon />, permission: "figurines:stores:read" },
-      { labelKey: "storeMatching",  path: "/figurine-matching/stores", icon: <StoreOutlinedIcon />,    permission: "figurines:stores:read" }
+      { labelKey: "storeMatching",  path: "/figurine-matching/stores", icon: <StoreOutlinedIcon />,   permission: "figurines:stores:read" }
     ],
   },
   {
     headingKey: "eventsPartners",
     items: [
-      { labelKey: "anniversaries", path: "/anniversaries", icon: <CelebrationOutlinedIcon />,     permission: "anniversaries:read" },
+      { labelKey: "anniversaries", path: "/anniversaries", icon: <CelebrationOutlinedIcon />,    permission: "anniversaries:read" },
       { labelKey: "distributors",  path: "/distributors",  icon: <LocalShippingOutlinedIcon />,  permission: "distributors:read" }
     ],
   },
@@ -136,21 +136,21 @@ const NAV_SECTIONS: NavSection[] = [
         icon: <LibraryBooksOutlinedIcon />,
         expandOnly: true,
         children: [
-          { labelKey: "distributions", path: "/catalogs/distributions", icon: <HubOutlinedIcon />,         permission: "catalogs:read" },
-          { labelKey: "groups",        path: "/catalogs/groups",        icon: <GroupWorkOutlinedIcon />,      permission: "catalogs:read" },
-          { labelKey: "lineups",       path: "/catalogs/lineups",       icon: <ViewTimelineOutlinedIcon />,    permission: "catalogs:read" },
-          { labelKey: "series",        path: "/catalogs/series",        icon: <AutoStoriesOutlinedIcon />, permission: "catalogs:read" }
+          { labelKey: "distributions", path: "/catalogs/distributions", icon: <HubOutlinedIcon />,           permission: "catalogs:read" },
+          { labelKey: "groups",        path: "/catalogs/groups",        icon: <GroupWorkOutlinedIcon />,     permission: "catalogs:read" },
+          { labelKey: "lineups",       path: "/catalogs/lineups",       icon: <ViewTimelineOutlinedIcon />,  permission: "catalogs:read" },
+          { labelKey: "series",        path: "/catalogs/series",        icon: <AutoStoriesOutlinedIcon />,   permission: "catalogs:read" }
         ]
       },
       { labelKey: "stores", path: "/stores", icon: <StoreOutlinedIcon />, permission: "stores:create" },
-      { 
+      {
         labelKey: "security",
         icon: <SecurityOutlinedIcon />,
         expandOnly: true,
         children: [
-          { labelKey: "roles",            path: "/security/roles",            icon: <BadgeOutlinedIcon />, permission: "roles:read" },
-          { labelKey: "permissions",      path: "/security/permissions",      icon: <KeyOutlinedIcon />,               permission: "permissions:read" },
-          { labelKey: "rolePermissions", path: "/security/role-permissions", icon: <VpnKeyOutlinedIcon />,               permission: "roles:permissions:read" }
+          { labelKey: "roles",           path: "/security/roles",            icon: <BadgeOutlinedIcon />,  permission: "roles:read" },
+          { labelKey: "permissions",     path: "/security/permissions",      icon: <KeyOutlinedIcon />,    permission: "permissions:read" },
+          { labelKey: "rolePermissions", path: "/security/role-permissions", icon: <VpnKeyOutlinedIcon />, permission: "roles:permissions:read" }
         ]
       },
       { labelKey: "figurineImport", path: "/figurines/import", icon: <UploadFileOutlinedIcon />, permission: "figurines:import" }
@@ -164,8 +164,8 @@ const NAV_SECTIONS: NavSection[] = [
         icon: <SettingsSuggestOutlinedIcon />,
         expandOnly: true,
         children: [
-          { labelKey: "yourAccount", path: "/settings/account", icon: <ManageAccountsOutlinedIcon /> },
-          { labelKey: "preferences", path: "/settings/preferences", icon: <TuneOutlinedIcon /> }
+          { labelKey: "yourAccount",  path: "/personal/account",     icon: <ManageAccountsOutlinedIcon /> },
+          { labelKey: "preferences",  path: "/personal/preferences", icon: <TuneOutlinedIcon /> }
         ]
       },
       {
@@ -173,9 +173,9 @@ const NAV_SECTIONS: NavSection[] = [
         icon: <InfoOutlinedIcon />,
         expandOnly: true,
         children: [
-          { labelKey: "terms", path: "/info/terms", icon: <GavelOutlinedIcon /> },
+          { labelKey: "terms",   path: "/info/terms",   icon: <GavelOutlinedIcon /> },
           { labelKey: "contact", path: "/info/contact", icon: <ContactMailOutlinedIcon /> },
-          { labelKey: "about", path: "/info/about", icon: <InfoOutlinedIcon /> }
+          { labelKey: "about",   path: "/info/about",   icon: <InfoOutlinedIcon /> }
         ]
       }
     ]
@@ -219,7 +219,7 @@ function useGoogleSDK() {
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { isAuthenticated, session, hasPermission, loginWithFacebook, loginWithGoogle, loginWithDemo, facebookEnabled, googleEnabled, demoEnabled, logout } = useAuth();
-  const { t } = useTranslation(["navigation", "common", "auth"]);
+  const { t } = useTranslation(["common", "navigation", "auth"]);
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();

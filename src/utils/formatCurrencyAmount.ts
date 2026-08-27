@@ -1,5 +1,3 @@
-import i18n from "../i18n";
-
 export type CurrencyAmountDisplayStyle = "currency" | "symbolCode";
 
 export type FormatCurrencyAmountOptions = {
@@ -69,7 +67,7 @@ export function formatCurrencyAmount(
     return `- ${currencyCode}`;
   }
 
-  const locale = options.locale ?? i18n.resolvedLanguage ?? "en-US";
+  const locale = options.locale ?? "en-US";
   const displayStyle = options.style ?? "currency";
   const { minimumFractionDigits, maximumFractionDigits } = getFractionDigits(currencyCode, options);
 

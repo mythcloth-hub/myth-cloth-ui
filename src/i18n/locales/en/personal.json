@@ -1,0 +1,41 @@
+{
+  "yourAccount": {
+    "eyebrow": "Settings • Personal",
+    "title": "Your Account",
+    "subtitle": "Review your profile and authentication status. Theme and Display Currency are managed in Preferences.",
+    "profile": {
+      "collectorId": "Collector ID",
+      "role": "Role",
+      "noRoleAssigned": "No role assigned",
+      "permissions": "Permissions",
+      "logOut": "Log Out",
+      "guest": "You are currently browsing as a guest. Sign in from the sidebar to view your account details."
+    },
+    "preferences": {
+      "title": "Preferences",
+      "descriptionTheme": "Theme is managed in Preferences and applies across the entire application.",
+      "descriptionCurrency": "Display Currency is managed in Preferences and applies across pages and reports."
+    }
+  },
+  "preferences": {
+    "eyebrow": "Settings • Personal",
+    "title": "Preferences",
+    "subtitle": "Configure global visual and display options for the entire application.",
+    "language": {
+      "title": "Language",
+      "description": "Choose the language used for menus, labels and messages.",
+      "label": "Language"
+    },
+    "currency": {
+      "title": "Currency",
+      "description": "Choose how monetary values are shown across pages and reports.",
+      "label": "Currency",
+      "auto": "Auto",
+      "store": "Store"
+    },
+    "theme": {
+      "title": "Theme",
+      "description": "Pick the visual style that best matches your collecting workspace."
+    }
+  }
+}

@@ -1,11 +1,11 @@
 {
   "sections": {
     "collections": "Colecciones",
-    "explore": "Explora",
-    "matching": "Emparejamiento de Figuras",
-    "eventsPartners": "Eventos y Socios",
+    "explore": "Descubre",
+    "matching": "Unificación de Figuras",
+    "eventsPartners": "Eventos y Distribuidores",
     "administration": "Administración",
-    "settings": "Ajustes"
+    "settings": "Configuración"
   },
   "items": {
     "home": "Inicio",
@@ -15,8 +15,8 @@
     "releases": "Lanzamientos",
     "charts": "Gráficas",
     "pricing": "Precios",
-    "manualMatching": "Emparejamiento Manual",
-    "storeMatching": "Emparejamiento por Tienda",
+    "manualMatching": "Unificación Manual",
+    "storeMatching": "Unificación por Tienda",
     "anniversaries": "Aniversarios",
     "distributors": "Distribuidores",
     "catalogs": "Catálogos",
@@ -29,7 +29,7 @@
     "roles": "Roles",
     "permissions": "Permisos",
     "rolePermissions": "Permisos por Rol",
-    "figurineImport": "Importar Figuras",
+    "figurineImport": "Migrar Figuras",
     "personal": "Personal",
     "yourAccount": "Tu Cuenta",
     "preferences": "Preferencias",
