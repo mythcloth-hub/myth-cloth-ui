@@ -1,6 +1,7 @@
 import { Avatar, Box, Button, Chip, Divider, Paper, Stack, Typography } from "@mui/material";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import PaletteOutlinedIcon from "@mui/icons-material/PaletteOutlined";
 import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
@@ -10,6 +11,7 @@ import { useAuth } from "../../../auth/AuthContext";
 export default function AccountPage() {
   const navigate = useNavigate();
   const { isAuthenticated, session, logout } = useAuth();
+  const { t } = useTranslation("personal");
 
   const handleLogout = () => {
     logout();
@@ -20,9 +22,9 @@ export default function AccountPage() {
     <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
-          eyebrow="Settings • Personal"
-          title="Your Account"
-          subtitle="Review your profile and authentication status. Theme and Display Currency are managed in Preferences."
+          eyebrow={t("yourAccount.eyebrow")}
+          title={t("yourAccount.title")}
+          subtitle={t("yourAccount.subtitle")}
           compact
         />
       </Box>
@@ -50,9 +52,9 @@ export default function AccountPage() {
               <Divider />
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap flexWrap="wrap">
-                <Chip icon={<VerifiedUserOutlinedIcon />} label={`Collector ID: ${session.collectorId}`} />
-                <Chip label={`Role: ${session.role ?? "Not assigned"}`} color="primary" variant="outlined" />
-                <Chip label={`${session.permissions.length} permissions`} variant="outlined" />
+                <Chip icon={<VerifiedUserOutlinedIcon />} label={`${t("yourAccount.profile.collectorId")}: ${session.collectorId}`} />
+                <Chip label={`${t("yourAccount.profile.role")}: ${session.role ?? t("yourAccount.profile.noRoleAssigned")}`} color="primary" variant="outlined" />
+                <Chip label={`${session.permissions.length} ${t("yourAccount.profile.permissions")}`} variant="outlined" />
               </Stack>
 
               <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -62,30 +64,30 @@ export default function AccountPage() {
                   startIcon={<LogoutOutlinedIcon />}
                   onClick={handleLogout}
                 >
-                  Log out
+                  {t("yourAccount.profile.logOut")}
                 </Button>
               </Box>
             </Stack>
           ) : (
             <Typography color="text.secondary">
-              You are currently browsing as a guest. Sign in from the sidebar to view your account details.
+              {t("yourAccount.profile.guest")}
             </Typography>
           )}
         </Paper>
 
         <Paper sx={{ p: { xs: 2, md: 2.5 }, borderRadius: 2 }}>
           <Stack spacing={1.5}>
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>Preferences</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>{t("yourAccount.preferences.title")}</Typography>
             <Stack direction="row" spacing={1} alignItems="center">
               <PaletteOutlinedIcon color="primary" fontSize="small" />
               <Typography variant="body2" color="text.secondary">
-                Theme is managed in Preferences and applies across the entire application.
+                {t("yourAccount.preferences.descriptionTheme")}
               </Typography>
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
               <PublicOutlinedIcon color="primary" fontSize="small" />
               <Typography variant="body2" color="text.secondary">
-                Display Currency is managed in Preferences and applies across pages and reports.
+                {t("yourAccount.preferences.descriptionCurrency")}
               </Typography>
             </Stack>
           </Stack>

@@ -1,0 +1,30 @@
+{
+  "import": {
+    "eyebrow": "Administration",
+    "title": "Importation de Figurines",
+    "subtitle": "Lancez les importations de figurines depuis Google Sheets et consultez les exécutions précédentes.",
+    "loadButton": "Importer Toutes les Figurines",
+    "importing": "Importation en cours...",
+    "description": "Utilisez cette page chaque fois que vous devez actualiser les figurines dans l'application. Chaque exécution est enregistrée dans l'historique des importations.",
+    "missingPermission": "Vous n'avez pas la permission requise : figurines:import",
+    "successMessage": "Toutes les figurines ont été importées.",
+    "emptyTitle": "Aucune importation de figurines pour le moment.",
+    "emptySubtitle": "Exécutez une importation pour commencer à construire l'historique.",
+    "columns": {
+      "status": "Statut",
+      "imported": "Importées",
+      "errorMessage": "Message d'erreur",
+      "completedAt": "Date de fin"
+    },
+    "statusWithErrors": "Importation terminée avec des erreurs",
+    "statusSuccessful": "Importation terminée avec succès",
+    "noErrors": "Aucune erreur",
+    "confirm": {
+      "title": "Importer Toutes les Figurines",
+      "body": "Cela lancera l'importation de toutes les figurines depuis la feuille de calcul. Vous pouvez exécuter ce processus plusieurs fois chaque fois que vous devez actualiser les données.",
+      "warning": "Attention : ce processus écrasera les figurines existantes lorsque l'importation sera effectuée.",
+      "cancel": "Annuler",
+      "start": "Démarrer l'Importation"
+    }
+  }
+}

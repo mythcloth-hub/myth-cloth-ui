@@ -1,0 +1,51 @@
+{
+  "termsAndConditions": {
+    "eyebrow": "Paramètres • Informations",
+    "title": "Conditions Générales",
+    "subtitle": "Veuillez lire ces conditions avant d’utiliser Saint Collections. Elles expliquent ce que vous pouvez attendre de l’application et ce que nous attendons de vous.",
+    "use": {
+      "title": "Utilisation Acceptable",
+      "description": "Veuillez utiliser l'application de manière responsable et uniquement à des fins légales. N'essayez pas de mal utiliser les fonctionnalités, de contourner les autorisations ou d'interférer avec le fonctionnement de l'application pour les autres."
+    },
+    "dataResponsibility": {
+      "title": "Responsabilité des Données",
+      "description": "Vous êtes responsable de vérifier vos sources d'importation, de conserver des sauvegardes si nécessaire et de vous assurer que les données de votre collection sont correctes avant de prendre des décisions d'achat ou commerciales."
+    },
+    "changes": {
+      "title": "Modifications du Service",
+      "description": "Les fonctionnalités et les écrans peuvent changer au fil du temps à mesure que nous améliorons la plateforme. En continuant à utiliser l'application après les mises à jour, vous acceptez la version la plus récente de ces conditions."
+    }
+  },
+  "contact": {
+    "eyebrow": "Paramètres • Informations",
+    "title": "Contact",
+    "subtitle": "Besoin d'aide pour l'accès, les données ou le comportement ? Contactez-nous via les canaux ci-dessous.",
+    "generalSupport": {
+      "title": "Support Général",
+      "description": "Pour les questions concernant le compte, les autorisations et l'intégration, contactez :"
+    },
+    "bugReport": {
+      "title": "Rapports de Bugs",
+      "description": "Incluez le chemin, le navigateur/appareil et les étapes de reproduction lors de la signalisation de problèmes d'interface ou de données :"
+    },
+    "expectations": {
+      "title": "Attentes de Réponse",
+      "description": "Les demandes de support standard reçoivent généralement une réponse sous 1 à 2 jours ouvrables."
+    }
+  },
+  "about": {
+    "eyebrow": "Paramètres • Informations",
+    "title": "Conditions générales",
+    "subtitle": "Veuillez lire ces conditions avant d’utiliser Saint Collections. Elles expliquent ce que vous pouvez attendre de l’application et ce que nous attendons de vous.",
+    "ourMission": {
+      "title": "Notre Mission",
+      "description": "Saint Collections aide les collectionneurs à centraliser l'inventaire, à découvrir l'activité des sorties et à maintenir des enregistrements précis sur les marchés. La plateforme combine l'exploration du catalogue, le suivi de la propriété, l'analyse et les flux de travail de correspondance dans un seul espace de travail."
+    },
+    "whatYouCanDo": {
+      "title": "Ce Que Vous Pouvez Faire",
+      "step1": "1. Parcourez et filtrez les figurines par gamme, statut, anniversaire et attributs du marché.",
+      "step2": "2. Suivez les prix en temps réel des magasins et comparez les changements du marché entre les annonces.",
+      "step3": "3. Organisez des collections personnelles et utilisez des graphiques et des outils de correspondance pour évaluer les tendances et aligner les annonces avec votre catalogue."
+    }
+  }
+}

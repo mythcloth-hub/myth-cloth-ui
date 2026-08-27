@@ -1,0 +1,30 @@
+{
+  "import": {
+    "eyebrow": "Administration",
+    "title": "Figurine Import",
+    "subtitle": "Trigger figurine imports from Google Sheets and review previous import runs.",
+    "loadButton": "Import All Figurines",
+    "importing": "Importing...",
+    "description": "Use this page whenever you need to refresh figurines in the app. Each run is recorded in the import history list.",
+    "missingPermission": "You do not have the required permission: figurines:import",
+    "successMessage": "All the figurines were imported.",
+    "emptyTitle": "No figurine imports yet.",
+    "emptySubtitle": "Run an import to start building the history.",
+    "columns": {
+      "status": "Status",
+      "imported": "Imported",
+      "errorMessage": "Error Message",
+      "completedAt": "Completed At"
+    },
+    "statusWithErrors": "Import completed with errors",
+    "statusSuccessful": "Import completed successfully",
+    "noErrors": "No errors",
+    "confirm": {
+      "title": "Import All Figurines",
+      "body": "This will start importing all figurines from the spreadsheet. You can run this process multiple times whenever you need to refresh data.",
+      "warning": "Warning: this process will override existing figurines when the import runs.",
+      "cancel": "Cancel",
+      "start": "Start Import"
+    }
+  }
+}

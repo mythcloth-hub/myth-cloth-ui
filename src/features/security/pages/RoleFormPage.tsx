@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -19,6 +20,7 @@ import { getRoleById, createRole, updateRole } from "../api/roleApi";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 export default function RoleFormPage() {
+  const { t } = useTranslation("security");
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -46,7 +48,7 @@ export default function RoleFormPage() {
 
   const validate = (): boolean => {
     if (!description.trim()) {
-      setDescriptionError("Description is required");
+      setDescriptionError(t("roles.form.descriptionRequired"));
       return false;
     }
     setDescriptionError(undefined);
@@ -63,7 +65,7 @@ export default function RoleFormPage() {
       } else {
         await createRole({ description: description.trim() });
       }
-      setSuccessMessage(isEdit ? "Role updated successfully." : "Role created successfully.");
+      setSuccessMessage(isEdit ? t("roles.form.updatedSuccessful") : t("roles.form.createdSuccessful"));
     } catch (err) {
       console.error(err);
       if (axios.isAxiosError(err)) {
@@ -91,7 +93,7 @@ export default function RoleFormPage() {
         sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}
         gutterBottom
       >
-        {isEdit ? "Edit Role" : "New Role"}
+        {isEdit ? t("roles.form.titleEdit") : t("roles.form.titleCreate")}
       </Typography>
 
       {loadingForm ? (
@@ -112,7 +114,7 @@ export default function RoleFormPage() {
               </Alert>
             )}
             <TextField
-              label="Description"
+              label={t("roles.form.descriptionField")}
               name="description"
               value={description}
               onChange={(e) => {
@@ -129,7 +131,7 @@ export default function RoleFormPage() {
             />
             <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
               <Button variant="outlined" startIcon={<CancelOutlinedIcon />} onClick={() => navigate("/security/roles")}>
-                Cancel
+                {t("roles.form.cancelButton")}
               </Button>
               <Button
                 type="submit"
@@ -137,7 +139,7 @@ export default function RoleFormPage() {
                 disabled={loading || Boolean(successMessage)}
                 startIcon={isEdit ? <SaveOutlinedIcon /> : <AddIcon />}
               >
-                {isEdit ? "Update" : "Create"}
+                {isEdit ? t("roles.form.updateButton") : t("roles.form.createButton")}
               </Button>
             </Box>
           </Box>

@@ -1,0 +1,30 @@
+{
+  "import": {
+    "eyebrow": "Administración",
+    "title": "Importación de Figuras",
+    "subtitle": "Ejecuta importaciones de figuras desde Google Sheets y revisa las ejecuciones anteriores.",
+    "loadButton": "Importar Todas las Figuras",
+    "importing": "Importando...",
+    "description": "Usa esta página cuando necesites actualizar las figuras de la aplicación. Cada ejecución queda registrada en el historial de importaciones.",
+    "missingPermission": "No tienes el permiso requerido: figurines:import",
+    "successMessage": "Todas las figuras fueron importadas.",
+    "emptyTitle": "Aún no hay importaciones de figuras.",
+    "emptySubtitle": "Ejecuta una importación para comenzar a construir el historial.",
+    "columns": {
+      "status": "Estado",
+      "imported": "Importadas",
+      "errorMessage": "Mensaje de Error",
+      "completedAt": "Fecha de Terminación"
+    },
+    "statusWithErrors": "Importación completada con errores",
+    "statusSuccessful": "Importación completada con éxito",
+    "noErrors": "Sin errores",
+    "confirm": {
+      "title": "Importar Todas las Figuras",
+      "body": "Esto iniciará la importación de todas las figuras desde la hoja de cálculo. Puedes ejecutar este proceso varias veces siempre que necesites actualizar los datos.",
+      "warning": "Advertencia: este proceso sobrescribirá las figuras existentes cuando se ejecute la importación.",
+      "cancel": "Cancelar",
+      "start": "Iniciar Importación"
+    }
+  }
+}

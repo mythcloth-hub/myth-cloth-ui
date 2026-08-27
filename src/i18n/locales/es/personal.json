@@ -1,0 +1,41 @@
+{
+  "yourAccount": {
+    "eyebrow": "Ajustes • Personal",
+    "title": "Tu Cuenta",
+    "subtitle": "Revisa tu perfil y el estado de autenticación. El tema y la moneda de visualización se gestionan en Preferencias.",
+    "profile": {
+      "collectorId": "ID de Coleccionista",
+      "role": "Rol",
+      "noRoleAssigned": "No se ha asignado ningún rol",
+      "permissions": "Permisos",
+      "logOut": "Cerrar Sesión",
+      "guest": "Actualmente estás navegando como invitado. Inicia sesión desde la barra lateral para ver los detalles de tu cuenta."
+    },
+    "preferences": {
+      "title": "Preferencias",
+      "descriptionTheme": "El tema se gestiona en Preferencias y se aplica en toda la aplicación.",
+      "descriptionCurrency": "La moneda de visualización se gestiona en Preferencias y se aplica en todas las páginas e informes."
+    }
+  },
+  "preferences": {
+    "eyebrow": "Ajustes • Personal",
+    "title": "Preferencias",
+    "subtitle": "Configura las opciones visuales y de visualización globales para toda la aplicación.",
+    "language": {
+      "title": "Idioma",
+      "description": "Elige el idioma que se utilizará en los menús, etiquetas y mensajes.",
+      "label": "Idioma"
+    },
+    "currency": {
+      "title": "Moneda",
+      "description": "Elige cómo se mostrarán los valores monetarios en las páginas e informes.",
+      "label": "Moneda",
+      "auto": "Automático",
+      "store": "Tienda"
+    },
+    "theme": {
+      "title": "Tema",
+      "description": "Elige el estilo visual que mejor se adapte a tu espacio de trabajo de colección."
+    }
+  }
+}

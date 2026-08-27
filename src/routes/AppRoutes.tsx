@@ -72,11 +72,11 @@ export default function AppRoutes() {
           <Route path="/security/permissions/edit/:id" element={<PermissionFormPage />} />
           <Route path="/security/role-permissions" element={<RolePermissionsPage />} />
           <Route path="/figurines/import" element={<FigurineLoaderPage />} />
-          <Route path="/account" element={<AccountPage />} />
-          <Route path="/settings/preferences" element={<PreferencesPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/personal/account" element={<AccountPage />} />
+          <Route path="/personal/preferences" element={<PreferencesPage />} />
+          <Route path="/info/terms" element={<TermsPage />} />
+          <Route path="/info/contact" element={<ContactPage />} />
+          <Route path="/info/about" element={<AboutPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

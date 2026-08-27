@@ -1,0 +1,41 @@
+{
+  "yourAccount": {
+    "eyebrow": "Paramètres • Personnel",
+    "title": "Votre Compte",
+    "subtitle": "Passez en revue votre profil et l'état de l'authentification. Le thème et la monnaie d'affichage sont gérés dans les Préférences.",
+    "profile": {
+      "collectorId": "ID de Collectionneur",
+      "role": "ôle",
+      "noRoleAssigned": "Aucun rôle attribué",
+      "permissions": "Autorisations",
+      "logOut": "Se Déconnecter",
+      "guest": "Vous naviguez actuellement en tant qu'invité. Connectez-vous depuis la barre latérale pour voir les détails de votre compte."
+    },
+    "preferences": {
+      "title": "Préférences",
+      "descriptionTheme": "Le thème est géré dans les Préférences et s'applique à l'ensemble de l'application.",
+      "descriptionCurrency": "La monnaie d'affichage est gérée dans les Préférences et s'applique à toutes les pages et rapports."
+    }
+  },
+  "preferences": {
+    "eyebrow": "Paramètres • Personnel",
+    "title": "Préférences",
+    "subtitle": "Configurez les options visuelles et d'affichage globales pour l'ensemble de l'application.",
+    "language": {
+      "title": "Langue",
+      "description": "Choisissez la langue utilisée pour les menus, les étiquettes et les messages.",
+      "label": "Langue"
+    },
+    "currency": {
+      "title": "Monnaie",
+      "description": "Choisissez comment les valeurs monétaires sont affichées sur les pages et les rapports.",
+      "label": "Monnaie",
+      "auto": "Automatique",
+      "store": "Magasin"
+    },
+    "theme": {
+      "title": "Thème",
+      "description": "Choisissez le style visuel qui correspond le mieux à votre espace de collection."
+    }
+  }
+}

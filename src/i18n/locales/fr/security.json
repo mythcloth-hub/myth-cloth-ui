@@ -1,0 +1,85 @@
+{
+  "roles": {
+    "eyebrow": "Administration • Sécurité",
+    "title": "Roles",
+    "subtitle": "Gérez les définitions de rôles utilisées pour contrôler l'accès dans toute l'application.",
+    "noRolesYet": "Aucun rôle pour le moment.",
+    "chooseAndClick": "Cliquez sur + Ajouter un Rôle pour commencer.",
+    "columns": {
+      "description": "Description",
+      "actions": "Actions",
+      "editTooltip": "Modifier",
+      "deleteTooltip": "Supprimer"
+    },
+    "addRoleButton": "Ajouter un Rôle",
+    "deleteDialog": {
+      "title": "Supprimer le Rôle",
+      "body": "Êtes-vous sûr de vouloir supprimer ce rôle ? Cette action est irréversible.",
+      "cancelButton": "Annuler",
+      "deleteButton": "Supprimer"
+    },
+    "deleteSuccessful": "Rôle supprimé avec succès.",
+    "form": {
+      "descriptionRequired": "La description est requise.",
+      "updatedSuccessful": "Rôle mis à jour avec succès.",
+      "createdSuccessful": "Rôle créé avec succès.",
+      "titleEdit": "Modifier le Rôle",
+      "titleCreate": "Ajouter un Rôle",
+      "descriptionField": "Description",
+      "cancelButton": "Annuler",
+      "updateButton": "Mettre à jour",
+      "createButton": "Créer"
+    }
+  },
+  "permissions": {
+    "eyebrow": "Administration • Sécurité",
+    "title": "Autorisations",
+    "subtitle": "Gérez les permissions granulaires qui sont attribuées aux rôles et aux fonctionnalités protégées.",
+    "noPermissionsYet": "Aucune permission pour le moment.",
+    "chooseAndClick": "Cliquez sur + Ajouter une Permission pour commencer.",
+    "columns": {
+      "description": "Permission Attribuée",
+      "actions": "Actions",
+      "editTooltip": "Modifier",
+      "deleteTooltip": "Supprimer"
+    },
+    "addPermissionButton": "Ajouter une Permission",
+    "deleteDialog": {
+      "title": "Supprimer la Permission",
+      "body": "Êtes-vous sûr de vouloir supprimer cette permission ? Cette action est irréversible.",
+      "cancelButton": "Annuler",
+      "deleteButton": "Supprimer"
+    },
+    "deleteSuccessful": "Permission supprimée avec succès.",
+    "form": {
+      "descriptionRequired": "La description ne doit pas être vide.",
+      "descriptionTooLong": "La description ne doit pas dépasser 200 caractères.",
+      "descriptionPattern": "La description doit suivre le format 'ressource:action[:sous-action...]' (par exemple, 'posts:create' ou 'posts:create:comment') en utilisant des lettres minuscules, des chiffres, des tirets ou des underscores.",
+      "updatedSuccessful": "Permission mise à jour avec succès.",
+      "createdSuccessful": "Permission créée avec succès.",
+      "titleEdit": "Modifier la Permission",
+      "titleCreate": "Ajouter une Permission",
+      "descriptionField": "Description",
+      "descriptionHelperText": "Utilisez le format ressource:action[:sous-action...] (minuscules, chiffres, '-' ou '_').",
+      "cancelButton": "Annuler",
+      "updateButton": "Mettre à jour",
+      "createButton": "Créer"
+    }
+  },
+  "rolePermissions": {
+    "eyebrow": "Administration • Sécurité",
+    "title": "Autorisations par Rôle",
+    "subtitle": "Attribuez des permissions aux rôles et maintenez l'accès aligné dans toute l'application.",
+    "noPermissionsYet": "Aucune permission n'a encore été attribuée à ce rôle.",
+    "chooseAndClick": "Choisissez les permissions et cliquez sur Synchroniser les Permissions.", 
+    "columns": {
+      "description": "Permission Attribuée"
+    },
+    "syncSuccessful": "Permissions de rôle synchronisées avec succès.",
+    "roleLabel": "Rôle",
+    "permissionLabel": "Permissions",
+    "syncingButton": "Synchronisation...",
+    "syncButton": "Synchroniser les Permissions",
+    "selectRoleMessage": "Sélectionnez un rôle pour voir et gérer ses permissions."
+  }
+}
