@@ -607,7 +607,7 @@ export default function FigurineCollectionPage() {
 
   const [errorMessage,   setErrorMessage]   = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(
-    (location.state as { deleted?: boolean } | null)?.deleted ? "Figurine deleted successfully." : null
+    (location.state as { deleted?: boolean } | null)?.deleted ? t("messages.figurineDeleted") : null
   );
   const [filtersOpen,    setFiltersOpen]    = useState(false);
   const [bulkAddModalOpen, setBulkAddModalOpen] = useState(false);
@@ -1220,7 +1220,7 @@ export default function FigurineCollectionPage() {
                 <Chip
                   key={key}
                   size="small"
-                  label={`${label}: ${value === "true" ? "Yes" : "No"}`}
+                  label={`${label}: ${value === "true" ? t("filters.yes") : t("filters.no")}`}
                   onDelete={() => handleBoolChange(key, "")}
                 />
               ))}
@@ -1232,13 +1232,13 @@ export default function FigurineCollectionPage() {
             <Chip
               size="small"
               color="primary"
-              label={`Viewing: ${selectedCollection.name}`}
+              label={t("collection.viewing", { collection: selectedCollection.name })}
               onDelete={() => setSelectedCollectionId("")}
             />
             <Chip
               size="small"
               variant="outlined"
-              label={`${selectedCollection.totalFigurines} owned in this collection`}
+              label={t("collection.totalOwned", { count: selectedCollection.totalFigurines })}
             />
           </Box>
         )}
@@ -1300,7 +1300,7 @@ export default function FigurineCollectionPage() {
           }}
         >
           <Alert severity="info" sx={{ maxWidth: 640, width: "100%", pointerEvents: "auto" }}>
-            We’re currently loading the figurines and retrieving the latest information. This may take a little longer than usual. Please keep this page open while we finish loading the data.
+            {t("messages.slowLoading")}
           </Alert>
         </Box>
       )}

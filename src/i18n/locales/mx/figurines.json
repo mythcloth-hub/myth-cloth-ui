@@ -15,7 +15,7 @@
     "clearAll": "Limpiar todo"
   },
   "filters": {
-    "all": "Todos",
+    "all": "Todas",
     "yes": "Sí",
     "no": "No",
     "lineUp": "Línea",
@@ -78,7 +78,14 @@
     "restockFromLabel": "Relanzamiento desde {{date}}",
     "restockLabel": "Relanzamiento"
   },
+  "messages": {
+    "slowLoading": "Actualmente estamos cargando las figuras y recuperando la información más reciente. Esto puede tardar un poco más de lo habitual. Por favor, mantén esta página abierta mientras terminamos de cargar los datos.",
+    "figurineDeleted": "Figura eliminada correctamente."
+  },
   "collection": {
+    "viewing": "Viendo {{collection}}",
+    "totalOwned_one": "{{count}} figura en esta colección",
+    "totalOwned_other": "{{count}} figuras en esta colección",
     "totalSelected_one": "{{count}} figura seleccionada",
     "totalSelected_other": "{{count}} figuras seleccionadas",
     "selectThisPage": "Solo ésta página ({{count}})",

@@ -78,7 +78,14 @@
     "restockFromLabel": "Restock from {{date}}",
     "restockLabel": "Restock"
   },
+  "messages": {
+    "slowLoading": "We’re currently loading the figurines and retrieving the latest information. This may take a little longer than usual. Please keep this page open while we finish loading the data.",
+    "figurineDeleted": "Figurine deleted successfully."
+  },
   "collection": {
+    "viewing": "Viewing {{collection}}",
+    "totalOwned_one": "{{count}} figurine owned in this collection",
+    "totalOwned_other": "{{count}} figurines owned in this collection",
     "totalSelected_one": "{{count}} figurine selected",
     "totalSelected_other": "{{count}} figurines selected",
     "selectThisPage": "This page ({{count}})",

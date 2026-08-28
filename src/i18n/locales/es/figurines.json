@@ -2,7 +2,7 @@
   "header": {
     "eyebrow": "Colecciones",
     "title": "Myth Cloth",
-    "subtitle": "Explora el catálogo completo de Myth Cloth. Navega por las figuras lanzadas, prototipo, anunciadas, rumoreadas y no lanzadas, con filtros para encontrar rápidamente lo que buscas."
+    "subtitle": "Explora el catálogo completo de Myth Cloth. Navega por las figuras lanzadas, prototipos, anunciadas, rumoreadas y no lanzadas, con filtros para encontrar rápidamente lo que buscas."
   },
   "toolbar": {
     "ownershipAll": "Todas",
@@ -27,12 +27,12 @@
     "tamashiiTooltip": "Festival Anual de Figuras de TAMASHII NATIONS - Mercancía Conmemorativa",
     "flags": {
       "metalBody": "Cuerpo Metálico",
-      "originalColor": "Color Original",
-      "revival": "Reedición",
-      "plainCloth": "Túnica Simple",
+      "originalColor": "OCE",
+      "revival": "Revival",
+      "plainCloth": "Plain Cloth",
       "battleDamaged": "Dañado en Batalla",
       "goldenArmor": "Armadura Dorada",
-      "gold24k": "Oro 24K",
+      "gold24k": "Oro de 24K",
       "manga": "Versión Manga",
       "multiPack": "Paquete Múltiple",
       "articulable": "Articulable",
@@ -78,7 +78,14 @@
     "restockFromLabel": "Reposición desde {{date}}",
     "restockLabel": "Reposición"
   },
+  "messages": {
+    "slowLoading": "Actualmente estamos cargando las figurinas y recuperando la información más reciente. Esto puede tardar un poco más de lo habitual. Por favor, mantén esta página abierta mientras terminamos de cargar los datos.",
+    "figurineDeleted": "Figurina eliminada con éxito."
+  },
   "collection": {
+    "viewing": "Viendo {{collection}}",
+    "totalOwned_one": "{{count}} figura en esta colección",
+    "totalOwned_other": "{{count}} figuras en esta colección",
     "totalSelected_one": "{{count}} figura seleccionada",
     "totalSelected_other": "{{count}} figuras seleccionadas",
     "selectThisPage": "Esta página ({{count}})",
@@ -93,7 +100,7 @@
       "totalSelected_one": "{{count}} figura",
       "totalSelected_other": "{{count}} figuras",
       "existing": {
-        "title": "Tus Colecciones",
+        "title": "Tus colecciones",
         "noCollections": "Aún no hay colecciones. ¡Crea una a continuación!",
         "figurinesPerCollection_one": "{{count}} figura",
         "figurinesPerCollection_other": "{{count}} figuras"
