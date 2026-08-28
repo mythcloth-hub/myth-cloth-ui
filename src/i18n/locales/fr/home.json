@@ -1,0 +1,83 @@
+{
+  "eyebrow": "Accueil",
+  "title": "Bienvenue à Saint Collections",
+  "subtitle": "Suivez votre collection Myth Cloth, surveillez les réassorts et les versions, filtrez les figurines non publiées et prototypes, et suivez les prix en temps réel avec un compte connecté.",
+  "enterMythCloth": "Entrer à Saint Collections",
+
+  "startHere": "COMMENCEZ ICI",
+  "welcomeToCollection": "Bienvenue dans votre collection",
+  "collectionDescription": "Explorez ce que vous possédez, découvrez les nouveautés, suivez les réassorts et filtrez par version, statut de publication et catégorie pour faire avancer votre collection.",
+
+  "signedIn": "Connecté",
+  "browsingUnlockedAreas": "Navigation dans les zones débloquées",
+  "quickDestinations_one": "{{count}} destination rapide",
+  "quickDestinations_other": "{{count}} destinations rapides",
+  "realTimePrices": "Prix en temps réel pour les utilisateurs connectés",
+
+  "signInTitle": "Connectez-vous pour débloquer l'expérience complète",
+  "signInDescription": "Connectez-vous depuis la section compte dans le menu de gauche pour accéder au suivi des prix en temps réel, à des informations de marché plus détaillées et à des flux de travail personnalisés pour votre collection.",
+
+  "currentAccount": "COMPTE ACTUEL",
+  "profilePicture": "Photo de profil",
+  "role": "Rôle : {{role}}",
+
+  "featuredPlaces": "Lieux en vedette pour commencer",
+  "openSection": "Ouvrir la section",
+
+  "morePlaces": "Plus de lieux dans l'application",
+  "morePlacesDescription": "Ces zones sont disponibles en fonction de votre accès actuel et peuvent vous aider à aller plus loin une fois que vous êtes prêt.",
+
+  "links": {
+    "mythCloth": {
+      "label": "Myth Cloth",
+      "description": "Parcourez le catalogue complet de figurines et revenez à la vue principale de votre collection."
+    },
+    "collections": {
+      "label": "Mes Collections",
+      "description": "Ouvrez vos collections enregistrées, comparez les progrès et gérez les figurines regroupées."
+    },
+    "charts": {
+      "label": "Graphiques",
+      "description": "Consultez des résumés rapides de la collection, des proportions et des analyses visuelles."
+    },
+    "releases": {
+      "label": "Lancements",
+      "description": "Explorez l'historique des lancements par année et approfondissez les détails de la chronologie."
+    },
+    "storeMatching": {
+      "label": "Correspondance de magasin",
+      "description": "Examinez les sources de magasin correspondantes et comparez-les avec votre catalogue de figurines."
+    },
+    "manualMatching": {
+      "label": "Correspondance manuelle",
+      "description": "Résolvez les annonces non appariées et connectez-les aux bonnes entrées du catalogue."
+    },
+    "anniversaries": {
+      "label": "Anniversaires",
+      "description": "Suivez les moments commémoratifs et les événements marquants liés à la collection."
+    },
+    "distributors": {
+      "label": "Distributeurs",
+      "description": "Gardez les données des partenaires et des distributeurs organisées en un seul endroit."
+    },
+    "permissions": {
+      "label": "Permissions",
+      "description": "Gérez l'accès par rôle et les contrôles de sécurité lors du travail sur les flux d'administration."
+    }
+  },
+
+  "startSteps": {
+    "browseCatalog": {
+      "title": "Parcourez votre catalogue",
+      "description": "Commencez avec Myth Cloth pour explorer les versions, appliquer des filtres avancés et trouver rapidement les figurines publiées, non publiées et prototypes."
+    },
+    "trackOwnership": {
+      "title": "Suivez la propriété",
+      "description": "Passez aux collections et aux achats lorsque vous souhaitez organiser ce que vous possédez et ce qui est encore en attente."
+    },
+    "exploreTrends": {
+      "title": "Explorez les tendances",
+      "description": "Ouvrez les graphiques, les lancements et les prix pour surveiller le mouvement du marché, les réapprovisionnements et les prix en temps réel lorsque vous êtes connecté."
+    }
+  }
+}

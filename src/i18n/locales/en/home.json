@@ -1,0 +1,83 @@
+{
+  "eyebrow": "Home",
+  "title": "Welcome to Saint Collections",
+  "subtitle": "Track your Myth Cloth collection, monitor restocks and versions, filter unreleased and prototype figurines, and follow real-time prices with a signed-in account.",
+  "enterMythCloth": "Enter Saint Collections",
+
+  "startHere": "START HERE",
+  "welcomeToCollection": "Welcome to your collection",
+  "collectionDescription": "Explore what you own, discover what is new, track restocks, and filter by version, release status, and category to keep your collection moving forward.",
+
+  "signedIn": "Signed in",
+  "browsingUnlockedAreas": "Browsing unlocked areas",
+  "quickDestinations_one": "{{count}} quick destinations",
+  "quickDestinations_other": "{{count}} quick destinations",
+  "realTimePrices": "Real-time prices for signed-in users",
+
+  "signInTitle": "Sign in to unlock the full experience",
+  "signInDescription": "Log in from the account section in the left menu to access real-time price tracking, richer market insights, and personalized collection workflows.",
+
+  "currentAccount": "CURRENT ACCOUNT",
+  "profilePicture": "Profile picture",
+  "role": "Role: {{role}}",
+
+  "featuredPlaces": "Featured places to start",
+  "openSection": "Open section",
+
+  "morePlaces": "More places in the app",
+  "morePlacesDescription": "These areas are available based on your current access and can help you go deeper once you are ready.",
+
+  "links": {
+    "mythCloth": {
+      "label": "Myth Cloth",
+      "description": "Browse the full figurine catalog and jump back into your main collection view."
+    },
+    "collections": {
+      "label": "My Collections",
+      "description": "Open your saved collections, compare progress, and manage grouped figurines."
+    },
+    "charts": {
+      "label": "Charts",
+      "description": "See fast collection summaries, proportions, and visual breakdowns."
+    },
+    "releases": {
+      "label": "Releases",
+      "description": "Explore release history by year and drill into the timeline details."
+    },
+    "storeMatching": {
+      "label": "Store Matching",
+      "description": "Review matched store sources and compare them against your figurine catalog."
+    },
+    "manualMatching": {
+      "label": "Manual Matching",
+      "description": "Resolve unmatched listings and connect them to the right catalog entries."
+    },
+    "anniversaries": {
+      "label": "Anniversaries",
+      "description": "Track commemorative moments and milestone events tied to the collection."
+    },
+    "distributors": {
+      "label": "Distributors",
+      "description": "Keep partner and distributor data organized in one place."
+    },
+    "permissions": {
+      "label": "Permissions",
+      "description": "Manage role access and security controls when working on administration flows."
+    }
+  },
+
+  "startSteps": {
+    "browseCatalog": {
+      "title": "Browse your catalog",
+      "description": "Start with Myth Cloth to explore versions, apply advanced filters, and quickly find released, unreleased, and prototype figurines."
+    },
+    "trackOwnership": {
+      "title": "Track ownership",
+      "description": "Move into collections and purchases when you want to organize what you own and what is still pending."
+    },
+    "exploreTrends": {
+      "title": "Explore trends",
+      "description": "Open charts, releases, and pricing to monitor market movement, restocks, and real-time prices when signed in."
+    }
+  }
+}

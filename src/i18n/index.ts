@@ -9,6 +9,7 @@ import "dayjs/locale/fr";
 import enCommon from "./locales/en/common.json";
 import enNavigation from "./locales/en/navigation.json";
 import enAuth from "./locales/en/auth.json";
+import enHome from "./locales/en/home.json";
 import enFigurines from "./locales/en/figurines.json";
 import enSecurity from "./locales/en/security.json";
 import enPersonal from "./locales/en/personal.json";
@@ -17,6 +18,7 @@ import enInfo from "./locales/en/info.json";
 import mxCommon from "./locales/mx/common.json";
 import mxNavigation from "./locales/mx/navigation.json";
 import mxAuth from "./locales/mx/auth.json";
+import mxHome from "./locales/mx/home.json";
 import mxFigurines from "./locales/mx/figurines.json";
 import mxSecurity from "./locales/mx/security.json";
 import mxPersonal from "./locales/mx/personal.json";
@@ -25,6 +27,7 @@ import mxInfo from "./locales/mx/info.json";
 import esCommon from "./locales/es/common.json";
 import esNavigation from "./locales/es/navigation.json";
 import esAuth from "./locales/es/auth.json";
+import esHome from "./locales/es/home.json";
 import esFigurines from "./locales/es/figurines.json";
 import esSecurity from "./locales/es/security.json";
 import esPersonal from "./locales/es/personal.json";
@@ -33,6 +36,7 @@ import esInfo from "./locales/es/info.json";
 import frCommon from "./locales/fr/common.json";
 import frNavigation from "./locales/fr/navigation.json";
 import frAuth from "./locales/fr/auth.json";
+import frHome from "./locales/fr/home.json";
 import frFigurines from "./locales/fr/figurines.json";
 import frSecurity from "./locales/fr/security.json";
 import frPersonal from "./locales/fr/personal.json";
@@ -49,6 +53,7 @@ export const resources = {
     common: enCommon,
     navigation: enNavigation,
     auth: enAuth,
+    home: enHome,
     figurines: enFigurines,
     security: enSecurity,
     personal: enPersonal,
@@ -58,6 +63,7 @@ export const resources = {
     common: mxCommon,
     navigation: mxNavigation,
     auth: mxAuth,
+    home: mxHome,
     figurines: mxFigurines,
     security: mxSecurity,
     personal: mxPersonal,
@@ -67,6 +73,7 @@ export const resources = {
     common: esCommon,
     navigation: esNavigation,
     auth: esAuth,
+    home: esHome,
     figurines: esFigurines,
     security: esSecurity,
     personal: esPersonal,
@@ -76,6 +83,7 @@ export const resources = {
     common: frCommon,
     navigation: frNavigation,
     auth: frAuth,
+    home: frHome,
     figurines: frFigurines,
     security: frSecurity,
     personal: frPersonal,
@@ -89,7 +97,7 @@ void i18n
   .init({
     resources,
     defaultNS,
-    ns: ["common", "navigation", "auth", "figurines", "security", "personal", "info"],
+    ns: ["common", "navigation", "auth", "home", "figurines", "security", "personal", "info"],
     fallbackLng: DEFAULT_LANGUAGE,
     supportedLngs: [...SUPPORTED_LANGUAGES],
     load: "languageOnly",

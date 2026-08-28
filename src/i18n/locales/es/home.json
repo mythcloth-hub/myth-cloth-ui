@@ -1,0 +1,83 @@
+{
+  "eyebrow": "Inicio",
+  "title": "Bienvenido a Saint Collections",
+  "subtitle": "Realiza un seguimiento de tu colección de Myth Cloth, monitorea relanzamientos y versiones, filtra figuras no lanzadas y prototipos, y sigue los precios en tiempo real con una cuenta iniciada.",
+  "enterMythCloth": "Entrar a Saint Collections",
+
+  "startHere": "COMIENZA AQUÍ",
+  "welcomeToCollection": "Bienvenido a tu colección",
+  "collectionDescription": "Explora lo que posees, descubre lo nuevo, realiza un seguimiento de los relanzamientos y filtra por versión, estado de lanzamiento y categoría para mantener tu colección en movimiento.",
+
+  "signedIn": "Conectado",
+  "browsingUnlockedAreas": "Navegando por áreas desbloqueadas",
+  "quickDestinations_one": "{{count}} destino rápido",
+  "quickDestinations_other": "{{count}} destinos rápidos",
+  "realTimePrices": "Precios en tiempo real para usuarios conectados",
+
+  "signInTitle": "Inicia sesión para desbloquear la experiencia completa",
+  "signInDescription": "Inicia sesión desde la sección de cuenta en el menú izquierdo para acceder al seguimiento de precios en tiempo real, obtener información de mercado más detallada y flujos de trabajo personalizados para tu colección.",
+
+  "currentAccount": "CUENTA ACTUAL",
+  "profilePicture": "Foto de perfil",
+  "role": "Rol: {{role}}",
+
+  "featuredPlaces": "Lugares destacados para comenzar",
+  "openSection": "Abrir sección",
+
+  "morePlaces": "Más lugares en la aplicación",
+  "morePlacesDescription": "Estas áreas están disponibles según tu acceso actual y pueden ayudarte a profundizar una vez que estés listo.",
+
+  "links": {
+    "mythCloth": {
+      "label": "Myth Cloth",
+      "description": "Explora el catálogo completo de figuras y vuelve a la vista principal de tu colección."
+    },
+    "collections": {
+      "label": "Mis Colecciones",
+      "description": "Abre tus colecciones guardadas, compara el progreso y administra las figuras agrupadas."
+    },
+    "charts": {
+      "label": "Gráficos",
+      "description": "Consulta resúmenes rápidos de la colección, proporciones y desgloses visuales."
+    },
+    "releases": {
+      "label": "Lanzamientos",
+      "description": "Explora el historial de lanzamientos por año y profundiza en los detalles de la línea de tiempo."
+    },
+    "storeMatching": {
+      "label": "Coincidencia de Tienda",
+      "description": "Revisa las fuentes de tienda coincidentes y compáralas con tu catálogo de figuras."
+    },
+    "manualMatching": {
+      "label": "Coincidencia Manual",
+      "description": "Resuelve los listados no coincidentes y conéctalos con las entradas correctas del catálogo."
+    },
+    "anniversaries": {
+      "label": "Aniversarios",
+      "description": "Realiza un seguimiento de los momentos conmemorativos y eventos importantes relacionados con la colección."
+    },
+    "distributors": {
+      "label": "Distribuidores",
+      "description": "Mantén los datos de socios y distribuidores organizados en un solo lugar."
+    },
+    "permissions": {
+      "label": "Permisos",
+      "description": "Gestiona el acceso por roles y los controles de seguridad al trabajar en los flujos de administración."
+    }
+  },
+
+  "startSteps": {
+    "browseCatalog": {
+      "title": "Explora tu catálogo",
+      "description": "Comienza con Myth Cloth para explorar versiones, aplicar filtros avanzados y encontrar rápidamente figuras lanzadas, no lanzadas y prototipos."
+    },
+    "trackOwnership": {
+      "title": "Realiza un seguimiento de la propiedad",
+      "description": "Pasa a colecciones y compras cuando quieras organizar lo que posees y lo que aún está pendiente."
+    },
+    "exploreTrends": {
+      "title": "Explora tendencias",
+      "description": "Abre gráficos, lanzamientos y precios para monitorear el movimiento del mercado, los relanzamientos y los precios en tiempo real cuando hayas iniciado sesión."
+    }
+  }
+}
