@@ -1,4 +1,129 @@
 {
+  "header": {
+    "eyebrow": "Collections",
+    "title": "Myth Cloth",
+    "subtitle": "Explore the complete Myth Cloth catalog. Browse released, prototype, announced, rumored, and unreleased figurines, with filters to quickly find what you're looking for."
+  },
+  "toolbar": {
+    "ownershipAll": "All",
+    "ownershipOwned": "Owned",
+    "collectionView": "Collection View",
+    "allFigurines": "All Figurines",
+    "newFigurine": "New Figurine",
+    "searchPlaceholder": "Search by name...",
+    "filters": "Filters",
+    "clearAll": "Clear all"
+  },
+  "filters": {
+    "all": "All",
+    "yes": "Yes",
+    "no": "No",
+    "lineUp": "Line Up",
+    "series": "Series",
+    "group": "Group",
+    "distribution": "Distribution",
+    "anniversary": "Anniversary",
+    "releaseStatus": "Release Status",
+    "tamashiiTooltip": "TAMASHII NATIONS' Annual Figure Festival - Commemorative Merchandise",
+    "flags": {
+      "metalBody": "Metal Body",
+      "originalColor": "OCE",
+      "revival": "Revival",
+      "plainCloth": "Plain Cloth",
+      "battleDamaged": "Battle Damaged",
+      "goldenArmor": "Golden Armor",
+      "gold24k": "Gold 24K",
+      "manga": "Manga Version",
+      "multiPack": "Multi-Pack",
+      "articulable": "Articulable",
+      "restocks": "Restocks"
+    }
+  },
+  "matching": {
+    "noneInFilter": "No figurines match the current filters.",
+    "noneInCollection": "No figurines in the collection yet."
+  },
+  "status": {
+    "labels": {
+      "RELEASED": "Released",
+      "ANNOUNCED": "Announced",
+      "RUMORED": "Rumored",
+      "PROTOTYPE": "Prototype",
+      "UNRELEASED": "Unreleased"
+    },
+    "helpers": {
+      "RELEASED": "Already available in the market.",
+      "ANNOUNCED": "Future releases that were officially announced.",
+      "RUMORED": "Unconfirmed releases with circulating information.",
+      "PROTOTYPE": "Prototype-stage figures; design may still change.",
+      "UNRELEASED": "Canceled or indefinitely unreleased figures."
+    }
+  },
+  "figurineCount_one": "{{count}} figurine",
+  "figurineCount_other": "{{count}} figurines",
+  "pagination": {
+    "summary_one": "{{count}} figurine · page {{page}} of {{pages}}",
+    "summary_other": "{{count}} figurines · page {{page}} of {{pages}}",
+    "summaryMatching_one": "{{count}} figurine matching \"{{query}}\" · page {{page}} of {{pages}}",
+    "summaryMatching_other": "{{count}} figurines matching \"{{query}}\" · page {{page}} of {{pages}}"
+  },
+  "card": {
+    "noImage": "No image",
+    "tamashiiTooltip": "Tamashii Nations commemorative figurine",
+    "anniversaryTooltip": "Anniversary Edition",
+    "restocked_one": "Restocked {{count}} time.",
+    "restocked_other": "Restocked {{count}} times.",
+    "restockedLatest_one": "Restocked {{count}} time. Latest: {{date}}.",
+    "restockedLatest_other": "Restocked {{count}} times. Latest: {{date}}.",
+    "restockFromLabel": "Restock from {{date}}",
+    "restockLabel": "Restock"
+  },
+  "collection": {
+    "totalSelected_one": "{{count}} figurine selected",
+    "totalSelected_other": "{{count}} figurines selected",
+    "selectThisPage": "This page ({{count}})",
+    "selectAllPagesLoading": "Loading ...",
+    "selectAllPages": "All pages ({{count}})",
+    "clearSelection": "Clear",
+    "addToCollection": "Add to Collection",
+    "bulkAddToCollectionModal": {
+      "title_one": "Add {{count}} figurine to Collection",
+      "title_other": "Add {{count}} figurines to Collection",
+      "selected": "Selected Figurines:",
+      "totalSelected_one": "{{count}} figurine",
+      "totalSelected_other": "{{count}} figurines",
+      "existing": {
+        "title": "Your Collections",
+        "noCollections": "No collections yet. Create one below!",
+        "figurinesPerCollection_one": "{{count}} figurine",
+        "figurinesPerCollection_other": "{{count}} figurines"
+      },
+      "new": {
+        "title": "Create New Collection",
+        "name": {
+          "label": "Collection name",
+          "required": "Collection name is required."
+        },
+        "imageUrlLabel": "Your collection image URL (optional)",
+        "descriptionLabel": "Description (optional)"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "create_one": "Create and Add {{count}} figurine",
+        "create_other": "Create and Add {{count}} figurines",
+        "adding": "Adding...",
+        "add_one": "Add {{count}} figurine",
+        "add_other": "Add {{count}} figurines"
+      },
+      "createdAndAddedSuccessful_one": "Created \"{{name}}\" and added {{count}} figurine!",
+      "createdAndAddedSuccessful_other": "Created \"{{name}}\" and added {{count}} figurines!",
+      "duplicateName": "Collection \"{{name}}\" already exists. Please choose a different name.",
+      "collectionRequired": "Please select at least one collection",
+      "addedSuccessful_one": "Added {{count}} figurine to {{collection}} collection!",
+      "addedSuccessful_other": "Added {{count}} figurine to {{collection}} collections!"
+    }
+  },
   "import": {
     "eyebrow": "Administration",
     "title": "Figurine Import",

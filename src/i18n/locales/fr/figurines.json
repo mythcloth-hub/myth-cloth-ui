@@ -1,4 +1,129 @@
 {
+  "header": {
+    "eyebrow": "Collections",
+    "title": "Myth Cloth",
+    "subtitle": "Découvrez le catalogue complet Myth Cloth. Parcourez les figurines sorties, les prototypes, les modèles annoncés, ceux faisant l'objet de rumeurs et les modèles inédits, grâce à des filtres vous permettant de trouver rapidement ce que vous cherchez."
+  },
+  "toolbar": {
+    "ownershipAll": "Toutes",
+    "ownershipOwned": "Possédées",
+    "collectionView": "Vue de la Collection",
+    "allFigurines": "Toutes les Figurines",
+    "newFigurine": "Nouvelle Figurine",
+    "searchPlaceholder": "Rechercher par nom...",
+    "filters": "Filtres",
+    "clearAll": "Tout Effacer"
+  },
+  "filters": {
+    "all": "Toutes",
+    "yes": "Oui",
+    "no": "Non",
+    "lineUp": "Ligne",
+    "series": "Série",
+    "group": "Groupe",
+    "distribution": "Distribution",
+    "anniversary": "Anniversaire",
+    "releaseStatus": "Statut de Sortie",
+    "tamashiiTooltip": "Festival Annuel de Figurines de TAMASHII NATIONS - Marchandises Commémoratives",
+    "flags": {
+      "metalBody": "Corps Métallique",
+      "originalColor": "Couleur Originale",
+      "revival": "Réédition",
+      "plainCloth": "Tunique Simple",
+      "battleDamaged": "Endommagé au Combat",
+      "goldenArmor": "Armure Dorée",
+      "gold24k": "Or 24K",
+      "manga": "Version Manga",
+      "multiPack": "Pack Multiple",
+      "articulable": "Articulable",
+      "restocks": "Réassorts"
+    }
+  },
+  "matching": {
+    "noneInFilter": "Aucune figurine ne correspond aux filtres actuels.",
+    "noneInCollection": "Aucune figurine dans la collection pour le moment."
+  },
+  "status": {
+    "labels": {
+      "RELEASED": "Sortie",
+      "ANNOUNCED": "Annoncée",
+      "RUMORED": "Rumeur",
+      "PROTOTYPE": "Prototype",
+      "UNRELEASED": "Non Sortie"
+    },
+    "helpers": {
+      "RELEASED": "Déjà disponible sur le marché.",
+      "ANNOUNCED": "Futures sorties qui ont été officiellement annoncées.",
+      "RUMORED": "Sorties non confirmées avec des informations circulantes.",
+      "PROTOTYPE": "Figurines en phase de prototype ; le design peut encore changer.",
+      "UNRELEASED": "Figurines annulées ou non sorties indéfiniment."
+    }
+  },
+  "figurineCount_one": "{{count}} figurine",
+  "figurineCount_other": "{{count}} figurines",
+  "pagination": {
+    "summary_one": "{{count}} figurine · page {{page}} sur {{pages}}",
+    "summary_other": "{{count}} figurines · page {{page}} sur {{pages}}",
+    "summaryMatching_one": "{{count}} figurine correspondant à \"{{query}}\" · page {{page}} sur {{pages}}",
+    "summaryMatching_other": "{{count}} figurines correspondant à \"{{query}}\" · page {{page}} sur {{pages}}"
+  },
+  "card": {
+    "noImage": "Pas d'image",
+    "tamashiiTooltip": "Figurine commémorative de Tamashii Nations",
+    "anniversaryTooltip": "Édition Anniversaire",
+    "restocked_one": "Réassorti {{count}} fois.",
+    "restocked_other": "Réassorti {{count}} fois.",
+    "restockedLatest_one": "Réassorti {{count}} fois. Dernier : {{date}}.",
+    "restockedLatest_other": "Réassorti {{count}} fois. Dernier : {{date}}.",
+    "restockFromLabel": "Réassorti depuis {{date}}",
+    "restockLabel": "Réassort"
+  },
+  "collection": {
+    "totalSelected_one": "{{count}} figurine sélectionnée",
+    "totalSelected_other": "{{count}} figurines sélectionnées",
+    "selectThisPage": "Cette page ({{count}})",
+    "selectAllPagesLoading": "Chargement ...",
+    "selectAllPages": "Toutes les pages ({{count}})",
+    "clearSelection": "Effacer",
+    "addToCollection": "Ajouter à la Collection",
+    "bulkAddToCollectionModal": {
+      "title_one": "Ajouter {{count}} figurine à la Collection",
+      "title_other": "Ajouter {{count}} figurines à la Collection",
+      "selected": "Figurines Sélectionnées :",
+      "totalSelected_one": "{{count}} figurine",
+      "totalSelected_other": "{{count}} figurines",
+      "existing": {
+        "title": "Vos collections",
+        "noCollections": "Aucune collection pour le moment. Créez-en une ci-dessous !",
+        "figurinesPerCollection_one": "{{count}} figurine",
+        "figurinesPerCollection_other": "{{count}} figurines"
+      },
+      "new": {
+        "title": "Créer une Nouvelle Collection",
+        "name": {
+          "label": "Nom de la collection",
+          "required": "Le nom de la collection est obligatoire."
+        },
+        "imageUrlLabel": "URL de l'image de votre collection (optionnel)",
+        "descriptionLabel": "Description (optionnelle)"
+      },
+      "actions": {
+        "cancel": "Annuler",
+        "creating": "Création...",
+        "create_one": "Créer et Ajouter {{count}} figurine",
+        "create_other": "Créer et Ajouter {{count}} figurines",
+        "adding": "Ajout...",
+        "add_one": "Ajouter {{count}} figurine",
+        "add_other": "Ajouter {{count}} figurines"
+      },
+      "createdAndAddedSuccessful_one": "Créée \"{{name}}\" et ajoutée {{count}} figurine !",
+      "createdAndAddedSuccessful_other": "Créée \"{{name}}\" et ajoutées {{count}} figurines !",
+      "duplicateName": "La collection \"{{name}}\" existe déjà. Veuillez choisir un nom différent.",
+      "collectionRequired": "Veuillez sélectionner au moins une collection",
+      "addedSuccessful_one": "Ajoutée {{count}} figurine à la collection {{collection}} !",
+      "addedSuccessful_other": "Ajoutées {{count}} figurines à la collection {{collection}} !"
+    }
+  },
   "import": {
     "eyebrow": "Administration",
     "title": "Importation de Figurines",
