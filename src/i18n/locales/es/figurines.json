@@ -131,6 +131,77 @@
       "addedSuccessful_other": "¡Agregadas {{count}} figuras a la colección {{collection}}!"
     }
   },
+  "details": {
+    "eyebrow": "Figura",
+    "subtitle": "Revisa los detalles del lanzamiento, los precios del mercado, los enlaces a tiendas y el estado de la colección para esta entrada de Myth Cloth.",
+    "notFound": "Figura no encontrada.",
+    "lineUp": "Línea",
+    "series": "Serie",
+    "group": "Grupo",
+    "distribution": "Distribución",
+    "prevFigurine": "Anterior Figura",
+    "nextFigurine": "Siguiente Figura",
+    "edit": "Editar",
+    "addToCollection": "Agregar a la Colección",
+    "revival": "Revival",
+    "liveMarketPrice": "Precio del Mercado en Vivo",
+    "live": "EN VIVO",
+    "realTimeAverage": "Promedio en tiempo real de las tiendas",
+    "noImageAvailable": "No hay imagen disponible",
+    "commemorativeTitle": "Figura de evento conmemorativo.",
+    "commemorativeLabel": "Conmemorativa",
+    "releaseStatus": "Estado",
+    "restock": "Relanzamiento",
+    "anniversary": "Aniversario",
+    "ownedInCollection": "Propias en {{name}}",
+    "missingInCollection": "Faltante en {{name}}",
+    "officialPage": "Abrir Página Oficial",
+    "restockReferences": "Referencias de Relanzamiento",
+    "restockText": "Esta figura es un relanzamiento. Abre un lanzamiento previo relacionado:",
+    "attributes": {
+      "title": "Atributos",
+      "metalBody": "Cuerpo Metálico",
+      "articulable": "Articulable",
+      "revival": "Revival",
+      "oce": "OCE",
+      "battleDamaged": "Daño en Batalla",
+      "goldenArmor": "Armadura Dorada",
+      "gold24k": "Oro de 24K",
+      "manga": "Versión del Manga",
+      "plainCloth": "Plain Cloth",
+      "multiPack": "Set de múltiples items"
+    },
+    "notes": {
+      "title": "Información Adicional"
+    },
+    "distributors": {
+      "title": "Distribuidores Oficiales en Todo el Mundo",
+      "price": "Precio",
+      "n/a": "N/A",
+      "withTax": "{{price}} con impuestos",
+      "preOrder": "Pre-Orden",
+      "release": "Lanzamiento",
+      "unconfirmed": "(no confirmado)",
+      "tbd": "Por Determinar"
+    },
+    "chronology": {
+      "title": "Cronología",
+      "tbd": "Por Determinar",
+      "release": "Lanzamiento"
+    },
+    "historicalPrices": {
+      "title": "Precios Históricos",
+      "store": "Tienda",
+      "all": "Todas",
+      "allStores": "Todas las Tiendas",
+      "noPrices": "No hay precios históricos disponibles para la tienda seleccionada.",
+      "openProduct": "Abrir producto"
+    },
+    "related": {
+      "title": "Figuras Relacionadas"
+    },
+    "successMessage": "¡Agregada a la colección con éxito!"
+  },
   "import": {
     "eyebrow": "Administración",
     "title": "Importación de Figuras",

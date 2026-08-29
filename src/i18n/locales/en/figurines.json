@@ -131,6 +131,77 @@
       "addedSuccessful_other": "Added {{count}} figurine to {{collection}} collections!"
     }
   },
+  "details": {
+    "eyebrow": "Figurines",
+    "subtitle": "Review release details, market pricing, store links, and collection status for this Myth Cloth entry.",
+    "notFound": "Figurine not found.",
+    "lineUp": "Line Up",
+    "series": "Series",
+    "group": "Group",
+    "distribution": "Distribution",
+    "prevFigurine": "Previous Figurine",
+    "nextFigurine": "Next Figurine",
+    "edit": "Edit",
+    "addToCollection": "Add to Collection",
+    "revival": "Revival",
+    "liveMarketPrice": "Live Market Price",
+    "live": "LIVE",
+    "realTimeAverage": "Real-time average from stores",
+    "noImageAvailable": "No image available",
+    "commemorativeTitle": "Commemorative event figurine.",
+    "commemorativeLabel": "Commemorative",
+    "releaseStatus": "Release Status",
+    "restock": "Restock",
+    "anniversary": "Anniversary",
+    "ownedInCollection": "Owned in {{name}}",
+    "missingInCollection": "Missing in {{name}}",
+    "officialPage": "Open Official Page",
+    "restockReferences": "Restock References",
+    "restockText": "This figurine is a restock. Open a related previous release:",
+    "attributes": {
+      "title": "Attributes",
+      "metalBody": "Metal Body",
+      "articulable": "Articulable",
+      "revival": "Revival",
+      "oce": "Original Color Ed.",
+      "battleDamaged": "Battle Damaged",
+      "goldenArmor": "Golden Armor",
+      "gold24k": "Gold 24K Edition",
+      "manga": "Manga Version",
+      "plainCloth": "Plain Cloth",
+      "multiPack": "Multi-Pack"
+    },
+    "notes": {
+      "title": "Additional Information"
+    },
+    "distributors": {
+      "title": "Official Worldwide Distributors",
+      "price": "Price",
+      "n/a": "N/A",
+      "withTax": "{{price}} w/ tax",
+      "preOrder": "Pre-Order",
+      "release": "Release",
+      "unconfirmed": "(unconfirmed)",
+      "tbd": "TBD"
+    },
+    "chronology": {
+      "title": "Chronology",
+      "tbd": "TBD",
+      "release": "Release"
+    },
+    "historicalPrices": {
+      "title": "Historical Prices",
+      "store": "Store",
+      "all": "All",
+      "allStores": "All Stores",
+      "noPrices": "No historical prices available for the selected store.",
+      "openProduct": "Open product"
+    },
+    "related": {
+      "title": "Related Figurines"
+    },
+    "successMessage": "Added to collection successfully!"
+  },
   "import": {
     "eyebrow": "Administration",
     "title": "Figurine Import",
