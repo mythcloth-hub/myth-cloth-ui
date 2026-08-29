@@ -68,15 +68,15 @@
 
   "startSteps": {
     "browseCatalog": {
-      "title": "Explora tu catálogo",
+      "title": "Explora tu Catálogo",
       "description": "Comienza con Myth Cloth para explorar versiones, aplicar filtros avanzados y encontrar rápidamente figuras lanzadas, no lanzadas y prototipos."
     },
     "trackOwnership": {
-      "title": "Realiza un seguimiento de la propiedad",
+      "title": "Realiza un Seguimiento de tus Figuras",
       "description": "Pasa a colecciones y compras cuando quieras organizar lo que posees y lo que aún está pendiente."
     },
     "exploreTrends": {
-      "title": "Explora tendencias",
+      "title": "Explora Tendencias",
       "description": "Abre gráficos, lanzamientos y precios para monitorear el movimiento del mercado, los relanzamientos y los precios en tiempo real cuando hayas iniciado sesión."
     }
   }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import {
   Dialog,
@@ -42,6 +43,8 @@ export default function AddToCollectionModal({
   figurineName,
   onSuccess,
 }: AddToCollectionModalProps) {
+  const { t } = useTranslation("figurines");
+
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollections, setSelectedCollections] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -98,7 +101,7 @@ export default function AddToCollectionModal({
   const handleCreateAndAdd = async () => {
     const collectionName = newCollectionName.trim();
     if (!collectionName) {
-      setError("Collection name is required");
+      setError(t("collection.addToCollectionModal.new.name.required"));
       return;
     }
 
@@ -115,7 +118,7 @@ export default function AddToCollectionModal({
         },
       });
 
-      setSuccessMessage(`✨ Created "${collectionName}" and added "${figurineName}"!`);
+      setSuccessMessage(`✨ ${t("collection.addToCollectionModal.createdAndAddedSuccessful", { collection: collectionName, figurine: figurineName })}`);
       setNewCollectionName("");
       setNewCollectionImageUrl("");
       setNewCollectionDesc("");
@@ -126,7 +129,7 @@ export default function AddToCollectionModal({
       }, 1500);
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 409) {
-        setError(`Collection "${collectionName}" already exists. Please choose a different name.`);
+        setError(t("collection.addToCollectionModal.new.name.duplicate", { name: collectionName }));
       } else {
         setError(getApiErrorMessage(err, { action: "create", resource: "collection" }));
       }
@@ -137,7 +140,7 @@ export default function AddToCollectionModal({
 
   const handleAddToSelected = async () => {
     if (selectedCollections.size === 0) {
-      setError("Please select at least one collection");
+      setError(t("collection.addToCollectionModal.collectionRequired"));
       return;
     }
 
@@ -151,9 +154,7 @@ export default function AddToCollectionModal({
       });
 
       const count = selectedCollections.size;
-      setSuccessMessage(
-        `✨ Added "${figurineName}" to ${count} collection${count > 1 ? "s" : ""}!`
-      );
+      setSuccessMessage(`✨ ${t("collection.addToCollectionModal.addedSuccessful", { name: figurineName, count })}`);
 
       setTimeout(() => {
         onSuccess?.();
@@ -192,14 +193,14 @@ export default function AddToCollectionModal({
           borderBottom: "1px solid rgba(212,175,55,0.1)",
         }}
       >
-        💫 Add to Collection
+        💫 {t("collection.addToCollectionModal.title")}
       </DialogTitle>
 
       <DialogContent sx={{ pt: 2 }}>
         {/* Figurine name info */}
         <Box sx={{ mb: 2, mt: 2, p: 1.5, background: "rgba(79,195,247,0.05)", borderRadius: 1 }}>
           <Typography variant="caption" sx={{ color: "text.secondary" }}>
-            Adding:
+            {t("collection.addToCollectionModal.adding")}
           </Typography>
           <Typography
             variant="body2"
@@ -242,12 +243,12 @@ export default function AddToCollectionModal({
                 variant="subtitle2"
                 sx={{ color: "#d4af37", fontWeight: 600, mb: 1 }}
               >
-                Your Collections
+                {t("collection.addToCollectionModal.existing.title")}
               </Typography>
 
               {collections.length === 0 ? (
                 <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  No collections yet. Create one below!
+                  {t("collection.addToCollectionModal.existing.noCollections")}
                 </Typography>
               ) : (
                 <List
@@ -306,7 +307,7 @@ export default function AddToCollectionModal({
                                   </Typography>
                                 )}
                                 <Chip
-                                  label={`${collection.figurineIds.length} figurines`}
+                                  label={t("collection.addToCollectionModal.existing.figurinesPerCollection", { count: collection.figurineIds.length })}
                                   size="small"
                                   sx={{
                                     height: 20,
@@ -341,12 +342,12 @@ export default function AddToCollectionModal({
                 sx={{ color: "#d4af37", fontWeight: 600, mb: 1, display: "flex", alignItems: "center", gap: 1 }}
               >
                 <AddIcon sx={{ fontSize: "1.1rem" }} />
-                Create New Collection
+                {t("collection.addToCollectionModal.new.title")}
               </Typography>
 
               <TextField
                 fullWidth
-                label="Collection name"
+                label={t("collection.addToCollectionModal.new.name.label")}
                 value={newCollectionName}
                 onChange={(e) => setNewCollectionName(e.target.value)}
                 size="small"
@@ -374,7 +375,7 @@ export default function AddToCollectionModal({
 
               <TextField
                 fullWidth
-                label="Your collection image URL (optional)"
+                label={t("collection.addToCollectionModal.new.imageUrlLabel")}
                 value={newCollectionImageUrl}
                 onChange={(e) => setNewCollectionImageUrl(e.target.value)}
                 size="small"
@@ -402,7 +403,7 @@ export default function AddToCollectionModal({
 
               <TextField
                 fullWidth
-                label="Description (optional)"
+                label={t("collection.addToCollectionModal.new.descriptionLabel")}
                 value={newCollectionDesc}
                 onChange={(e) => setNewCollectionDesc(e.target.value)}
                 size="small"
@@ -445,7 +446,7 @@ export default function AddToCollectionModal({
             "&:hover": { bgcolor: "rgba(255,255,255,0.05)" },
           }}
         >
-          Cancel
+          {t("collection.addToCollectionModal.actions.cancel")}
         </Button>
 
         {newCollectionName.trim() && (
@@ -466,7 +467,7 @@ export default function AddToCollectionModal({
               },
             }}
           >
-            {creating ? "Creating..." : "Create & Add"}
+            {creating ? t("collection.addToCollectionModal.actions.creating") : t("collection.addToCollectionModal.actions.create")}
           </Button>
         )}
 
@@ -488,7 +489,7 @@ export default function AddToCollectionModal({
               },
             }}
           >
-            {creating ? "Adding..." : `Add to ${selectedCollections.size}`}
+            {creating ? t("collection.addToCollectionModal.actions.adding") : t("collection.addToCollectionModal.actions.add", { count: selectedCollections.size })}
           </Button>
         )}
       </DialogActions>

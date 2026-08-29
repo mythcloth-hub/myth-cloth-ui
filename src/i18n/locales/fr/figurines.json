@@ -100,7 +100,7 @@
       "totalSelected_one": "{{count}} figurine",
       "totalSelected_other": "{{count}} figurines",
       "existing": {
-        "title": "Vos collections",
+        "title": "Vos Collections",
         "noCollections": "Aucune collection pour le moment. Créez-en une ci-dessous !",
         "figurinesPerCollection_one": "{{count}} figurine",
         "figurinesPerCollection_other": "{{count}} figurines"
@@ -129,6 +129,38 @@
       "collectionRequired": "Veuillez sélectionner au moins une collection",
       "addedSuccessful_one": "Ajoutée {{count}} figurine à la collection {{collection}} !",
       "addedSuccessful_other": "Ajoutées {{count}} figurines à la collection {{collection}} !"
+    },
+    "addToCollectionModal": {
+      "title": "Ajouter à la collection",
+      "adding": "Ajout :",
+      "existing": {
+        "title": "Vos Collections",
+        "noCollections": "Aucune collection pour le moment. Créez-en une ci-dessous !",
+        "figurinesPerCollection_one": "{{count}} figurine",
+        "figurinesPerCollection_other": "{{count}} figurines"
+      },
+      "new": {
+        "title": "Créer une Nouvelle Collection",
+        "name": {
+          "label": "Nom de la collection",
+          "required": "Le nom de la collection est obligatoire.",
+          "duplicate": "La collection \"{{name}}\" existe déjà. Veuillez choisir un nom différent."
+        },
+        "imageUrlLabel": "URL de l'image de votre collection (optionnel)",
+        "descriptionLabel": "Description (optionnelle)"
+      },
+      "actions": {
+        "cancel": "Annuler",
+        "creating": "Création...",
+        "create": "Créer et Ajouter",
+        "adding": "Ajout...",
+        "add_one": "Ajouter à {{count}} collection",
+        "add_other": "Ajouter à {{count}} collections"
+      },
+      "createdAndAddedSuccessful": "Créée \"{{collection}}\" et ajoutée \"{{figurine}}\" !",
+      "collectionRequired": "Veuillez sélectionner au moins une collection",
+      "addedSuccessful_one": "Ajoutée \"{{name}}\" à {{count}} collection !",
+      "addedSuccessful_other": "Ajoutées \"{{name}}\" à {{count}} collections !"
     }
   },
   "details": {
@@ -172,7 +204,7 @@
       "multiPack": "Multi-Pack"
     },
     "notes": {
-      "title": "Informations supplémentaires"
+      "title": "Informations Supplémentaires"
     },
     "distributors": {
       "title": "Distributeurs officiels dans le monde",
@@ -198,7 +230,7 @@
       "openProduct": "Ouvrir le produit"
     },
     "related": {
-      "title": "Figurines associées"
+      "title": "Figurines Associées"
     },
     "successMessage": "Ajoutée à la collection avec succès !"
   },

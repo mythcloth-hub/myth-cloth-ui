@@ -68,15 +68,15 @@
 
   "startSteps": {
     "browseCatalog": {
-      "title": "Browse your catalog",
+      "title": "Browse your Catalog",
       "description": "Start with Myth Cloth to explore versions, apply advanced filters, and quickly find released, unreleased, and prototype figurines."
     },
     "trackOwnership": {
-      "title": "Track ownership",
+      "title": "Track Ownership",
       "description": "Move into collections and purchases when you want to organize what you own and what is still pending."
     },
     "exploreTrends": {
-      "title": "Explore trends",
+      "title": "Explore Trends",
       "description": "Open charts, releases, and pricing to monitor market movement, restocks, and real-time prices when signed in."
     }
   }

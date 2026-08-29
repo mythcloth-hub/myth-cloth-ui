@@ -100,13 +100,13 @@
       "totalSelected_one": "{{count}} figura",
       "totalSelected_other": "{{count}} figuras",
       "existing": {
-        "title": "Tus colecciones",
+        "title": "Tus Colecciones",
         "noCollections": "No hay colecciones aún. ¡Crea una aquí abajo!",
         "figurinesPerCollection_one": "{{count}} figura",
         "figurinesPerCollection_other": "{{count}} figuras"
       },
       "new": {
-        "title": "Crear nueva colección",
+        "title": "Crear Nueva Colección",
         "name": {
           "label": "Nombre de la colección",
           "required": "El nombre de la colección es obligatorio."
@@ -129,6 +129,38 @@
       "collectionRequired": "Por favor selecciona al menos una colección",
       "addedSuccessful_one": "¡{{count}} figura agregada a {{collection}} colección!",
       "addedSuccessful_other": "¡{{count}} figura agregada a {{collection}} colecciones!"
+    },
+    "addToCollectionModal": {
+      "title": "Agregar a la Colección",
+      "adding": "Agregando:",
+      "existing": {
+        "title": "Tus Colecciones",
+        "noCollections": "No hay colecciones aún. ¡Crea una aquí abajo!",
+        "figurinesPerCollection_one": "{{count}} figura",
+        "figurinesPerCollection_other": "{{count}} figuras"
+      },
+      "new": {
+        "title": "Crear Nueva Colección",
+        "name": {
+          "label": "Nombre de la colección",
+          "required": "El nombre de la colección es obligatorio.",
+          "duplicate": "La colección con nombre \"{{name}}\" ya existe. Por favor elige otro nombre."
+        },
+        "imageUrlLabel": "URL de la imagen de la colección (opcional)",
+        "descriptionLabel": "Descripción (opcional)"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "creating": "Creando...",
+        "create": "Crear y Agregar",
+        "adding": "Agregando...",
+        "add_one": "Agregar a {{count}} colección",
+        "add_other": "Agregar a {{count}} colecciones"
+      },
+      "createdAndAddedSuccessful": "¡\"{{collection}}\" creada y \"{{figurine}}\" agregada!",
+      "collectionRequired": "Por favor selecciona al menos una colección",
+      "addedSuccessful_one": "¡\"{{name}}\" agregada a {{count}} colección!",
+      "addedSuccessful_other": "¡\"{{name}}\" agregada a {{count}} colecciones!"
     }
   },
   "details": {

@@ -100,7 +100,7 @@
       "totalSelected_one": "{{count}} figura",
       "totalSelected_other": "{{count}} figuras",
       "existing": {
-        "title": "Tus colecciones",
+        "title": "Tus Colecciones",
         "noCollections": "Aún no hay colecciones. ¡Crea una a continuación!",
         "figurinesPerCollection_one": "{{count}} figura",
         "figurinesPerCollection_other": "{{count}} figuras"
@@ -129,6 +129,38 @@
       "collectionRequired": "Por favor selecciona al menos una colección",
       "addedSuccessful_one": "¡Agregada {{count}} figura a la colección {{collection}}!",
       "addedSuccessful_other": "¡Agregadas {{count}} figuras a la colección {{collection}}!"
+    },
+    "addToCollectionModal": {
+      "title": "Agregar a Colección",
+      "adding": "Agregando:",
+      "existing": {
+        "title": "Tus Colecciones",
+        "noCollections": "Aún no hay colecciones. ¡Crea una a continuación!",
+        "figurinesPerCollection_one": "{{count}} figura",
+        "figurinesPerCollection_other": "{{count}} figuras"
+      },
+      "new": {
+        "title": "Crear Nueva Colección",
+        "name": {
+          "label": "Nombre de la colección",
+          "required": "El nombre de la colección es obligatorio.",
+          "duplicate": "La colección \"{{name}}\" ya existe. Por favor elige un nombre diferente."
+        },
+        "imageUrlLabel": "URL de la imagen de tu colección (opcional)",
+        "descriptionLabel": "Descripción (opcional)"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "creating": "Creando...",
+        "create": "Crear y Agregar",
+        "adding": "Agregando...",
+        "add_one": "Agregar a {{count}} colección",
+        "add_other": "Agregar a {{count}} colecciones"
+      },
+      "createdAndAddedSuccessful": "¡Creada \"{{collection}}\" y agregada \"{{figurine}}\"!",
+      "collectionRequired": "Por favor selecciona al menos una colección",
+      "addedSuccessful_one": "¡Agregada \"{{name}}\" a {{count}} colección!",
+      "addedSuccessful_other": "¡Agregadas \"{{name}}\" a {{count}} colecciones!"
     }
   },
   "details": {
