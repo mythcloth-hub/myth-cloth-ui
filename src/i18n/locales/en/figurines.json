@@ -89,7 +89,7 @@
     "totalSelected_one": "{{count}} figurine selected",
     "totalSelected_other": "{{count}} figurines selected",
     "selectThisPage": "This page ({{count}})",
-    "selectAllPagesLoading": "Loading ...",
+    "selectAllPagesLoading": "Loading...",
     "selectAllPages": "All pages ({{count}})",
     "clearSelection": "Clear",
     "addToCollection": "Add to Collection",

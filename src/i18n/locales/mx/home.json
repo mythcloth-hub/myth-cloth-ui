@@ -1,83 +1,75 @@
 {
   "eyebrow": "Inicio",
   "title": "Bienvenido a Saint Collections",
-  "subtitle": "Realiza un seguimiento de tu colección de Myth Cloth, monitorea relanzamientos y versiones, filtra figuras no lanzadas y prototipos, y sigue los precios en tiempo real con una cuenta iniciada.",
+  "subtitle": "Da seguimiento a tu colección de Myth Cloth, monitorea relanzamientos y versiones, filtra figuras no lanzadas y prototipos, y consulta precios en tiempo real al iniciar sesión.",
   "enterMythCloth": "Entrar a Saint Collections",
-
   "startHere": "COMIENZA AQUÍ",
   "welcomeToCollection": "Bienvenido a tu colección",
-  "collectionDescription": "Explora lo que posees, descubre lo nuevo, realiza un seguimiento de los relanzamientos y filtra por versión, estado de lanzamiento y categoría para mantener tu colección en movimiento.",
-
-  "signedIn": "Conectado",
-  "browsingUnlockedAreas": "Navegando por áreas desbloqueadas",
+  "collectionDescription": "Explora lo que tienes, descubre novedades, da seguimiento a los relanzamientos y filtra por versión, estado de lanzamiento y categoría para mantener tu colección al día.",
+  "signedIn": "Sesión iniciada",
+  "browsingUnlockedAreas": "Explorando áreas disponibles",
   "quickDestinations_one": "{{count}} destino rápido",
   "quickDestinations_other": "{{count}} destinos rápidos",
-  "realTimePrices": "Precios en tiempo real para usuarios conectados",
-
+  "realTimePrices": "Precios en tiempo real para usuarios con sesión iniciada",
   "signInTitle": "Inicia sesión para desbloquear la experiencia completa",
-  "signInDescription": "Inicia sesión desde la sección de cuenta en el menú izquierdo para acceder al seguimiento de precios en tiempo real, obtener información más detallada del mercado y flujos de trabajo personalizados para tu colección.",
-
+  "signInDescription": "Inicia sesión desde la sección de cuenta en el menú izquierdo para acceder al seguimiento de precios en tiempo real, consultar información más detallada del mercado y utilizar herramientas personalizadas para administrar tu colección.",
   "currentAccount": "CUENTA ACTUAL",
   "profilePicture": "Foto de perfil",
   "role": "Rol: {{role}}",
-
-  "featuredPlaces": "Lugares importantes para comenzar",
+  "featuredPlaces": "Secciones destacadas para comenzar",
   "openSection": "Abrir sección",
-
-  "morePlaces": "Más lugares en la aplicación",
-  "morePlacesDescription": "Estas áreas están disponibles según tu acceso actual y pueden ayudarte a profundizar una vez que estés listo.",
-
+  "morePlaces": "Más secciones en la aplicación",
+  "morePlacesDescription": "Estas áreas están disponibles según tu nivel de acceso y pueden ayudarte a explorar más a fondo cuando estés listo.",
   "links": {
     "mythCloth": {
       "label": "Myth Cloth",
-      "description": "Explora el catálogo completo de figuras y vuelve a la vista principal de tu colección."
+      "description": "Explora el catálogo completo de figuras y regresa a la vista principal de tu colección."
     },
     "collections": {
       "label": "Mis Colecciones",
-      "description": "Abre tus colecciones guardadas, compara el progreso y administra las figuras agrupadas."
+      "description": "Abre tus colecciones guardadas, compara tu progreso y administra las figuras que tienes agrupadas."
     },
     "charts": {
       "label": "Gráficas",
-      "description": "Consulta resúmenes rápidos de la colección, proporciones y desgloses visuales."
+      "description": "Consulta resúmenes rápidos de tu colección, proporciones y diferentes desgloses visuales."
     },
     "releases": {
       "label": "Lanzamientos",
-      "description": "Explora el historial de lanzamientos por año y profundiza en los detalles de la línea de tiempo."
+      "description": "Explora el historial de lanzamientos por año y consulta los detalles de la línea de tiempo."
     },
     "storeMatching": {
       "label": "Coincidencia de Tienda",
-      "description": "Revisa las fuentes de tienda coincidentes y compáralas con tu catálogo de figuras."
+      "description": "Revisa las coincidencias de las tiendas y compáralas con las figuras de tu catálogo."
     },
     "manualMatching": {
       "label": "Coincidencia Manual",
-      "description": "Resuelve los listados no coincidentes y conéctalos con las entradas correctas del catálogo."
+      "description": "Resuelve los listados que no coinciden y vincúlalos con las entradas correctas del catálogo."
     },
     "anniversaries": {
       "label": "Aniversarios",
-      "description": "Realiza un seguimiento de los momentos conmemorativos y eventos importantes relacionados con la colección."
+      "description": "Da seguimiento a momentos conmemorativos y eventos importantes relacionados con tu colección."
     },
     "distributors": {
       "label": "Distribuidores",
-      "description": "Mantén los datos de socios y distribuidores organizados en un solo lugar."
+      "description": "Mantén organizados en un solo lugar los datos de socios y distribuidores."
     },
     "permissions": {
       "label": "Permisos",
-      "description": "Gestiona el acceso por roles y los controles de seguridad al trabajar en los flujos de administración."
+      "description": "Administra el acceso por roles y los controles de seguridad de las funciones administrativas."
     }
   },
-
   "startSteps": {
     "browseCatalog": {
       "title": "Explora tu Catálogo",
       "description": "Comienza con Myth Cloth para explorar versiones, aplicar filtros avanzados y encontrar rápidamente figuras lanzadas, no lanzadas y prototipos."
     },
     "trackOwnership": {
-      "title": "Realiza un Seguimiento de tus Propias Figuras",
-      "description": "Pasa a colecciones y compras cuando quieras organizar lo que posees y lo que aún está pendiente."
+      "title": "Da Seguimiento a tus Propias Figuras",
+      "description": "Ve a colecciones y compras cuando quieras organizar lo que tienes y lo que todavía está pendiente."
     },
     "exploreTrends": {
       "title": "Explora Tendencias",
-      "description": "Abre gráficas, lanzamientos y precios para monitorear el movimiento del mercado, relanzamientos y precios en tiempo real cuando hayas iniciado sesión."
+      "description": "Abre gráficas, lanzamientos y precios para monitorear el movimiento del mercado, los relanzamientos y los precios en tiempo real cuando hayas iniciado sesión."
     }
   }
 }

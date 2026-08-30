@@ -2,7 +2,7 @@
   "roles": {
     "eyebrow": "Administración • Seguridad",
     "title": "Roles",
-    "subtitle": "Administra las definiciones de roles utilizadas para controlar el acceso en toda la aplicación.",
+    "subtitle": "Administra las definiciones de roles que se utilizan para controlar el acceso en toda la aplicación.",
     "noRolesYet": "Aún no hay roles.",
     "chooseAndClick": "Haz clic en + Agregar Rol para comenzar.",
     "columns": {
@@ -14,15 +14,15 @@
     "addRoleButton": "Agregar Rol",
     "deleteDialog": {
       "title": "Eliminar Rol",
-      "body": "¿Estás seguro de que deseas eliminar este rol? Esta acción no se puede deshacer.",
+      "body": "¿Estás seguro de que quieres eliminar este rol? Esta acción no se puede deshacer.",
       "cancelButton": "Cancelar",
       "deleteButton": "Eliminar"
     },
-    "deleteSuccessful": "Rol eliminado con éxito.",
+    "deleteSuccessful": "Rol eliminado correctamente.",
     "form": {
-      "descriptionRequired": "La descripción es requerida.",
-      "updatedSuccessful": "Rol actualizado con éxito.",
-      "createdSuccessful": "Rol creado con éxito.",
+      "descriptionRequired": "La descripción es obligatoria.",
+      "updatedSuccessful": "Rol actualizado correctamente.",
+      "createdSuccessful": "Rol creado correctamente.",
       "titleEdit": "Editar Rol",
       "titleCreate": "Agregar Rol",
       "descriptionField": "Descripción",
@@ -34,7 +34,7 @@
   "permissions": {
     "eyebrow": "Administración • Seguridad",
     "title": "Permisos",
-    "subtitle": "Administra permisos granulares que se asignan a los roles y a las funciones protegidas.",
+    "subtitle": "Administra los permisos específicos que se asignan a los roles y a las funciones protegidas.",
     "noPermissionsYet": "Aún no hay permisos.",
     "chooseAndClick": "Haz clic en + Agregar Permiso para comenzar.",
     "columns": {
@@ -46,17 +46,17 @@
     "addPermissionButton": "Agregar Permiso",
     "deleteDialog": {
       "title": "Eliminar Permiso",
-      "body": "¿Estás seguro de que deseas eliminar este permiso? Esta acción no se puede deshacer.",
+      "body": "¿Estás seguro de que quieres eliminar este permiso? Esta acción no se puede deshacer.",
       "cancelButton": "Cancelar",
       "deleteButton": "Eliminar"
     },
-    "deleteSuccessful": "Permiso eliminado con éxito.",
+    "deleteSuccessful": "Permiso eliminado correctamente.",
     "form": {
-      "descriptionRequired": "La descripción no debe estar vacía.",
-      "descriptionTooLong": "La descripción no debe exceder los 200 caracteres.",
-      "descriptionPattern": "La descripción debe seguir el formato 'recurso:acción[:subacción...]' (por ejemplo, 'posts:create' o 'posts:create:comment') usando letras minúsculas, números, guiones o guiones bajos.",
-      "updatedSuccessful": "Permiso actualizado con éxito.",
-      "createdSuccessful": "Permiso creado con éxito.",
+      "descriptionRequired": "La descripción no puede estar vacía.",
+      "descriptionTooLong": "La descripción no puede exceder los 200 caracteres.",
+      "descriptionPattern": "La descripción debe seguir el formato 'recurso:acción[:subacción...]' (por ejemplo, 'posts:create' o 'posts:create:comment') y usar letras minúsculas, números, guiones o guiones bajos.",
+      "updatedSuccessful": "Permiso actualizado correctamente.",
+      "createdSuccessful": "Permiso creado correctamente.",
       "titleEdit": "Editar Permiso",
       "titleCreate": "Agregar Permiso",
       "descriptionField": "Descripción",
@@ -69,17 +69,17 @@
   "rolePermissions": {
     "eyebrow": "Administración • Seguridad",
     "title": "Permisos por Rol",
-    "subtitle": "Asigna permisos a los roles y mantén el acceso alineado en toda la aplicación.",
+    "subtitle": "Asigna permisos a los roles y mantén el acceso organizado en toda la aplicación.",
     "noPermissionsYet": "Aún no se han asignado permisos a este rol.",
     "chooseAndClick": "Elige los permisos y haz clic en Sincronizar Permisos.",
     "columns": {
       "description": "Permiso Asignado"
     },
-    "syncSuccessful": "Permisos por rol sincronizados con éxito.",
+    "syncSuccessful": "Permisos por rol sincronizados correctamente.",
     "roleLabel": "Rol",
     "permissionLabel": "Permisos",
     "syncingButton": "Sincronizando...",
     "syncButton": "Sincronizar Permisos",
-    "selectRoleMessage": "Selecciona un rol para ver y gestionar sus permisos."
+    "selectRoleMessage": "Selecciona un rol para ver y administrar sus permisos."
   }
 }

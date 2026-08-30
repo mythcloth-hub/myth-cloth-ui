@@ -2,7 +2,7 @@
   "header": {
     "eyebrow": "Colecciones",
     "title": "Myth Cloth",
-    "subtitle": "Explora el catálogo completo de Myth Cloth. Navega por las figuras lanzadas, prototipos, anunciadas, rumoreadas y no lanzadas, con filtros para encontrar rápidamente lo que buscas."
+    "subtitle": "Explora el catálogo completo de Myth Cloth. Navega por las figuras lanzadas, prototipos, anunciadas, rumoreadas y no lanzadas, y usa los filtros para encontrar rápidamente lo que buscas."
   },
   "toolbar": {
     "ownershipAll": "Todas",
@@ -40,7 +40,7 @@
     }
   },
   "matching": {
-    "noneInFilter": "Ninguna figura coincide con los filtros proporcionados.",
+    "noneInFilter": "Ninguna figura coincide con los filtros seleccionados.",
     "noneInCollection": "Aún no hay figuras en la colección."
   },
   "status": {
@@ -52,11 +52,11 @@
       "UNRELEASED": "No Lanzada"
     },
     "helpers": {
-      "RELEASED": "Ya disponibles en el mercado.",
-      "ANNOUNCED": "Futuras figuras que ya fueron anunciadas oficialmente.",
-      "RUMORED": "Figuras no confirmadas pero con probabilidad de ser lanzadas.",
+      "RELEASED": "Ya disponible en el mercado.",
+      "ANNOUNCED": "Figuras futuras que ya fueron anunciadas oficialmente.",
+      "RUMORED": "Figuras no confirmadas, pero con información que indica un posible lanzamiento.",
       "PROTOTYPE": "Figuras en etapa de prototipo; el diseño aún puede cambiar.",
-      "UNRELEASED": "Figuras canceladas o no lanzadas indefinidamente."
+      "UNRELEASED": "Figuras canceladas o que no han sido lanzadas y no tienen una fecha definida."
     }
   },
   "figurineCount_one": "{{count}} figura",
@@ -69,7 +69,7 @@
   },
   "card": {
     "noImage": "Sin imagen",
-    "tamashiiTooltip": "Figura conmemorativa de la Tamashii Nations",
+    "tamashiiTooltip": "Figura conmemorativa de Tamashii Nations",
     "anniversaryTooltip": "Edición de Aniversario",
     "restocked_one": "Relanzada {{count}} vez.",
     "restocked_other": "Relanzada {{count}} veces.",
@@ -88,8 +88,8 @@
     "totalOwned_other": "{{count}} figuras en esta colección",
     "totalSelected_one": "{{count}} figura seleccionada",
     "totalSelected_other": "{{count}} figuras seleccionadas",
-    "selectThisPage": "Solo ésta página ({{count}})",
-    "selectAllPagesLoading": "Cargando ...",
+    "selectThisPage": "Solo esta página ({{count}})",
+    "selectAllPagesLoading": "Cargando...",
     "selectAllPages": "Todas las páginas ({{count}})",
     "clearSelection": "Limpiar",
     "addToCollection": "Agregar a tu Colección",
@@ -101,7 +101,7 @@
       "totalSelected_other": "{{count}} figuras",
       "existing": {
         "title": "Tus Colecciones",
-        "noCollections": "No hay colecciones aún. ¡Crea una aquí abajo!",
+        "noCollections": "Aún no hay colecciones. ¡Crea una aquí abajo!",
         "figurinesPerCollection_one": "{{count}} figura",
         "figurinesPerCollection_other": "{{count}} figuras"
       },
@@ -125,17 +125,17 @@
       },
       "createdAndAddedSuccessful_one": "¡\"{{name}}\" creada y {{count}} figura agregada!",
       "createdAndAddedSuccessful_other": "¡\"{{name}}\" creada y {{count}} figuras agregadas!",
-      "duplicateName": "La colección con nombre \"{{name}}\" ya existe. Por favor elige otro nombre.",
-      "collectionRequired": "Por favor selecciona al menos una colección",
-      "addedSuccessful_one": "¡{{count}} figura agregada a {{collection}} colección!",
-      "addedSuccessful_other": "¡{{count}} figura agregada a {{collection}} colecciones!"
+      "duplicateName": "La colección \"{{name}}\" ya existe. Por favor, elige otro nombre.",
+      "collectionRequired": "Por favor, selecciona al menos una colección",
+      "addedSuccessful_one": "¡{{count}} figura agregada a la colección {{collection}}!",
+      "addedSuccessful_other": "¡{{count}} figuras agregadas a la colección {{collection}}!"
     },
     "addToCollectionModal": {
       "title": "Agregar a la Colección",
       "adding": "Agregando:",
       "existing": {
         "title": "Tus Colecciones",
-        "noCollections": "No hay colecciones aún. ¡Crea una aquí abajo!",
+        "noCollections": "Aún no hay colecciones. ¡Crea una aquí abajo!",
         "figurinesPerCollection_one": "{{count}} figura",
         "figurinesPerCollection_other": "{{count}} figuras"
       },
@@ -144,7 +144,7 @@
         "name": {
           "label": "Nombre de la colección",
           "required": "El nombre de la colección es obligatorio.",
-          "duplicate": "La colección con nombre \"{{name}}\" ya existe. Por favor elige otro nombre."
+          "duplicate": "La colección \"{{name}}\" ya existe. Por favor, elige otro nombre."
         },
         "imageUrlLabel": "URL de la imagen de la colección (opcional)",
         "descriptionLabel": "Descripción (opcional)"
@@ -158,7 +158,7 @@
         "add_other": "Agregar a {{count}} colecciones"
       },
       "createdAndAddedSuccessful": "¡\"{{collection}}\" creada y \"{{figurine}}\" agregada!",
-      "collectionRequired": "Por favor selecciona al menos una colección",
+      "collectionRequired": "Por favor, selecciona al menos una colección",
       "addedSuccessful_one": "¡\"{{name}}\" agregada a {{count}} colección!",
       "addedSuccessful_other": "¡\"{{name}}\" agregada a {{count}} colecciones!"
     }
@@ -171,7 +171,7 @@
     "series": "Serie",
     "group": "Grupo",
     "distribution": "Distribución",
-    "prevFigurine": "Anterior Figura",
+    "prevFigurine": "Figura Anterior",
     "nextFigurine": "Siguiente Figura",
     "edit": "Editar",
     "addToCollection": "Agregar a la Colección",
@@ -201,7 +201,7 @@
       "gold24k": "Oro de 24K",
       "manga": "Versión del Manga",
       "plainCloth": "Plain Cloth",
-      "multiPack": "Set de múltiples items"
+      "multiPack": "Set de múltiples Items"
     },
     "notes": {
       "title": "Información Adicional"
@@ -232,7 +232,7 @@
     "related": {
       "title": "Figuras Relacionadas"
     },
-    "successMessage": "¡Agregada a la colección con éxito!"
+    "successMessage": "¡Agregada a la colección correctamente!"
   },
   "import": {
     "eyebrow": "Administración",
@@ -240,11 +240,11 @@
     "subtitle": "Ejecuta la migración de figuras desde Google Sheets y revisa las ejecuciones anteriores.",
     "loadButton": "Migrar Todas las Figuras",
     "importing": "Migrando...",
-    "description": "Usa esta página cuando necesites actualizar las figuras de la aplicación. Cada ejecución queda registrada en el historial de importaciones.",
+    "description": "Usa esta página cuando necesites actualizar las figuras de la aplicación. Cada ejecución queda registrada en el historial de migraciones.",
     "missingPermission": "No tienes el permiso requerido: figurines:import",
     "successMessage": "Todas las figuras fueron migradas.",
     "emptyTitle": "Aún no hay migraciones de figuras.",
-    "emptySubtitle": "Ejecuta una migración para comenzar a construir el historial.",
+    "emptySubtitle": "Ejecuta una migración para comenzar a crear el historial.",
     "columns": {
       "status": "Estado",
       "imported": "Migradas",
@@ -252,11 +252,11 @@
       "completedAt": "Fecha de Término"
     },
     "statusWithErrors": "Migración completada con errores",
-    "statusSuccessful": "Migración completada con éxito",
+    "statusSuccessful": "Migración completada correctamente",
     "noErrors": "Sin errores",
     "confirm": {
       "title": "Migrar Todas las Figuras",
-      "body": "Esto iniciará la migración de todas las figuras desde la hoja de cálculo. Puedes ejecutar este proceso varias veces siempre que necesites actualizar los datos.",
+      "body": "Esto iniciará la migración de todas las figuras desde la hoja de cálculo. Puedes ejecutar este proceso varias veces cuando necesites actualizar los datos.",
       "warning": "Advertencia: este proceso sobrescribirá las figuras existentes cuando se ejecute la migración.",
       "cancel": "Cancelar",
       "start": "Iniciar Migración"

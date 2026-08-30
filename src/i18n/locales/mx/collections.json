@@ -18,7 +18,7 @@
   },
   "overview": {
     "title": "Resumen de Colecciones",
-    "description": "Realiza un seguimiento de tus colecciones a medida que crecen y compara lo que es único frente a lo que se repite. \"Entradas totales\" cuenta cada colocación de figura en cada colección, mientras que \"Figuras únicas\" cuenta cada figura solo una vez. Los conteos incluyen tanto los lanzamientos reservados próximos como los artículos ya en tu posesión cuando estén disponibles en tus colecciones.",
+    "description": "Da seguimiento a tus colecciones a medida que crecen y compara las figuras únicas con las que se repiten. \"Entradas totales\" cuenta cada vez que una figura aparece en una colección, mientras que \"Figuras únicas\" cuenta cada figura una sola vez. Los conteos incluyen tanto los próximos lanzamientos que tengas reservados como las figuras que ya tengas en tu colección, cuando estén disponibles en tus colecciones.",
     "largestCollectionDesc_one": "Colección más grande: {{name}} con {{count}} figura",
     "largestCollectionDesc_other": "Colección más grande: {{name}} con {{count}} figuras",
     "totalCollections": {
@@ -27,15 +27,15 @@
     },
     "totalFigurineEntries": {
       "label": "Total de figuras",
-      "tooltip": "Cuenta todas las colocaciones, incluidos los lanzamientos reservados próximos y las figuras ya poseídas. Si la misma figura aparece en 3 colecciones, cuenta como 3 entradas."
+      "tooltip": "Cuenta todas las apariciones, incluidos los próximos lanzamientos que tengas reservados y las figuras que ya tengas. Si la misma figura aparece en 3 colecciones, cuenta como 3 entradas."
     },
     "uniqueFigurines": {
       "label": "Figuras únicas",
-      "tooltip": "Cuenta cada figura solo una vez, incluso si aparece en múltiples colecciones."
+      "tooltip": "Cuenta cada figura una sola vez, incluso si aparece en varias colecciones."
     },
     "averageFigurinesPerCollection": {
       "label": "Promedio por colección",
-      "tooltip": "Número promedio de figuras por colección = entradas totales de figuras divididas por el total de colecciones."
+      "tooltip": "Número promedio de figuras por colección = total de entradas de figuras dividido entre el total de colecciones."
     },
     "repeatedEntries": {
       "label": "Entradas repetidas en las colecciones: {{total}}",
@@ -43,14 +43,14 @@
       "noRepetitions": " (ninguna figura se repite en las colecciones)."
     },
     "largestCollection": {
-        "title": "Colecciones más grandes por cantidad de figuras",
-        "tooltip": "Muestra hasta 5 colecciones ordenadas por cantidad de figuras. Barras más largas significan más figuras en esa colección.",
-        "total_one": "{{count}} figura",
-        "total_other": "{{count}} figuras"
+      "title": "Colecciones más grandes por cantidad de figuras",
+      "tooltip": "Muestra hasta 5 colecciones ordenadas por cantidad de figuras. Las barras más largas indican que hay más figuras en esa colección.",
+      "total_one": "{{count}} figura",
+      "total_other": "{{count}} figuras"
     },
     "uniqueFigurinesRatio": {
       "title": "Proporción de figuras únicas",
-      "tooltip": "Porcentaje de entradas que son únicas: figuras únicas divididas por el total de entradas de figuras.",
+      "tooltip": "Porcentaje de entradas que corresponden a figuras únicas: figuras únicas divididas entre el total de entradas de figuras.",
       "unique": "única",
       "footer_one": "{{count}} figura única de {{entries}} entradas totales.",
       "footer_other": "{{count}} figuras únicas de {{entries}} entradas totales."
@@ -65,7 +65,7 @@
     "dialogDelete": {
       "title": "¿Eliminar colección?",
       "description": "¿Estás seguro de que deseas eliminar \"{{name}}\"?",
-      "description2": "Esta acción no se puede deshacer. Eliminar esta colección eliminará permanentemente la colección, junto con todas las figuras que hayas agregado a ella.",
+      "description2": "Esta acción no se puede deshacer. Al eliminar esta colección, se eliminará permanentemente junto con todas las figuras que hayas agregado a ella.",
       "description3": "Si deseas organizar esas figuras nuevamente, deberás crear una nueva colección y agregarlas manualmente.",
       "cancel": "Cancelar",
       "deleting": "Eliminando...",

@@ -2,11 +2,11 @@
   "header": {
     "eyebrow": "Colecciones",
     "title": "Myth Cloth",
-    "subtitle": "Explora el catálogo completo de Myth Cloth. Navega por las figuras lanzadas, prototipos, anunciadas, rumoreadas y no lanzadas, con filtros para encontrar rápidamente lo que buscas."
+    "subtitle": "Explora el catálogo completo de Myth Cloth. Consulta las figuras lanzadas, los prototipos, las anunciadas, las rumoreadas y las que aún no se han lanzado, y utiliza los filtros para encontrar rápidamente lo que buscas."
   },
   "toolbar": {
     "ownershipAll": "Todas",
-    "ownershipOwned": "Propias",
+    "ownershipOwned": "En propiedad",
     "collectionView": "Vista de Colección",
     "allFigurines": "Todas las Figuras",
     "newFigurine": "Nueva Figura",
@@ -30,18 +30,18 @@
       "originalColor": "OCE",
       "revival": "Revival",
       "plainCloth": "Plain Cloth",
-      "battleDamaged": "Dañado en Batalla",
+      "battleDamaged": "Dañada en Batalla",
       "goldenArmor": "Armadura Dorada",
       "gold24k": "Oro de 24K",
       "manga": "Versión Manga",
-      "multiPack": "Paquete Múltiple",
+      "multiPack": "Pack múltiple",
       "articulable": "Articulable",
       "restocks": "Reposiciones"
     }
   },
   "matching": {
     "noneInFilter": "Ninguna figura coincide con los filtros actuales.",
-    "noneInCollection": "No hay figuras en la colección aún."
+    "noneInCollection": "Aún no hay figuras en la colección."
   },
   "status": {
     "labels": {
@@ -53,10 +53,10 @@
     },
     "helpers": {
       "RELEASED": "Ya disponible en el mercado.",
-      "ANNOUNCED": "Futuros lanzamientos que fueron anunciados oficialmente.",
-      "RUMORED": "Lanzamientos no confirmados con información circulante.",
+      "ANNOUNCED": "Próximos lanzamientos que han sido anunciados oficialmente.",
+      "RUMORED": "Lanzamientos no confirmados sobre los que circula información.",
       "PROTOTYPE": "Figuras en fase de prototipo; el diseño aún puede cambiar.",
-      "UNRELEASED": "Figuras canceladas o no lanzadas indefinidamente."
+      "UNRELEASED": "Figuras canceladas o cuyo lanzamiento se ha pospuesto indefinidamente."
     }
   },
   "figurineCount_one": "{{count}} figura",
@@ -70,17 +70,17 @@
   "card": {
     "noImage": "Sin imagen",
     "tamashiiTooltip": "Figura conmemorativa de Tamashii Nations",
-    "anniversaryTooltip": "Edición Aniversario",
-    "restocked_one": "Repuesto {{count}} vez.",
-    "restocked_other": "Repuesto {{count}} veces.",
-    "restockedLatest_one": "Repuesto {{count}} vez. Último: {{date}}.",
-    "restockedLatest_other": "Repuesto {{count}} veces. Último: {{date}}.",
+    "anniversaryTooltip": "Edición de Aniversario",
+    "restocked_one": "Repuesta {{count}} Vez.",
+    "restocked_other": "Repuesta {{count}} Veces.",
+    "restockedLatest_one": "Repuesta {{count}} Vez. Última: {{date}}.",
+    "restockedLatest_other": "Repuesta {{count}} Veces. Última: {{date}}.",
     "restockFromLabel": "Reposición desde {{date}}",
     "restockLabel": "Reposición"
   },
   "messages": {
-    "slowLoading": "Actualmente estamos cargando las figurinas y recuperando la información más reciente. Esto puede tardar un poco más de lo habitual. Por favor, mantén esta página abierta mientras terminamos de cargar los datos.",
-    "figurineDeleted": "Figurina eliminada con éxito."
+    "slowLoading": "Estamos cargando las figuras y obteniendo la información más reciente. Esto puede tardar un poco más de lo habitual. Mantén esta página abierta mientras terminamos de cargar los datos.",
+    "figurineDeleted": "Figura eliminada correctamente."
   },
   "collection": {
     "viewing": "Viendo {{collection}}",
@@ -89,19 +89,19 @@
     "totalSelected_one": "{{count}} figura seleccionada",
     "totalSelected_other": "{{count}} figuras seleccionadas",
     "selectThisPage": "Esta página ({{count}})",
-    "selectAllPagesLoading": "Cargando ...",
+    "selectAllPagesLoading": "Cargando...",
     "selectAllPages": "Todas las páginas ({{count}})",
     "clearSelection": "Limpiar",
-    "addToCollection": "Agregar a la Colección",
+    "addToCollection": "Añadir a la colección",
     "bulkAddToCollectionModal": {
-      "title_one": "Agregar {{count}} figura a la Colección",
-      "title_other": "Agregar {{count}} figuras a la Colección",
+      "title_one": "Añadir {{count}} figura a la colección",
+      "title_other": "Añadir {{count}} figuras a la colección",
       "selected": "Figuras Seleccionadas:",
       "totalSelected_one": "{{count}} figura",
       "totalSelected_other": "{{count}} figuras",
       "existing": {
         "title": "Tus Colecciones",
-        "noCollections": "Aún no hay colecciones. ¡Crea una a continuación!",
+        "noCollections": "Aún no tienes colecciones. ¡Crea una a continuación!",
         "figurinesPerCollection_one": "{{count}} figura",
         "figurinesPerCollection_other": "{{count}} figuras"
       },
@@ -117,25 +117,25 @@
       "actions": {
         "cancel": "Cancelar",
         "creating": "Creando...",
-        "create_one": "Crear y Agregar {{count}} figura",
-        "create_other": "Crear y Agregar {{count}} figuras",
-        "adding": "Agregando...",
-        "add_one": "Agregar {{count}} figura",
-        "add_other": "Agregar {{count}} figuras"
+        "create_one": "Crear y añadir {{count}} figura",
+        "create_other": "Crear y añadir {{count}} figuras",
+        "adding": "Añadiendo...",
+        "add_one": "Añadir {{count}} figura",
+        "add_other": "Añadir {{count}} figuras"
       },
-      "createdAndAddedSuccessful_one": "¡Creada \"{{name}}\" y agregada {{count}} figura!",
-      "createdAndAddedSuccessful_other": "¡Creada \"{{name}}\" y agregadas {{count}} figuras!",
-      "duplicateName": "La colección \"{{name}}\" ya existe. Por favor elige un nombre diferente.",
-      "collectionRequired": "Por favor selecciona al menos una colección",
-      "addedSuccessful_one": "¡Agregada {{count}} figura a la colección {{collection}}!",
-      "addedSuccessful_other": "¡Agregadas {{count}} figuras a la colección {{collection}}!"
+      "createdAndAddedSuccessful_one": "¡Se ha creado \"{{name}}\" y se ha añadido {{count}} figura!",
+      "createdAndAddedSuccessful_other": "¡Se ha creado \"{{name}}\" y se han añadido {{count}} figuras!",
+      "duplicateName": "La colección \"{{name}}\" ya existe. Elige otro nombre.",
+      "collectionRequired": "Selecciona al menos una colección.",
+      "addedSuccessful_one": "¡Se ha añadido {{count}} figura a la colección {{collection}}!",
+      "addedSuccessful_other": "¡Se han añadido {{count}} figuras a la colección {{collection}}!"
     },
     "addToCollectionModal": {
-      "title": "Agregar a Colección",
-      "adding": "Agregando:",
+      "title": "Añadir a la colección",
+      "adding": "Añadiendo:",
       "existing": {
         "title": "Tus Colecciones",
-        "noCollections": "Aún no hay colecciones. ¡Crea una a continuación!",
+        "noCollections": "Aún no tienes colecciones. ¡Crea una a continuación!",
         "figurinesPerCollection_one": "{{count}} figura",
         "figurinesPerCollection_other": "{{count}} figuras"
       },
@@ -144,7 +144,7 @@
         "name": {
           "label": "Nombre de la colección",
           "required": "El nombre de la colección es obligatorio.",
-          "duplicate": "La colección \"{{name}}\" ya existe. Por favor elige un nombre diferente."
+          "duplicate": "La colección \"{{name}}\" ya existe. Elige otro nombre."
         },
         "imageUrlLabel": "URL de la imagen de tu colección (opcional)",
         "descriptionLabel": "Descripción (opcional)"
@@ -152,56 +152,56 @@
       "actions": {
         "cancel": "Cancelar",
         "creating": "Creando...",
-        "create": "Crear y Agregar",
-        "adding": "Agregando...",
-        "add_one": "Agregar a {{count}} colección",
-        "add_other": "Agregar a {{count}} colecciones"
+        "create": "Crear y Añadir",
+        "adding": "Añadiendo...",
+        "add_one": "Añadir a {{count}} colección",
+        "add_other": "Añadir a {{count}} colecciones"
       },
-      "createdAndAddedSuccessful": "¡Creada \"{{collection}}\" y agregada \"{{figurine}}\"!",
-      "collectionRequired": "Por favor selecciona al menos una colección",
-      "addedSuccessful_one": "¡Agregada \"{{name}}\" a {{count}} colección!",
-      "addedSuccessful_other": "¡Agregadas \"{{name}}\" a {{count}} colecciones!"
+      "createdAndAddedSuccessful": "¡Se ha creado \"{{collection}}\" y se ha añadido \"{{figurine}}\"!",
+      "collectionRequired": "Selecciona al menos una colección.",
+      "addedSuccessful_one": "¡Se ha añadido \"{{name}}\" a {{count}} colección!",
+      "addedSuccessful_other": "¡Se ha añadido \"{{name}}\" a {{count}} colecciones!"
     }
   },
   "details": {
     "eyebrow": "Figura",
-    "subtitle": "Revisa los detalles del lanzamiento, los precios del mercado, los enlaces a tiendas y el estado de la colección para esta entrada de Myth Cloth.",
+    "subtitle": "Consulta los detalles del lanzamiento, los precios de mercado, los enlaces a tiendas y el estado de la colección de esta figura de Myth Cloth.",
     "notFound": "Figura no encontrada.",
     "lineUp": "Línea",
     "series": "Serie",
     "group": "Grupo",
     "distribution": "Distribución",
-    "prevFigurine": "Anterior Figura",
-    "nextFigurine": "Siguiente Figura",
+    "prevFigurine": "Figura Anterior",
+    "nextFigurine": "Figura Siguiente",
     "edit": "Editar",
-    "addToCollection": "Agregar a la Colección",
+    "addToCollection": "Añadir a la Colección",
     "revival": "Revival",
-    "liveMarketPrice": "Precio del Mercado en Vivo",
+    "liveMarketPrice": "Precio de mercado en tiempo real",
     "live": "EN VIVO",
-    "realTimeAverage": "Promedio en tiempo real de las tiendas",
-    "noImageAvailable": "No hay imagen disponible",
+    "realTimeAverage": "Media en tiempo real de las tiendas",
+    "noImageAvailable": "No hay ninguna imagen disponible",
     "commemorativeTitle": "Figura de evento conmemorativo.",
     "commemorativeLabel": "Conmemorativa",
     "releaseStatus": "Estado",
     "restock": "Relanzamiento",
     "anniversary": "Aniversario",
-    "ownedInCollection": "Propias en {{name}}",
-    "missingInCollection": "Faltante en {{name}}",
-    "officialPage": "Abrir Página Oficial",
-    "restockReferences": "Referencias de Relanzamiento",
-    "restockText": "Esta figura es un relanzamiento. Abre un lanzamiento previo relacionado:",
+    "ownedInCollection": "En propiedad en {{name}}",
+    "missingInCollection": "Falta en {{name}}",
+    "officialPage": "Abrir página oficial",
+    "restockReferences": "Referencias de relanzamiento",
+    "restockText": "Esta figura es un relanzamiento. Abre uno de los lanzamientos anteriores relacionados:",
     "attributes": {
       "title": "Atributos",
-      "metalBody": "Cuerpo Metálico",
+      "metalBody": "Cuerpo metálico",
       "articulable": "Articulable",
       "revival": "Revival",
       "oce": "OCE",
-      "battleDamaged": "Daño en Batalla",
-      "goldenArmor": "Armadura Dorada",
+      "battleDamaged": "Daño de batalla",
+      "goldenArmor": "Armadura dorada",
       "gold24k": "Oro de 24K",
-      "manga": "Versión del Manga",
+      "manga": "Versión manga",
       "plainCloth": "Plain Cloth",
-      "multiPack": "Set de múltiples items"
+      "multiPack": "Pack múltiple"
     },
     "notes": {
       "title": "Información Adicional"
@@ -209,57 +209,57 @@
     "distributors": {
       "title": "Distribuidores Oficiales en Todo el Mundo",
       "price": "Precio",
-      "n/a": "N/A",
+      "n/a": "N/D",
       "withTax": "{{price}} con impuestos",
-      "preOrder": "Pre-Orden",
+      "preOrder": "Reserva",
       "release": "Lanzamiento",
       "unconfirmed": "(no confirmado)",
-      "tbd": "Por Determinar"
+      "tbd": "Por determinar"
     },
     "chronology": {
       "title": "Cronología",
-      "tbd": "Por Determinar",
+      "tbd": "Por determinar",
       "release": "Lanzamiento"
     },
     "historicalPrices": {
-      "title": "Precios Históricos",
+      "title": "Precios históricos",
       "store": "Tienda",
       "all": "Todas",
-      "allStores": "Todas las Tiendas",
+      "allStores": "Todas las tiendas",
       "noPrices": "No hay precios históricos disponibles para la tienda seleccionada.",
       "openProduct": "Abrir producto"
     },
     "related": {
       "title": "Figuras Relacionadas"
     },
-    "successMessage": "¡Agregada a la colección con éxito!"
+    "successMessage": "¡Se ha añadido a la colección correctamente!"
   },
   "import": {
     "eyebrow": "Administración",
     "title": "Importación de Figuras",
-    "subtitle": "Ejecuta importaciones de figuras desde Google Sheets y revisa las ejecuciones anteriores.",
-    "loadButton": "Importar Todas las Figuras",
+    "subtitle": "Ejecuta importaciones de figuras desde Google Sheets y consulta las ejecuciones anteriores.",
+    "loadButton": "Importar todas las figuras",
     "importing": "Importando...",
-    "description": "Usa esta página cuando necesites actualizar las figuras de la aplicación. Cada ejecución queda registrada en el historial de importaciones.",
-    "missingPermission": "No tienes el permiso requerido: figurines:import",
-    "successMessage": "Todas las figuras fueron importadas.",
+    "description": "Utiliza esta página cuando necesites actualizar las figuras de la aplicación. Cada ejecución queda registrada en el historial de importaciones.",
+    "missingPermission": "No tienes el permiso necesario: figurines:import",
+    "successMessage": "Todas las figuras se han importado correctamente.",
     "emptyTitle": "Aún no hay importaciones de figuras.",
-    "emptySubtitle": "Ejecuta una importación para comenzar a construir el historial.",
+    "emptySubtitle": "Ejecuta una importación para empezar a crear el historial.",
     "columns": {
       "status": "Estado",
       "imported": "Importadas",
       "errorMessage": "Mensaje de Error",
-      "completedAt": "Fecha de Terminación"
+      "completedAt": "Fecha de Finalización"
     },
     "statusWithErrors": "Importación completada con errores",
-    "statusSuccessful": "Importación completada con éxito",
+    "statusSuccessful": "Importación completada correctamente",
     "noErrors": "Sin errores",
     "confirm": {
-      "title": "Importar Todas las Figuras",
-      "body": "Esto iniciará la importación de todas las figuras desde la hoja de cálculo. Puedes ejecutar este proceso varias veces siempre que necesites actualizar los datos.",
-      "warning": "Advertencia: este proceso sobrescribirá las figuras existentes cuando se ejecute la importación.",
+      "title": "Importar todas las figuras",
+      "body": "Esto iniciará la importación de todas las figuras desde la hoja de cálculo. Puedes ejecutar este proceso tantas veces como necesites para actualizar los datos.",
+      "warning": "Advertencia: este proceso sobrescribirá las figuras existentes al ejecutar la importación.",
       "cancel": "Cancelar",
-      "start": "Iniciar Importación"
+      "start": "Iniciar importación"
     }
   }
 }

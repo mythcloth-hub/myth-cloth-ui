@@ -2,11 +2,11 @@
   "yourAccount": {
     "eyebrow": "Configuración • Personal",
     "title": "Tu Cuenta",
-    "subtitle": "Revisa tu perfil y el estado de autenticación. El tema y la moneda de visualización se administran en Preferencias.",
+    "subtitle": "Revisa tu perfil y el estado de tu autenticación. El tema y la moneda de visualización se administran en Preferencias.",
     "profile": {
       "collectorId": "ID de Coleccionista",
       "role": "Rol",
-      "noRoleAssigned": "No se ha asignado ningún rol",
+      "noRoleAssigned": "No tienes ningún rol asignado",
       "permissions": "Permisos",
       "logOut": "Cerrar Sesión",
       "guest": "Actualmente estás navegando como invitado. Inicia sesión desde el menú lateral para ver los detalles de tu cuenta."
@@ -20,7 +20,7 @@
   "preferences": {
     "eyebrow": "Configuración • Personal",
     "title": "Preferencias",
-    "subtitle": "Configura las opciones visuales y de visualización globales para toda la aplicación.",
+    "subtitle": "Configura las opciones visuales y de visualización generales para toda la aplicación.",
     "language": {
       "title": "Idioma",
       "description": "Elige el idioma que se utilizará en los menús, etiquetas y mensajes.",
