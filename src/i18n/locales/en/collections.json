@@ -1,0 +1,84 @@
+{
+  "header": {
+    "eyebrow": "Collections",
+    "title": "My Collections",
+    "subtitle": "Manage your collections and keep your different collecting goals organized.",
+    "newCollection": "New Collection"
+  },
+  "messages": {
+    "duplicationStarted": "Collection \"{{name}}\" duplication started.",
+    "removed": "Collection \"{{name}}\" was removed.",
+    "required": "Collection name is required.",
+    "updated": "Collection \"{{name}}\" was updated."
+  },
+  "empty": {
+    "noCollections": "No collections yet",
+    "description": "Collections are created automatically when you add a figurine to one. Open any figurine and use Add to Collection to create your first collection.",
+    "browseFigurines": "Browse Figurines"
+  },
+  "overview": {
+    "title": "Collections Overview",
+    "description": "Track your collections as they grow and compare what is unique versus repeated. \"Total entries\" counts every figurine placement in every collection, while \"Unique figurines\" counts each figurine only once. Counts include both upcoming reserved releases and items already in hand when available in your collections.",
+    "largestCollectionDesc_one": "Largest collection: {{name}} with {{count}} figurine",
+    "largestCollectionDesc_other": "Largest collection: {{name}} with {{count}} figurines",
+    "totalCollections": {
+      "label": "Total collections",
+      "tooltip": "How many different collections you currently have."
+    },
+    "totalFigurineEntries": {
+      "label": "Total figurine entries",
+      "tooltip": "Counts all placements, including upcoming reserved releases and already-owned released figures. If the same figurine appears in 3 collections, it counts as 3 entries."
+    },
+    "uniqueFigurines": {
+      "label": "Unique figurines",
+      "tooltip": "Counts each figurine only once, even if it appears in multiple collections."
+    },
+    "averageFigurinesPerCollection": {
+      "label": "Average per collection",
+      "tooltip": "Average number of figurines per collection = total figurine entries divided by total collections."
+    },
+    "repeatedEntries": {
+      "label": "Repeated entries across collections: {{total}}",
+      "repetitions": " (same figurine appears in more than one collection).",
+      "noRepetitions": " (no figurine is repeated across collections)."
+    },
+    "largestCollection": {
+        "title": "Largest Collections by Figurine Count",
+        "tooltip": "Shows up to 5 collections ordered by figurine count. Longer bars mean more figurines in that collection.",
+        "total_one": "{{count}} figurine",
+        "total_other": "{{count}} figurines"
+    },
+    "uniqueFigurinesRatio": {
+      "title": "Unique Figurines Ratio",
+      "tooltip": "Percent of entries that are unique: unique figurines divided by total figurine entries.",
+      "unique": "unique",
+      "footer_one": "{{count}} unique figurine out of {{entries}} total entries.",
+      "footer_other": "{{count}} unique figurines out of {{entries}} total entries."
+    }
+  },
+  "myCollection": {
+    "totalFigurines_one": "{{count}} figurine in this collection",
+    "totalFigurines_other": "{{count}} figurines in this collection",
+    "edit": "Edit",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "dialogDelete": {
+      "title": "Delete Collection?",
+      "description": "Are you sure you want to delete \"{{name}}\"?",
+      "description2": "This action cannot be undone. Deleting this collection will permanently remove it, along with all the figurines you've added to it.",
+      "description3": "If you want to organize those figurines again, you'll need to create a new collection and add them manually.",
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "delete": "Delete"
+    },
+    "dialogEdit": {
+      "title": "Edit Collection",
+      "name": "Collection name",
+      "imageUrl": "Your collection image URL (optional)",
+      "description": "Description (optional)",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "save": "Save Changes"
+    }
+  }
+}

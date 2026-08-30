@@ -1,0 +1,98 @@
+{
+  "header": {
+    "eyebrow": "Collections",
+    "title": "Mes collections",
+    "subtitle": "Gérez vos collections et gardez vos différents objectifs de collection bien organisés.",
+    "newCollection": "Nouvelle collection"
+  },
+
+  "messages": {
+    "duplicationStarted": "La duplication de la collection \"{{name}}\" a commencé.",
+    "removed": "La collection \"{{name}}\" a été supprimée.",
+    "required": "Le nom de la collection est obligatoire.",
+    "updated": "La collection \"{{name}}\" a été mise à jour."
+  },
+
+  "empty": {
+    "noCollections": "Vous n'avez encore aucune collection",
+    "description": "Les collections sont créées automatiquement lorsque vous ajoutez une figurine à une collection. Ouvrez une figurine et utilisez Ajouter à la collection pour créer votre première collection.",
+    "browseFigurines": "Explorer les figurines"
+  },
+
+  "overview": {
+    "title": "Aperçu des collections",
+    "description": "Suivez l'évolution de vos collections et comparez les figurines uniques avec celles qui apparaissent plusieurs fois. « Entrées totales » compte chaque apparition d'une figurine dans chaque collection, tandis que « Figurines uniques » ne compte chaque figurine qu'une seule fois. Les totaux incluent les prochaines sorties que vous avez réservées ainsi que les figurines que vous possédez déjà, lorsqu'elles sont disponibles dans vos collections.",
+
+    "largestCollectionDesc_one": "Collection la plus importante : {{name}} avec {{count}} figurine",
+    "largestCollectionDesc_other": "Collection la plus importante : {{name}} avec {{count}} figurines",
+
+    "totalCollections": {
+      "label": "Nombre total de collections",
+      "tooltip": "Nombre de collections différentes que vous possédez actuellement."
+    },
+
+    "totalFigurineEntries": {
+      "label": "Total des figurines",
+      "tooltip": "Compte toutes les apparitions, y compris les prochaines sorties que vous avez réservées et les figurines que vous possédez déjà. Si la même figurine apparaît dans 3 collections, elle compte comme 3 entrées."
+    },
+
+    "uniqueFigurines": {
+      "label": "Figurines uniques",
+      "tooltip": "Compte chaque figurine une seule fois, même si elle apparaît dans plusieurs collections."
+    },
+
+    "averageFigurinesPerCollection": {
+      "label": "Moyenne par collection",
+      "tooltip": "Nombre moyen de figurines par collection = nombre total d'entrées de figurines divisé par le nombre total de collections."
+    },
+
+    "repeatedEntries": {
+      "label": "Entrées présentes dans plusieurs collections : {{total}}",
+      "repetitions": " (la même figurine apparaît dans plusieurs collections).",
+      "noRepetitions": " (aucune figurine n'apparaît dans plusieurs collections)."
+    },
+
+    "largestCollection": {
+      "title": "Collections les plus importantes par nombre de figurines",
+      "tooltip": "Affiche jusqu'à 5 collections classées par nombre de figurines. Les barres les plus longues indiquent un plus grand nombre de figurines dans la collection.",
+      "total_one": "{{count}} figurine",
+      "total_other": "{{count}} figurines"
+    },
+
+    "uniqueFigurinesRatio": {
+      "title": "Proportion de figurines uniques",
+      "tooltip": "Pourcentage d'entrées correspondant à des figurines uniques : nombre de figurines uniques divisé par le nombre total d'entrées de figurines.",
+      "unique": "unique",
+      "footer_one": "{{count}} figurine unique sur {{entries}} entrées au total.",
+      "footer_other": "{{count}} figurines uniques sur {{entries}} entrées au total."
+    }
+  },
+
+  "myCollection": {
+    "totalFigurines_one": "{{count}} figurine dans cette collection",
+    "totalFigurines_other": "{{count}} figurines dans cette collection",
+    "edit": "Modifier",
+    "duplicate": "Dupliquer",
+    "delete": "Supprimer",
+
+    "dialogDelete": {
+      "title": "Supprimer la collection ?",
+      "description": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ?",
+      "description2": "Cette action est irréversible. La suppression de cette collection entraînera sa suppression définitive, ainsi que celle de toutes les figurines que vous y avez ajoutées.",
+      "description3": "Si vous souhaitez organiser à nouveau ces figurines, vous devrez créer une nouvelle collection et les y ajouter manuellement.",
+      "cancel": "Annuler",
+      "deleting": "Suppression...",
+      "delete": "Supprimer"
+    },
+
+    "dialogEdit": {
+      "title": "Modifier la collection",
+      "name": "Nom de la collection",
+      "imageUrl": "URL de l'image de votre collection (facultatif)",
+      "description": "Description de la collection (facultatif)",
+      "cancel": "Annuler",
+      "saving": "Enregistrement...",
+      "save": "Enregistrer les modifications"
+    }
+  }
+}
