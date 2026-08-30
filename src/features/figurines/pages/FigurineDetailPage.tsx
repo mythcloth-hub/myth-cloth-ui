@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../auth/AuthContext";
 import { useDisplayCurrency } from "../../../currency/CurrencyContext";
@@ -130,6 +131,8 @@ function getRestockOrdinalLabel(restockCount: number): string {
 }
 
 export default function FigurineDetailPage() {
+  const { t } = useTranslation("figurines");
+
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -558,7 +561,7 @@ export default function FigurineDetailPage() {
   if (!figurine) {
     return (
       <Box sx={{ padding: 3 }}>
-        <Alert severity="error">Figurine not found.</Alert>
+        <Alert severity="error">{t("details.notFound")}</Alert>
       </Box>
     );
   }
@@ -566,10 +569,10 @@ export default function FigurineDetailPage() {
   const images = figurine.officialImageUrls ?? [];
   const mainImage = images[selectedImage] ?? null;
   const catalogDetails = [
-    { label: "Line Up", value: figurine.lineUp.description },
-    { label: "Series", value: figurine.series.description },
-    { label: "Group", value: figurine.group?.description },
-    { label: "Distribution", value: figurine.distribution?.description },
+    { label: t("details.lineUp"), value: figurine.lineUp.description },
+    { label: t("details.series"), value: figurine.series.description },
+    { label: t("details.group"), value: figurine.group?.description },
+    { label: t("details.distribution"), value: figurine.distribution?.description },
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
   const notesText = figurine.notes ? figurine.notes.replace(/\\n/g, "\n") : "";
   const canAddFigurinesToCollections = hasPermission("collections:figurines:add");
@@ -614,16 +617,16 @@ export default function FigurineDetailPage() {
 
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <AppPageHeader
-            eyebrow="Figurines"
+            eyebrow={t("details.eyebrow")}
             title={figurine.displayableName}
-            subtitle="Review release details, market pricing, store links, and collection status for this Myth Cloth entry."
+            subtitle={t("details.subtitle")}
             compact
             actions={
               <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", justifyContent: { xs: "flex-start", md: "flex-end" } }}>
                   {navList.length > 0 && (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <Tooltip title={prevId ? "Previous figurine" : ""}>
+                      <Tooltip title={prevId ? t("details.prevFigurine") : ""}>
                         <span>
                           <IconButton
                             onClick={() =>
@@ -646,7 +649,7 @@ export default function FigurineDetailPage() {
                       <Typography variant="caption" sx={{ color: "text.secondary", minWidth: 40, textAlign: "center" }}>
                         {currentIndex + 1} / {navList.length}
                       </Typography>
-                      <Tooltip title={nextId ? "Next figurine" : ""}>
+                      <Tooltip title={nextId ? t("details.nextFigurine") : ""}>
                         <span>
                           <IconButton
                             onClick={() =>
@@ -675,7 +678,7 @@ export default function FigurineDetailPage() {
                       onClick={() => navigate(`/figurines/${id}/edit`)}
                       sx={{ flexShrink: 0 }}
                     >
-                      Edit
+                      {t("details.edit")}
                     </Button>
                   )}
                   {shouldShowAddToCollectionButton && (
@@ -704,7 +707,7 @@ export default function FigurineDetailPage() {
                         },
                       }}
                     >
-                      Add to Collection
+                      {t("details.addToCollection")}
                     </Button>
                   )}
                 </Box>
@@ -751,7 +754,7 @@ export default function FigurineDetailPage() {
                   boxShadow: "0 10px 24px rgba(0,0,0,0.35)",
                 }}
               >
-                Revival
+                {t("details.revival")}
               </Box>
             )}
 
@@ -784,7 +787,7 @@ export default function FigurineDetailPage() {
                     variant="caption"
                     sx={{ color: "text.secondary", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700, fontSize: "0.62rem" }}
                   >
-                    Live Market Price
+                    {t("details.liveMarketPrice")}
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.45 }}>
                     <Box
@@ -804,12 +807,12 @@ export default function FigurineDetailPage() {
                       }}
                     />
                     <Typography variant="caption" sx={{ color: "info.main", fontWeight: 700, letterSpacing: "0.05em", fontSize: "0.62rem" }}>
-                      LIVE
+                      {t("details.live")}
                     </Typography>
                   </Box>
                 </Box>
 
-                <Tooltip title="Real-time average from stores" placement="bottom-end">
+                <Tooltip title={t("details.realTimeAverage")} placement="bottom-end">
                   <Typography
                     variant="body2"
                     sx={{
@@ -853,7 +856,7 @@ export default function FigurineDetailPage() {
                 }}
               >
                 <ImageNotSupportedOutlinedIcon sx={{ fontSize: 64, opacity: 0.3 }} />
-                <Typography variant="body2" sx={{ opacity: 0.4 }}>No image available</Typography>
+                <Typography variant="body2" sx={{ opacity: 0.4 }}>{t("details.noImageAvailable")}</Typography>
               </Box>
             )}
           </Box>
@@ -911,11 +914,11 @@ export default function FigurineDetailPage() {
                       <Typography variant="body2" sx={{ color: "text.primary" }}>
                         {value}
                       </Typography>
-                      <Tooltip title="Commemorative event figurine." arrow>
+                      <Tooltip title={t("details.commemorativeTitle")} arrow>
                         <Chip
                           size="small"
                           icon={<CelebrationIcon sx={{ fontSize: "0.84rem !important" }} />}
-                          label="Commemorative"
+                          label={t("details.commemorativeLabel")}
                           sx={{
                             height: 22,
                             fontSize: "0.72rem",
@@ -943,7 +946,7 @@ export default function FigurineDetailPage() {
                 return (
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "0.65rem" }}>
-                      Release Status
+                      {t("details.releaseStatus")}
                     </Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5 }}>
                       <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: cfg.color, border: `1px solid ${cfg.borderColor}`, flexShrink: 0 }} />
@@ -957,7 +960,7 @@ export default function FigurineDetailPage() {
               {hasRestocks && (
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "0.65rem" }}>
-                    Restock
+                    {t("details.restock")}
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5 }}>
                     <AutorenewIcon sx={{ fontSize: 16, color: "info.main" }} />
@@ -970,7 +973,7 @@ export default function FigurineDetailPage() {
               {figurine.anniversary && (
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "0.65rem" }}>
-                    Anniversary
+                    {t("details.anniversary")}
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5 }}>
                     <AnniversaryIcon sx={{ fontSize: 18, color: "#bfa100" }} />
@@ -1000,8 +1003,8 @@ export default function FigurineDetailPage() {
                         icon={isInSelectedCollection ? <CheckCircleOutlineIcon /> : <CancelOutlinedIcon />}
                         label={
                           isInSelectedCollection
-                            ? `Owned in ${selectedCollectionContext.name}`
-                            : `Missing in ${selectedCollectionContext.name}`
+                            ? t("details.ownedInCollection", { name: selectedCollectionContext.name })
+                            : t("details.missingInCollection", { name: selectedCollectionContext.name })
                         }
                         variant="outlined"
                         sx={{
@@ -1037,7 +1040,7 @@ export default function FigurineDetailPage() {
                         endIcon={<OpenInNewIcon />}
                         sx={{ flexShrink: 0, alignSelf: { xs: "stretch", sm: "auto" }, ml: { sm: "auto" } }}
                       >
-                        Open Official Page
+                        {t("details.officialPage")}
                       </Button>
                     )}
                   </Box>
@@ -1057,10 +1060,10 @@ export default function FigurineDetailPage() {
               }}
             >
               <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}>
-                Restock References
+                {t("details.restockReferences")}
               </Typography>
               <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.35, mb: 1.1, fontSize: "0.86rem" }}>
-                This figurine is a restock. Open a related previous release:
+                {t("details.restockText")}
               </Typography>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
                 {restocks.map((restock) => {
@@ -1121,19 +1124,19 @@ export default function FigurineDetailPage() {
 
           {/* Attributes */}
           <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem" }}>
-            Attributes
+            {t("details.attributes.title")}
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 2, mt: 0.5 }}>
-            <BoolRow label="Metal Body"          value={figurine.isMetalBody} />
-            <BoolRow label="Articulable"         value={figurine.isArticulable} />
-            <BoolRow label="Revival"             value={figurine.isRevival} />
-            <BoolRow label="Original Color Ed." value={figurine.isOriginalColorEdition} />
-            <BoolRow label="Battle Damaged"      value={figurine.isBattleDamaged} />
-            <BoolRow label="Golden Armor"        value={figurine.isGoldenArmor} />
-            <BoolRow label="Gold 24K Edition"    value={figurine.isGold24kEdition} />
-            <BoolRow label="Manga Version"       value={figurine.isMangaVersion} />
-            <BoolRow label="Plain Cloth"         value={figurine.isPlainCloth} />
-            <BoolRow label="Multi-Pack"          value={figurine.isMultiPack} />
+            <BoolRow label={t("details.attributes.metalBody")}          value={figurine.isMetalBody} />
+            <BoolRow label={t("details.attributes.articulable")}         value={figurine.isArticulable} />
+            <BoolRow label={t("details.attributes.revival")}             value={figurine.isRevival} />
+            <BoolRow label={t("details.attributes.oce")} value={figurine.isOriginalColorEdition} />
+            <BoolRow label={t("details.attributes.battleDamaged")}      value={figurine.isBattleDamaged} />
+            <BoolRow label={t("details.attributes.goldenArmor")}        value={figurine.isGoldenArmor} />
+            <BoolRow label={t("details.attributes.gold24k")}    value={figurine.isGold24kEdition} />
+            <BoolRow label={t("details.attributes.manga")}       value={figurine.isMangaVersion} />
+            <BoolRow label={t("details.attributes.plainCloth")}         value={figurine.isPlainCloth} />
+            <BoolRow label={t("details.attributes.multiPack")}          value={figurine.isMultiPack} />
           </Box>
 
           {/* Notes */}
@@ -1144,7 +1147,7 @@ export default function FigurineDetailPage() {
                 variant="overline"
                 sx={(theme) => theme.custom.magazineNotes.label}
               >
-                Additional Information
+                {t("details.notes.title")}
               </Typography>
               <Box
                 sx={(theme) => ({
@@ -1171,7 +1174,7 @@ export default function FigurineDetailPage() {
             <>
               <Divider sx={{ borderColor: "rgba(212,175,55,0.1)", mb: 1.5 }} />
               <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}>
-                Official Worldwide Distributors
+                {t("details.distributors.title")}
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25, mt: 0.75 }}>
                 {figurine.distributors.map((d, i) => {
@@ -1232,22 +1235,22 @@ export default function FigurineDetailPage() {
                       {/* Price */}
                       <Box sx={{ flex: "1 1 120px", py: 0.5, pr: 2 }}>
                         <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", display: "block" }}>
-                          Price
+                          {t("details.distributors.price")}
                         </Typography>
                         <Typography variant="body2" fontWeight={600} color="primary.main">
                           {d.price != null ? formatAmount(d.price, distributorCurrency) : (
                             <Typography component="span" variant="body2" sx={{ color: "text.disabled", fontStyle: "italic" }}>
-                              N/A
+                              {t("details.distributors.n/a")}
                             </Typography>
                           )}
                         </Typography>
                         {d.priceWithTax != null && d.priceWithTax !== d.price && d.distributor.countryCode !== "MX" && (
                           <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.7rem" }}>
-                            {formatCurrencyAmount(d.priceWithTax, d.currency, {
+                            {t("details.distributors.withTax", { price: formatCurrencyAmount(d.priceWithTax, d.currency, {
                               style: "symbolCode",
                               locale: "en-US",
                               fallbackCurrency: "JPY",
-                            })} w/ tax
+                            }) })}
                           </Typography>
                         )}
                       </Box>
@@ -1256,7 +1259,7 @@ export default function FigurineDetailPage() {
                       {d.preorderOpensAt && (
                         <Box sx={{ flex: "1 1 120px", py: 0.5, pr: 2 }}>
                           <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", display: "block" }}>
-                            Pre-order
+                            {t("details.distributors.preOrder")}
                           </Typography>
                           <Typography variant="body2" fontWeight={500} color="text.primary">
                             {formatIsoDateLabel(d.preorderOpensAt, { includeDay: true })}
@@ -1267,7 +1270,7 @@ export default function FigurineDetailPage() {
                       {/* Release date */}
                       <Box sx={{ flex: "1 1 120px", py: 0.5, pr: 2 }}>
                         <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", display: "block" }}>
-                          Release
+                          {t("details.distributors.release")}
                         </Typography>
                         {d.releaseDate ? (
                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -1276,13 +1279,13 @@ export default function FigurineDetailPage() {
                             </Typography>
                             {!d.releaseDateConfirmed && (
                               <Typography variant="caption" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: "0.68rem" }}>
-                                (unconfirmed)
+                                {t("details.distributors.unconfirmed")}
                               </Typography>
                             )}
                           </Box>
                         ) : (
                           <Typography variant="body2" sx={{ color: "text.disabled", fontStyle: "italic", fontSize: "0.8rem" }}>
-                            TBD
+                            {t("details.distributors.tbd")}
                           </Typography>
                         )}
                       </Box>
@@ -1302,7 +1305,7 @@ export default function FigurineDetailPage() {
                 variant="overline"
                 sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}
               >
-                Chronology
+                {t("details.chronology.title")}
               </Typography>
 
               <Box sx={{ position: "relative", mt: 1.5, ml: 1 }}>
@@ -1329,13 +1332,13 @@ export default function FigurineDetailPage() {
                         includeDay: ev.dateConfirmed,
                         monthCase: "upper",
                       })
-                      : "TBD";
+                      : t("details.chronology.tbd");
                     const formattedDateParts = formattedEventDateLabel.replace(",", "").split(/\s+/);
-                    const eventMonthAbbr = formattedDateParts[0] ?? "TBD";
+                    const eventMonthAbbr = formattedDateParts[0] ?? t("details.chronology.tbd");
                     const eventDay = ev.dateConfirmed ? (formattedDateParts[1] ?? "") : "";
                     const eventYear = ev.dateConfirmed
-                      ? (formattedDateParts[2] ?? "TBD")
-                      : (formattedDateParts[1] ?? "TBD");
+                      ? (formattedDateParts[2] ?? t("details.chronology.tbd"))
+                      : (formattedDateParts[1] ?? t("details.chronology.tbd"));
                     return (
                     <Box key={ev.id} sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
                       {/* Timeline dot */}
@@ -1414,7 +1417,7 @@ export default function FigurineDetailPage() {
                           {isRelease && (
                             <Chip
                               icon={<RocketLaunchOutlinedIcon sx={{ fontSize: "0.75rem !important" }} />}
-                              label="Release"
+                              label={t("details.chronology.release")}
                               size="small"
                               sx={{
                                 height: 18,
@@ -1457,7 +1460,7 @@ export default function FigurineDetailPage() {
             variant="overline"
             sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}
           >
-            Historical Prices
+            {t("details.historicalPrices.title")}
           </Typography>
 
           <Box sx={{ mt: 0.9 }}>
@@ -1472,14 +1475,14 @@ export default function FigurineDetailPage() {
               }}
             >
               <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 260 }, maxWidth: { xs: "100%", sm: 320 } }}>
-                <InputLabel id="historical-store-select-label">Store</InputLabel>
+                <InputLabel id="historical-store-select-label">{t("details.historicalPrices.store")}</InputLabel>
                 <Select
                   labelId="historical-store-select-label"
-                  value={selectedHistoricalStoreId === null ? "ALL" : String(selectedHistoricalStoreId)}
-                  label="Store"
+                  value={selectedHistoricalStoreId === null ? t("details.historicalPrices.all") : String(selectedHistoricalStoreId)}
+                  label={t("details.historicalPrices.store")}
                   onChange={handleHistoricalStoreChange}
                 >
-                  <MenuItem value="ALL">All Stores</MenuItem>
+                  <MenuItem value={t("details.historicalPrices.all")}>{t("details.historicalPrices.allStores")}</MenuItem>
                   {historicalStores.map((store) => (
                     <MenuItem key={store.id} value={String(store.id)}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
@@ -1510,7 +1513,7 @@ export default function FigurineDetailPage() {
             ) : historicalError ? (
               <Alert severity="error">{historicalError}</Alert>
             ) : normalizedHistoricalPrices.length === 0 ? (
-              <Alert severity="info">No historical prices available for the selected store.</Alert>
+              <Alert severity="info">{t("details.historicalPrices.noPrices")}</Alert>
             ) : (
               <Box
                 sx={{
@@ -1859,7 +1862,7 @@ export default function FigurineDetailPage() {
                           textTransform: "none",
                         }}
                       >
-                        Open product
+                        {t("details.historicalPrices.openProduct")}
                       </Button>
                     )}
                   </Box>
@@ -1911,7 +1914,7 @@ export default function FigurineDetailPage() {
         <Box sx={{ mt: { xs: 3, md: 4 } }}>
           <Divider sx={{ borderColor: "rgba(212,175,55,0.1)", mb: 1.5 }} />
           <Typography variant="overline" sx={{ color: "text.secondary", fontSize: "0.65rem", letterSpacing: "0.1em" }}>
-            Related Figurines
+            {t("details.related.title")}
           </Typography>
 
           <Box sx={{ position: "relative", mt: 1 }}>
@@ -2098,7 +2101,7 @@ export default function FigurineDetailPage() {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert severity="success" onClose={() => setAddSuccess(false)}>
-          ✨ Added to collection successfully!
+          ✨ {t("details.successMessage")}
         </Alert>
       </Snackbar>
 

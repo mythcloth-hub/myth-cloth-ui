@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Button,
@@ -37,6 +38,8 @@ import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
 
 export default function CollectionsListPage() {
+  const { t } = useTranslation("collections");
+
   const navigate = useNavigate();
   const theme = useTheme();
   const { hasPermission } = useAuth();
@@ -156,7 +159,7 @@ export default function CollectionsListPage() {
     try {
       await duplicateCollection(selectedCollection.id);
       await loadCollections();
-      setSuccessMessage(`Collection "${selectedCollection.name}" duplication started.`);
+      setSuccessMessage(t("messages.duplicationStarted", { name: selectedCollection.name }));
     } catch (err) {
       setError(getApiErrorMessage(err, { action: "update", resource: "collection" }));
     } finally {
@@ -174,7 +177,7 @@ export default function CollectionsListPage() {
       setCollections((currentCollections) =>
         currentCollections.filter((collection) => collection.id !== selectedCollection.id)
       );
-      setSuccessMessage(`Collection "${selectedCollection.name}" was removed.`);
+      setSuccessMessage(t("messages.removed", { name: selectedCollection.name }));
       setDeleteDialogOpen(false);
       setSelectedCollection(null);
     } catch (err) {
@@ -189,7 +192,7 @@ export default function CollectionsListPage() {
 
     const nextName = editName.trim();
     if (!nextName) {
-      setError("Collection name is required.");
+      setError(t("messages.required"));
       return;
     }
 
@@ -209,7 +212,7 @@ export default function CollectionsListPage() {
       );
       setSelectedCollection(updated);
       setEditDialogOpen(false);
-      setSuccessMessage(`Collection "${updated.name}" was updated.`);
+      setSuccessMessage(t("messages.updated", { name: updated.name }));
     } catch (err) {
       setError(getApiErrorMessage(err, { action: "update", resource: "collection" }));
     } finally {
@@ -245,18 +248,18 @@ export default function CollectionsListPage() {
       >
         <Box sx={{ width: "100%" }}>
           <AppPageHeader
-            eyebrow="Collections"
-            title="My Collections"
-            subtitle="Manage your collections and keep your different collecting goals organized."
+            eyebrow={t("header.eyebrow")}
+            title={t("header.title")}
+            subtitle={t("header.subtitle")}
             compact
             actions={
               <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
-                <Button 
+                <Button
                   variant="contained"
                   startIcon={<AddIcon />}
-                  onClick={() => navigate("/figurines")} 
+                  onClick={() => navigate("/figurines")}
                   sx={{ flexShrink: 0 }}>
-                    New Collection
+                    {t("header.newCollection")}
                 </Button>
               </Box>
             }
@@ -295,11 +298,10 @@ export default function CollectionsListPage() {
           }}
         >
           <Typography variant="h6" sx={{ color: "text.secondary" }}>
-            No collections yet
+            {t("empty.noCollections")}
           </Typography>
           <Typography variant="body2" sx={{ color: "text.secondary", textAlign: "center", maxWidth: 560 }}>
-            Collections are created automatically when you add a figurine to one.
-            Open any figurine and use Add to Collection to create your first collection.
+            {t("empty.description")}
           </Typography>
           <Button
             variant="contained"
@@ -314,7 +316,7 @@ export default function CollectionsListPage() {
               },
             }}
           >
-            Browse Figurines
+            {t("empty.browseFigurines")}
           </Button>
         </Box>
       ) : (
@@ -329,17 +331,14 @@ export default function CollectionsListPage() {
           >
             <CardContent>
               <Typography variant="overline" sx={{ color: "info.main", letterSpacing: 1.1, lineHeight: 1 }}>
-                Collections Overview
+                {t("overview.title")}
               </Typography>
               <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5, maxWidth: 760 }}>
-                Track your collections as they grow and compare what is unique versus repeated.
-                "Total entries" counts every figurine placement in every collection, while "Unique figurines" counts each figurine only once.
-                Counts include both upcoming reserved releases and items already in hand when available in your collections.
+                {t("overview.description")}
               </Typography>
               {largestCollection && (
                 <Typography variant="caption" sx={{ color: "primary.main", mt: 0.75, display: "block", fontWeight: 600 }}>
-                  Largest collection: <strong>{largestCollection.name}</strong> with {largestCollection.figurineIds.length}{" "}
-                  figurine{largestCollection.figurineIds.length !== 1 ? "s" : ""}
+                  {t("overview.largestCollectionDesc", { name: largestCollection.name, count: largestCollection.figurineIds.length })}
                 </Typography>
               )}
               <Box
@@ -353,9 +352,9 @@ export default function CollectionsListPage() {
                 <Box sx={metricCardSx}>
                   <Box sx={metricLabelRowSx}>
                     <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                      total collections
+                      {t("overview.totalCollections.label")}
                     </Typography>
-                    <Tooltip title="How many different collections you currently have." arrow>
+                    <Tooltip title={t("overview.totalCollections.tooltip")} arrow>
                       <span>
                         <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
                           <InfoOutlinedIcon sx={infoIconSx} />
@@ -370,9 +369,9 @@ export default function CollectionsListPage() {
                 <Box sx={metricCardSx}>
                   <Box sx={metricLabelRowSx}>
                     <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                      total figurine entries
+                      {t("overview.totalFigurineEntries.label")}
                     </Typography>
-                    <Tooltip title="Counts all placements, including upcoming reserved releases and already-owned released figures. If the same figurine appears in 3 collections, it counts as 3 entries." arrow>
+                    <Tooltip title={t("overview.totalFigurineEntries.tooltip")} arrow>
                       <span>
                         <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
                           <InfoOutlinedIcon sx={infoIconSx} />
@@ -387,9 +386,9 @@ export default function CollectionsListPage() {
                 <Box sx={metricCardSx}>
                   <Box sx={metricLabelRowSx}>
                     <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                      unique figurines
+                      {t("overview.uniqueFigurines.label")}
                     </Typography>
-                    <Tooltip title="Counts each figurine only once, even if it appears in multiple collections." arrow>
+                    <Tooltip title={t("overview.uniqueFigurines.tooltip")} arrow>
                       <span>
                         <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
                           <InfoOutlinedIcon sx={infoIconSx} />
@@ -404,9 +403,9 @@ export default function CollectionsListPage() {
                 <Box sx={metricCardSx}>
                   <Box sx={metricLabelRowSx}>
                     <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                      average per collection
+                      {t("overview.averageFigurinesPerCollection.label")}
                     </Typography>
-                    <Tooltip title="Average number of figurines per collection = total figurine entries divided by total collections." arrow>
+                    <Tooltip title={t("overview.averageFigurinesPerCollection.tooltip")} arrow>
                       <span>
                         <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
                           <InfoOutlinedIcon sx={infoIconSx} />
@@ -420,10 +419,10 @@ export default function CollectionsListPage() {
                 </Box>
               </Box>
               <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 1.1 }}>
-                Repeated entries across collections: {repeatedEntriesAcrossCollections}
+                {t("overview.repeatedEntries.label", { total: repeatedEntriesAcrossCollections })}
                 {repeatedEntriesAcrossCollections > 0
-                  ? " (same figurine appears in more than one collection)."
-                  : " (no figurine is repeated across collections)."}
+                  ? t("overview.repeatedEntries.repetitions")
+                  : t("overview.repeatedEntries.noRepetitions")}
               </Typography>
 
               <Box
@@ -444,9 +443,9 @@ export default function CollectionsListPage() {
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1.5 }}>
                     <Typography variant="subtitle2" sx={{ color: "info.main", fontWeight: 700 }}>
-                      Largest Collections by Figurine Count
+                      {t("overview.largestCollection.title")}
                     </Typography>
-                    <Tooltip title="Shows up to 5 collections ordered by figurine count. Longer bars mean more figurines in that collection." arrow>
+                    <Tooltip title={t("overview.largestCollection.tooltip")} arrow>
                       <span>
                         <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
                           <InfoOutlinedIcon sx={infoIconSx} />
@@ -475,7 +474,7 @@ export default function CollectionsListPage() {
                               {collection.name}
                             </Typography>
                             <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700, flexShrink: 0 }}>
-                              {count} figurine{count !== 1 ? "s" : ""}
+                              {t("overview.largestCollection.total", { count })}
                             </Typography>
                           </Box>
                           <Box
@@ -522,9 +521,9 @@ export default function CollectionsListPage() {
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                     <Typography variant="subtitle2" sx={{ color: "primary.main", fontWeight: 700 }}>
-                      Unique Figurines Ratio
+                      {t("overview.uniqueFigurinesRatio.title")}
                     </Typography>
-                    <Tooltip title="Percent of entries that are unique: unique figurines divided by total figurine entries." arrow>
+                    <Tooltip title={t("overview.uniqueFigurinesRatio.tooltip")} arrow>
                       <span>
                         <Box component="span" sx={{ display: "inline-flex", color: "text.disabled" }}>
                           <InfoOutlinedIcon sx={infoIconSx} />
@@ -563,12 +562,12 @@ export default function CollectionsListPage() {
                         {uniquenessPercent}%
                       </Typography>
                       <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                        unique
+                        {t("overview.uniqueFigurinesRatio.unique")}
                       </Typography>
                     </Box>
                   </Box>
                   <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "center", maxWidth: 220 }}>
-                    {uniqueFigurinesAcrossCollections} unique figurines out of {totalFigurinesAcrossCollections} total entries.
+                    {t("overview.uniqueFigurinesRatio.footer", { count: uniqueFigurinesAcrossCollections, entries: totalFigurinesAcrossCollections })}
                   </Typography>
                 </Box>
               </Box>
@@ -711,7 +710,7 @@ export default function CollectionsListPage() {
                         fontWeight: 600,
                       }}
                     >
-                      {collection.figurineIds.length} figurine{collection.figurineIds.length !== 1 ? "s" : ""} in this collection
+                      {t("myCollection.totalFigurines", { count: collection.figurineIds.length })}
                     </Typography>
                   </Box>
                 </CardContent>
@@ -726,39 +725,39 @@ export default function CollectionsListPage() {
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         {hasPermission("collections:update") && (
           <MenuItem onClick={handleEdit} sx={{ gap: 1 }}>
-            <EditIcon fontSize="small" /> Edit
+            <EditIcon fontSize="small" /> {t("myCollection.edit")}
           </MenuItem>
         )}
         {hasPermission("collections:duplicate") && (
         <MenuItem onClick={() => void handleDuplicateClick()} sx={{ gap: 1 }} disabled={duplicatingCollection}>
-          <ContentCopyIcon fontSize="small" /> Duplicate
+          <ContentCopyIcon fontSize="small" /> {t("myCollection.duplicate")}
         </MenuItem>
         )}
         {hasPermission("collections:delete") && (
           <MenuItem onClick={handleDeleteClick} sx={{ gap: 1, color: "error.main" }}>
-            <DeleteIcon fontSize="small" /> Delete
+            <DeleteIcon fontSize="small" /> {t("myCollection.delete")}
           </MenuItem>
         )}
       </Menu>
 
       {/* Delete confirmation dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => !deletingCollection && setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete Collection?</DialogTitle>
+        <DialogTitle>{t("myCollection.dialogDelete.title")}</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete "{selectedCollection?.name}"?
+            {t("myCollection.dialogDelete.description", { name: selectedCollection?.name })}
           </Typography>
           <Typography sx={{ mt: 2 }}>
-            This action cannot be undone. Deleting this collection will permanently remove it, along with all the figurines you've added to it.
+            {t("myCollection.dialogDelete.description2")}
           </Typography>
           <Typography sx={{ mt: 2 }}>
-            If you want to organize those figurines again, you'll need to create a new collection and add them manually.
+            {t("myCollection.dialogDelete.description3")}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deletingCollection} startIcon={<CancelOutlinedIcon />}>Cancel</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deletingCollection} startIcon={<CancelOutlinedIcon />}>{t("myCollection.dialogDelete.cancel")}</Button>
           <Button onClick={handleConfirmDelete} color="error" variant="contained" disabled={deletingCollection} startIcon={<DeleteIcon />}>
-            {deletingCollection ? "Deleting..." : "Delete"}
+            {deletingCollection ? t("myCollection.dialogDelete.deleting") : t("myCollection.dialogDelete.delete")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -776,7 +775,7 @@ export default function CollectionsListPage() {
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1.5 }}>Edit Collection</DialogTitle>
+        <DialogTitle sx={{ pb: 1.5 }}>{t("myCollection.dialogEdit.title")}</DialogTitle>
         <DialogContent
           sx={{
             pt: 2.5,
@@ -788,7 +787,7 @@ export default function CollectionsListPage() {
           }}
         >
           <TextField
-            label="Collection name"
+            label={t("myCollection.dialogEdit.name")}
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
             fullWidth
@@ -798,7 +797,7 @@ export default function CollectionsListPage() {
             sx={{ mt: 0.5 }}
           />
           <TextField
-            label="Your collection image URL (optional)"
+            label={t("myCollection.dialogEdit.imageUrl")}
             value={editImageUrl}
             onChange={(e) => setEditImageUrl(e.target.value)}
             fullWidth
@@ -808,7 +807,7 @@ export default function CollectionsListPage() {
             sx={{ mt: 0.5 }}
           />
           <TextField
-            label="Description (optional)"
+            label={t("myCollection.dialogEdit.description")}
             value={editDescription}
             onChange={(e) => setEditDescription(e.target.value)}
             fullWidth
@@ -819,10 +818,10 @@ export default function CollectionsListPage() {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button onClick={() => setEditDialogOpen(false)} disabled={savingEdit} startIcon={<CancelOutlinedIcon />}>
-            Cancel
+            {t("myCollection.dialogEdit.cancel")}
           </Button>
           <Button onClick={handleSaveEdit} variant="contained" disabled={savingEdit} startIcon={savingEdit ? undefined : <SaveOutlinedIcon />}>
-            {savingEdit ? "Saving..." : "Save Changes"}
+            {savingEdit ? t("myCollection.dialogEdit.saving") : t("myCollection.dialogEdit.save")}
           </Button>
         </DialogActions>
       </Dialog>

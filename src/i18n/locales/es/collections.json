@@ -1,0 +1,84 @@
+{
+  "header": {
+    "eyebrow": "Colecciones",
+    "title": "Mis colecciones",
+    "subtitle": "Gestiona tus colecciones y mantén organizados tus distintos objetivos de colección.",
+    "newCollection": "Nueva colección"
+  },
+  "messages": {
+    "duplicationStarted": "Ha comenzado la duplicación de la colección \"{{name}}\".",
+    "removed": "La colección \"{{name}}\" se ha eliminado.",
+    "required": "El nombre de la colección es obligatorio.",
+    "updated": "La colección \"{{name}}\" se ha actualizado."
+  },
+  "empty": {
+    "noCollections": "Aún no tienes ninguna colección",
+    "description": "Las colecciones se crean automáticamente cuando añades una figura a ellas. Abre cualquier figura y utiliza Añadir a colección para crear tu primera colección.",
+    "browseFigurines": "Explorar figuras"
+  },
+  "overview": {
+    "title": "Resumen de colecciones",
+    "description": "Haz un seguimiento de tus colecciones a medida que crecen y compara las figuras únicas con aquellas que aparecen varias veces. «Entradas totales» cuenta cada aparición de una figura en cada colección, mientras que «Figuras únicas» cuenta cada figura una sola vez. Los recuentos incluyen tanto los próximos lanzamientos que tengas reservados como las figuras que ya tengas en tu colección, siempre que estén disponibles en tus colecciones.",
+    "largestCollectionDesc_one": "Colección más grande: {{name}}, con {{count}} figura",
+    "largestCollectionDesc_other": "Colección más grande: {{name}}, con {{count}} figuras",
+    "totalCollections": {
+      "label": "Total de colecciones",
+      "tooltip": "Número de colecciones diferentes que tienes actualmente."
+    },
+    "totalFigurineEntries": {
+      "label": "Total de figuras",
+      "tooltip": "Cuenta todas las apariciones, incluidos los próximos lanzamientos que tengas reservados y las figuras que ya poseas. Si la misma figura aparece en 3 colecciones, cuenta como 3 entradas."
+    },
+    "uniqueFigurines": {
+      "label": "Figuras únicas",
+      "tooltip": "Cuenta cada figura una sola vez, aunque aparezca en varias colecciones."
+    },
+    "averageFigurinesPerCollection": {
+      "label": "Media por colección",
+      "tooltip": "Número medio de figuras por colección = número total de entradas de figuras dividido entre el número total de colecciones."
+    },
+    "repeatedEntries": {
+      "label": "Entradas repetidas en las colecciones: {{total}}",
+      "repetitions": " (la misma figura aparece en más de una colección).",
+      "noRepetitions": " (ninguna figura se repite en las colecciones)."
+    },
+    "largestCollection": {
+      "title": "Colecciones más grandes por número de figuras",
+      "tooltip": "Muestra hasta 5 colecciones ordenadas por número de figuras. Las barras más largas indican un mayor número de figuras en esa colección.",
+      "total_one": "{{count}} figura",
+      "total_other": "{{count}} figuras"
+    },
+    "uniqueFigurinesRatio": {
+      "title": "Proporción de figuras únicas",
+      "tooltip": "Porcentaje de entradas que corresponden a figuras únicas: número de figuras únicas dividido entre el total de entradas.",
+      "unique": "única",
+      "footer_one": "{{count}} figura única de un total de {{entries}} entradas.",
+      "footer_other": "{{count}} figuras únicas de un total de {{entries}} entradas."
+    }
+  },
+  "myCollection": {
+    "totalFigurines_one": "{{count}} figura en esta colección",
+    "totalFigurines_other": "{{count}} figuras en esta colección",
+    "edit": "Editar",
+    "duplicate": "Duplicar",
+    "delete": "Eliminar",
+    "dialogDelete": {
+      "title": "¿Eliminar colección?",
+      "description": "¿Estás seguro de que quieres eliminar \"{{name}}\"?",
+      "description2": "Esta acción no se puede deshacer. Al eliminar esta colección, se eliminará permanentemente junto con todas las figuras que hayas añadido a ella.",
+      "description3": "Si quieres volver a organizar esas figuras, tendrás que crear una nueva colección y añadirlas manualmente.",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando...",
+      "delete": "Eliminar"
+    },
+    "dialogEdit": {
+      "title": "Editar colección",
+      "name": "Nombre de la colección",
+      "imageUrl": "URL de la imagen de tu colección (opcional)",
+      "description": "Descripción de la colección (opcional)",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "save": "Guardar cambios"
+    }
+  }
+}

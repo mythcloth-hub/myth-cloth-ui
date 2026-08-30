@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   Avatar,
@@ -27,73 +28,131 @@ import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
 import { useAuth } from "../../../auth/AuthContext";
 import AppPageHeader from "../../../components/AppPageHeader";
 
+type HomeTranslationKey =
+    | "eyebrow"
+    | "title"
+    | "subtitle"
+    | "enterMythCloth"
+    | "startHere"
+    | "welcomeToCollection"
+    | "collectionDescription"
+    | "signedIn"
+    | "browsingUnlockedAreas"
+    | "quickDestinations"
+    | "realTimePrices"
+    | "signInTitle"
+    | "signInDescription"
+    | "currentAccount"
+    | "profilePicture"
+    | "role"
+    | "featuredPlaces"
+    | "openSection"
+    | "morePlaces"
+    | "morePlacesDescription"
+    | "links.mythCloth.label"
+    | "links.mythCloth.description"
+    | "links.collections.label"
+    | "links.collections.description"
+    | "links.charts.label"
+    | "links.charts.description"
+    | "links.releases.label"
+    | "links.releases.description"
+    | "links.storeMatching.label"
+    | "links.storeMatching.description"
+    | "links.manualMatching.label"
+    | "links.manualMatching.description"
+    | "links.anniversaries.label"
+    | "links.anniversaries.description"
+    | "links.distributors.label"
+    | "links.distributors.description"
+    | "links.permissions.label"
+    | "links.permissions.description"
+    | "startSteps.browseCatalog.title"
+    | "startSteps.browseCatalog.description"
+    | "startSteps.trackOwnership.title"
+    | "startSteps.trackOwnership.description"
+    | "startSteps.exploreTrends.title"
+    | "startSteps.exploreTrends.description";
+
 type HomeLink = {
-  label: string;
-  description: string;
+  labelKey: Extract<HomeTranslationKey, `links.${string}.label`>;
+  descriptionKey: Extract<
+        HomeTranslationKey,
+        `links.${string}.description`
+  >;
   path: string;
   icon: React.ReactNode;
   permission?: string;
 };
 
+type StartStep = {
+    titleKey: Extract<HomeTranslationKey, `startSteps.${string}.title`>;
+    descriptionKey: Extract<
+        HomeTranslationKey,
+        `startSteps.${string}.description`
+    >;
+    icon: React.ReactNode;
+};
+
 const HOME_LINKS: HomeLink[] = [
   {
-    label: "Myth Cloth",
-    description: "Browse the full figurine catalog and jump back into your main collection view.",
+    labelKey: "links.mythCloth.label",
+    descriptionKey: "links.mythCloth.description",
     path: "/figurines",
     icon: <WorkspacePremiumOutlinedIcon />,
   },
   {
-    label: "My Collections",
-    description: "Open your saved collections, compare progress, and manage grouped figurines.",
+    labelKey: "links.collections.label",
+    descriptionKey: "links.collections.description",
     path: "/collections",
     icon: <Inventory2OutlinedIcon />,
     permission: "collections:read",
   },
   {
-    label: "Charts",
-    description: "See fast collection summaries, proportions, and visual breakdowns.",
+    labelKey: "links.charts.label",
+    descriptionKey: "links.charts.description",
     path: "/charts",
     icon: <QueryStatsOutlinedIcon />,
     permission: "stats:read",
   },
   {
-    label: "Releases",
-    description: "Explore release history by year and drill into the timeline details.",
+    labelKey: "links.releases.label",
+    descriptionKey: "links.releases.description",
     path: "/releases",
     icon: <RocketLaunchOutlinedIcon />,
     permission: "stats:read",
   },
   {
-    label: "Store Matching",
-    description: "Review matched store sources and compare them against your figurine catalog.",
+    labelKey: "links.storeMatching.label",
+    descriptionKey: "links.storeMatching.description",
     path: "/figurine-matching/stores",
     icon: <StoreOutlinedIcon />,
     permission: "figurines:stores:read",
   },
   {
-    label: "Manual Matching",
-    description: "Resolve unmatched listings and connect them to the right catalog entries.",
+    labelKey: "links.manualMatching.label",
+    descriptionKey: "links.manualMatching.description",
     path: "/figurine-matching",
     icon: <CompareOutlinedIcon />,
     permission: "figurines:stores:read",
   },
   {
-    label: "Anniversaries",
-    description: "Track commemorative moments and milestone events tied to the collection.",
+    labelKey: "links.anniversaries.label",
+    descriptionKey: "links.anniversaries.description",
     path: "/anniversaries",
     icon: <CelebrationOutlinedIcon />,
     permission: "anniversaries:read",
   },
   {
-    label: "Distributors",
-    description: "Keep partner and distributor data organized in one place.",
+    labelKey: "links.distributors.label",
+    descriptionKey: "links.distributors.description",
     path: "/distributors",
     icon: <LocalShippingOutlinedIcon />,
     permission: "distributors:read",
   },
   {
-    label: "Permissions",
-    description: "Manage role access and security controls when working on administration flows.",
+    labelKey: "links.permissions.label",
+    descriptionKey: "links.permissions.description",
     path: "/security/permissions",
     icon: <LockOutlinedIcon />,
     permission: "permissions:read",
@@ -102,25 +161,26 @@ const HOME_LINKS: HomeLink[] = [
 
 const FEATURED_PATHS = ["/figurines", "/collections", "/charts", "/releases"];
 
-const START_STEPS = [
+const START_STEPS: StartStep[] = [
   {
-    title: "Browse your catalog",
-    description: "Start with Myth Cloth to explore versions, apply advanced filters, and quickly find released, unreleased, and prototype figurines.",
+    titleKey: "startSteps.browseCatalog.title",
+    descriptionKey: "startSteps.browseCatalog.description",
     icon: <WorkspacePremiumOutlinedIcon fontSize="small" />,
   },
   {
-    title: "Track ownership",
-    description: "Move into collections and purchases when you want to organize what you own and what is still pending.",
+    titleKey: "startSteps.trackOwnership.title",
+    descriptionKey: "startSteps.trackOwnership.description",
     icon: <Inventory2OutlinedIcon fontSize="small" />,
   },
   {
-    title: "Explore trends",
-    description: "Open charts, releases, and pricing to monitor market movement, restocks, and real-time prices when signed in.",
+    titleKey: "startSteps.exploreTrends.title",
+    descriptionKey: "startSteps.exploreTrends.description",
     icon: <ExploreOutlinedIcon fontSize="small" />,
   },
 ];
 
 export default function HomePage() {
+  const { t } = useTranslation("home");
   const navigate = useNavigate();
   const { isAuthenticated, session, hasPermission } = useAuth();
 
@@ -151,9 +211,9 @@ export default function HomePage() {
       <Box sx={{ mb: 2.5 }}>
         <AppPageHeader
           compact
-          eyebrow="Home"
-          title="Welcome to Saint Collections"
-          subtitle="Track your Myth Cloth collection, monitor restocks and versions, filter unreleased and prototype figurines, and follow real-time prices with a signed-in account."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          subtitle={t("subtitle")}
           actions={
             <Box sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" }, width: "100%" }}>
               <Button
@@ -161,7 +221,7 @@ export default function HomePage() {
                 startIcon={<WorkspacePremiumOutlinedIcon />}
                 onClick={() => navigate("/figurines")}
               >
-                Enter Myth Cloth
+                {t("enterMythCloth")}
               </Button>
             </Box>
           }
@@ -193,20 +253,20 @@ export default function HomePage() {
           <Stack direction={{ xs: "column", lg: "row" }} spacing={2.5} alignItems={{ xs: "stretch", lg: "center" }}>
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 2 }}>
-                START HERE
+                {t("startHere")}
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.12, mb: 0.75 }}>
-                Welcome to your collection
+                {t("welcomeToCollection")}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 760 }}>
-                Explore what you own, discover what is new, track restocks, and filter by version, release status, and category to keep your collection moving forward.
+                {t("collectionDescription")}
               </Typography>
             </Box>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap flexWrap="wrap">
-              <Chip label={isAuthenticated ? "Signed in" : "Browsing unlocked areas"} icon={<HomeOutlinedIcon />} />
-              <Chip label={`${visibleLinks.length} quick destinations`} variant="outlined" />
-              <Chip label="Real-time prices for signed-in users" variant="outlined" />
+              <Chip label={isAuthenticated ? t("signedIn") : t("browsingUnlockedAreas")} icon={<HomeOutlinedIcon />} />
+              <Chip label={t("quickDestinations", {count: visibleLinks.length})} variant="outlined" />
+              <Chip label={t("realTimePrices")} variant="outlined" />
             </Stack>
           </Stack>
 
@@ -222,11 +282,10 @@ export default function HomePage() {
               }}
             >
               <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "primary.main", mb: 0.4 }}>
-                Sign in to unlock the full experience
+                {t("signInTitle")}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Log in from the account section in the left menu to access real-time price tracking, richer market insights,
-                and personalized collection workflows.
+                {t("signInDescription")}
               </Typography>
             </Box>
           )}
@@ -245,7 +304,7 @@ export default function HomePage() {
                   {session.profilePictureUrl ? (
                     <Avatar
                       src={session.profilePictureUrl}
-                      alt={session.displayName || "Profile picture"}
+                      alt={session.displayName || t("profilePicture")}
                       sx={{ width: 42, height: 42, flexShrink: 0 }}
                     />
                   ) : (
@@ -256,7 +315,7 @@ export default function HomePage() {
 
                   <Box sx={{ minWidth: 0 }}>
                     <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 1.5 }}>
-                      CURRENT ACCOUNT
+                      {t("currentAccount")}
                     </Typography>
                     <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
                       {session.displayName}
@@ -267,7 +326,7 @@ export default function HomePage() {
                   </Box>
                 </Stack>
 
-                {session.role && <Chip label={`Role: ${session.role}`} color="primary" variant="outlined" />}
+                {session.role && ( <Chip label={t("role", {role: session.role })} color="primary" variant="outlined" />)}
               </Stack>
             </Box>
           )}
@@ -281,7 +340,7 @@ export default function HomePage() {
           >
             {START_STEPS.map((step) => (
               <Box
-                key={step.title}
+                key={step.titleKey}
                 sx={{
                   p: 1.5,
                   borderRadius: 1.25,
@@ -305,10 +364,10 @@ export default function HomePage() {
                   {step.icon}
                 </Box>
                 <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 0.4 }}>
-                  {step.title}
+                  {t(step.titleKey)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {step.description}
+                  {t(step.descriptionKey)}
                 </Typography>
               </Box>
             ))}
@@ -319,7 +378,7 @@ export default function HomePage() {
       <Box sx={{ mb: 1.25, display: "flex", alignItems: "center", gap: 1 }}>
         <AutoAwesomeOutlinedIcon sx={{ color: "primary.main", fontSize: 18 }} />
         <Typography variant="h6" sx={{ fontWeight: 800 }}>
-          Featured places to start
+          {t("featuredPlaces")}
         </Typography>
       </Box>
 
@@ -377,15 +436,15 @@ export default function HomePage() {
               </Box>
               <Box>
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.35 }}>
-                  {link.label}
+                  {t(link.labelKey)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {link.description}
+                  {t(link.descriptionKey)}
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "primary.main" }}>
                 <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: 0.3 }}>
-                  Open section
+                  {t("openSection")}
                 </Typography>
                 <ArrowForwardOutlinedIcon sx={{ fontSize: 16 }} />
               </Box>
@@ -398,10 +457,10 @@ export default function HomePage() {
         <>
           <Box sx={{ mb: 1.25 }}>
             <Typography variant="h6" sx={{ fontWeight: 800 }}>
-              More places in the app
+              {t("morePlaces")}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              These areas are available based on your current access and can help you go deeper once you are ready.
+              {t("morePlacesDescription")}
             </Typography>
           </Box>
 
@@ -456,10 +515,10 @@ export default function HomePage() {
                   </Box>
                   <Box sx={{ minWidth: 0 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.25 }}>
-                      {link.label}
+                      {t(link.labelKey)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {link.description}
+                      {t(link.descriptionKey)}
                     </Typography>
                   </Box>
                 </Stack>
