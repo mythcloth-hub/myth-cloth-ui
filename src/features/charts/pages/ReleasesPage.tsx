@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
@@ -35,11 +36,11 @@ function buildChartLineupColors(lineups: string[]) {
     "Myth Cloth": "#D4AF37",
     "Myth Cloth EX": "#4AA3D8",
     "Saintia Sho": "#E7A6C7",
-    Omega: "#7B61C8",
-    Appendix: "#C97A3D",
-    Revival: "#7FA36B",
+    "Omega": "#7B61C8",
+    "Appendix": "#C97A3D",
+    "Revival": "#7FA36B",
     "Legend of Sanctuary": "#B8C6D9",
-    Other: "#6E7681",
+    "Other": "#6E7681",
   };
   const secondaryLineups = lineups.filter((lineup) => !(lineup in themedColors));
 
@@ -87,11 +88,13 @@ function YearBarChart({
   lineupColors: Record<string, string>;
   onSelectYear: (year: number) => void;
 }) {
+  const { t } = useTranslation("explore");
+
   if (years.length === 0) {
     return (
       <Box sx={{ minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Typography variant="body2" color="text.secondary">
-          No release data available.
+          {t("releases.noReleases")}
         </Typography>
       </Box>
     );
@@ -155,15 +158,15 @@ function YearBarChart({
       >
         <Box>
           <Typography variant="overline" sx={{ color: "rgba(212, 175, 55, 0.9)", letterSpacing: { xs: 1.4, md: 2.2 }, fontSize: { xs: "0.65rem", md: "0.75rem" } }}>
-            SANCTUARY RELEASE MAP
+            {t("releases.sanctuaryReleaseMap")}
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.15, fontSize: { xs: "1.15rem", md: "1.5rem" } }}>
-            Track every era of Myth Cloth releases at a glance
+            {t("releases.description")}
           </Typography>
         </Box>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ width: { xs: "100%", sm: "auto" } }}>
           <Chip
-            label={`${sortedYears.length} active years`}
+            label={t("releases.totalActiveYears", { total: sortedYears.length })}
             sx={{
               bgcolor: "rgba(255,255,255,0.08)",
               color: "text.primary",
@@ -172,7 +175,7 @@ function YearBarChart({
             }}
           />
           <Chip
-            label={selectedYearData ? `${selectedYear}: ${selectedYearTotal} releases` : "Select a year to inspect it"}
+            label={selectedYearData ? t("releases.selectedYear", { year: selectedYear, count: selectedYearTotal }) : t("releases.noSelectedYear")}
             sx={{
               bgcolor: selectedYearData ? "rgba(212,175,55,0.14)" : "rgba(74,163,216,0.12)",
               color: selectedYearData ? "#F3D36B" : "#9FD7F4",
@@ -212,7 +215,7 @@ function YearBarChart({
                 title={
                   <Box sx={{ minWidth: 130 }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                      {yearItem.year} · {total} releases
+                      {t("releases.year", { year: yearItem.year, count: total })}
                     </Typography>
                     {[...yearItem.lineUp]
                       .sort((a, b) => b.count - a.count)
@@ -360,6 +363,7 @@ function FigurineImageCard({
   figurine: { id: number; name: string; url?: string; releaseStatus?: ReleaseStatus };
   lineupColor: string;
 }) {
+  const { t } = useTranslation("explore");
   const isAnnounced = figurine.releaseStatus === "ANNOUNCED";
 
   return (
@@ -416,7 +420,7 @@ function FigurineImageCard({
           }}
         >
           <Typography variant="caption" color="text.secondary">
-            No image
+            {t("releases.noImage")}
           </Typography>
         </Box>
       )}
@@ -449,11 +453,13 @@ function ReleaseYearDetailView({
   months: ReleaseYearMonthDetail[];
   lineupColors: Record<string, string>;
 }) {
+  const { t } = useTranslation("explore");
+
   if (months.length === 0) {
     return (
       <Box sx={{ minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Typography variant="body2" color="text.secondary">
-          No monthly releases found for {year}.
+          {t("releases.noMonthlyReleases", { year })}
         </Typography>
       </Box>
     );
@@ -475,10 +481,10 @@ function ReleaseYearDetailView({
         }}
       >
         <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 2 }}>
-          YEAR OVERVIEW
+          {t("releases.yearOverview")}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {totalReleases} figurines released across {months.length} month{months.length !== 1 ? "s" : ""}.
+          {t("releases.yearContent", { total: totalReleases })}
         </Typography>
       </Box>
 
@@ -538,11 +544,11 @@ function ReleaseYearDetailView({
                   {monthItem.name}
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1.1 }}>
-                  {getMonthReleaseTotal(monthItem)} release{getMonthReleaseTotal(monthItem) !== 1 ? "s" : ""}
+                  {t("releases.totalReleases", { count: getMonthReleaseTotal(monthItem) })}
                 </Typography>
               </Box>
               <Chip
-                label={`${monthItem.lineUp.length} lineup${monthItem.lineUp.length !== 1 ? "s" : ""}`}
+                label={t("releases.totalLineups", { count: monthItem.lineUp.length })}
                 sx={{
                   alignSelf: "flex-start",
                   bgcolor: "rgba(255,255,255,0.05)",
@@ -601,6 +607,8 @@ function ReleaseYearDetailView({
 }
 
 export default function ReleasesPage() {
+  const { t } = useTranslation("explore");
+
   const [summary, setSummary] = useState<ReleaseYearSummary[]>([]);
   const [detail, setDetail] = useState<ReleaseYearMonthDetail[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -700,9 +708,9 @@ export default function ReleasesPage() {
       >
         <Box sx={{ mb: 2 }}>
           <AppPageHeader
-            eyebrow="Explore"
-            title="Releases"
-            subtitle="Explore your release history by lineup and drill down from yearly trends into month-by-month figurine drops."
+            eyebrow={t("releases.eyebrow")}
+            title={t("releases.title")}
+            subtitle={t("releases.subtitle")}
           />
         </Box>
 
@@ -717,9 +725,9 @@ export default function ReleasesPage() {
         >
           <Stack spacing={2}>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
-              <Chip label={`${visibleSummary.length} years with releases`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
-              <Chip label={`${totalReleases} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
-              <Chip label={`${Object.keys(lineupColors).length} lineups represented`} sx={{ bgcolor: "rgba(74,163,216,0.12)", color: "#9FD7F4", border: "1px solid rgba(74,163,216,0.24)", fontWeight: 700 }} />
+              <Chip label={t("releases.yearsWithReleases", { count: visibleSummary.length })} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
+              <Chip label={t("releases.totalActiveReleases", { count: totalReleases })} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
+              <Chip label={t("releases.totalLineupsRepresented", { count: Object.keys(lineupColors).length })} sx={{ bgcolor: "rgba(74,163,216,0.12)", color: "#9FD7F4", border: "1px solid rgba(74,163,216,0.24)", fontWeight: 700 }} />
             </Stack>
           </Stack>
         </Paper>
@@ -742,10 +750,10 @@ export default function ReleasesPage() {
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-          Yearly release snapshot
+          {t("releases.yearlySnapshot.title")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Select a year to inspect lineup composition and monthly release details.
+          {t("releases.yearlySnapshot.description")}
         </Typography>
         {loading ? (
           <Box sx={{ minHeight: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -777,17 +785,17 @@ export default function ReleasesPage() {
             <Box sx={{ display: "flex", alignItems: { xs: "flex-start", sm: "center" }, justifyContent: "space-between", gap: 2, flexWrap: "wrap" }}>
               <Box>
                 <Typography variant="overline" sx={{ color: "rgba(212,175,55,0.9)", letterSpacing: 2 }}>
-                  YEAR FOCUS
+                  {t("releases.yearlySnapshot.yearFocus")}
                 </Typography>
                 <Typography variant="h4" sx={{ fontWeight: 900, lineHeight: 1.05 }}>
                   {selectedYear}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.4 }}>
-                  Month-by-month release breakdown with lineup accents and figurine cards.
+                  {t("releases.yearlySnapshot.monthToMonth")}
                 </Typography>
               </Box>
               <Chip
-                label="Dismiss year"
+                label={t("releases.yearlySnapshot.dismissYear")}
                 onClick={() => handleSelectYear(selectedYear)}
                 sx={{
                   cursor: "pointer",

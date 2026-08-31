@@ -1,0 +1,37 @@
+{
+  "releases": {
+    "eyebrow": "Descubre",
+    "title": "Lanzamientos",
+    "subtitle": "Explora tu historial de lanzamientos por línea y profundiza desde las tendencias anuales hasta los lanzamientos mensuales de figuras.",
+    "noReleases": "No hay datos de lanzamientos disponibles.",
+    "sanctuaryReleaseMap": "MAPA DE LANZAMIENTOS DEL SANTUARIO",
+    "description": "Rastrea cada etapa de lanzamientos de Myth Cloth de un vistazo",
+    "totalActiveYears": "{{total}} años con lanzamientos",
+    "selectedYear_one": "{{year}}: {{count}} lanzamiento",
+    "selectedYear_other": "{{year}}: {{count}} lanzamientos",
+    "noSelectedYear": "Selecciona un año para consultarlo",
+    "year_one": "{{year}}: {{count}} lanzamiento",
+    "year_other": "{{year}}: {{count}} lanzamientos",
+    "noImage": "Sin imagen",
+    "noMonthlyReleases": "No se encontraron lanzamientos mensuales para {{year}}.",
+    "yearOverview": "RESUMEN ANUAL",
+    "yearContent_one": "{{count}} figura lanzada en {{months}} meses",
+    "yearContent_other": "{{count}} figuras lanzadas en {{months}} meses",
+    "totalReleases_one": "{{count}} lanzamiento",
+    "totalReleases_other": "{{count}} lanzamientos",
+    "totalLineups_one": "{{count}} línea",
+    "totalLineups_other": "{{count}} líneas",
+    "yearsWithReleases": "{{count}} años con lanzamientos",
+    "totalActiveReleases": "{{count}} lanzamientos totales",
+    "totalLineupsRepresented": "{{count}} líneas representadas",
+    "yearlySnapshot": {
+      "title": "Resumen anual de lanzamientos",
+      "description": "Selecciona un año para consultar la composición de la línea y los detalles de los lanzamientos mensuales.",
+      "yearFocus": "ENFOQUE ANUAL",
+      "monthToMonth": "Desglose mensual de lanzamientos con detalles de cada línea y tarjetas de figuras.",
+      "dismissYear": "Cerrar año"
+    }
+  },
+  "charts": {},
+  "prices": {}
+}

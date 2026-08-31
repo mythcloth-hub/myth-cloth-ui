@@ -1,0 +1,37 @@
+{
+  "releases": {
+    "eyebrow": "Explore",
+    "title": "Releases",
+    "subtitle": "Explore your release history by lineup and drill down from yearly trends into month-by-month figurine drops.",
+    "noReleases": "No release data available.",
+    "sanctuaryReleaseMap": "SANCTUARY RELEASE MAP",
+    "description": "Track every era of Myth Cloth releases at a glance",
+    "totalActiveYears": "{{total}} active years",
+    "selectedYear_one": "{{year}}: {{count}} release",
+    "selectedYear_other": "{{year}}: {{count}} releases",
+    "noSelectedYear": "Select a year to inspect it",
+    "year_one": "{{year}}: {{count}} release",
+    "year_other": "{{year}}: {{count}} releases",
+    "noImage": "No image",
+    "noMonthlyReleases": "No monthly releases found for {{year}}.",
+    "yearOverview": "YEAR OVERVIEW",
+    "yearContent_one": "{{count}} figurine released across {{months}} months",
+    "yearContent_other": "{{count}} figurines released across {{months}} months",
+    "totalReleases_one": "{{count}} release",
+    "totalReleases_other": "{{count}} releases",
+    "totalLineups_one": "{{count}} lineup",
+    "totalLineups_other": "{{count}} lineups",
+    "yearsWithReleases": "{{count}} years with releases",
+    "totalActiveReleases": "{{count}} total releases",
+    "totalLineupsRepresented": "{{count}} lineups represented",
+    "yearlySnapshot": {
+      "title": "Yearly release snapshot",
+      "description": "Select a year to inspect lineup composition and monthly release details.",
+      "yearFocus": "YEAR FOCUS",
+      "monthToMonth": "Month-by-month release breakdown with lineup accents and figurine cards.",
+      "dismissYear": "Dismiss year"
+    }
+  },
+  "charts": {},
+  "prices": {}
+}

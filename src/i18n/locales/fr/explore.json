@@ -1,0 +1,37 @@
+{
+  "releases": {
+    "eyebrow": "Découvrir",
+    "title": "Sorties",
+    "subtitle": "Explorez l'historique des sorties par gamme et approfondissez votre analyse, des tendances annuelles aux sorties mensuelles des figurines.",
+    "noReleases": "Aucune donnée de sortie disponible.",
+    "sanctuaryReleaseMap": "CARTE DES SORTIES DU SANCTUAIRE",
+    "description": "Suivez en un coup d'œil chaque période de sorties Myth Cloth",
+    "totalActiveYears": "{{total}} années de sorties",
+    "selectedYear_one": "{{year}} : {{count}} sortie",
+    "selectedYear_other": "{{year}} : {{count}} sorties",
+    "noSelectedYear": "Sélectionnez une année pour la consulter",
+    "year_one": "{{year}} : {{count}} sortie",
+    "year_other": "{{year}} : {{count}} sorties",
+    "noImage": "Aucune image",
+    "noMonthlyReleases": "Aucune sortie mensuelle trouvée pour {{year}}.",
+    "yearOverview": "RÉSUMÉ ANNUEL",
+    "yearContent_one": "{{count}} figurine sortie sur {{months}} mois",
+    "yearContent_other": "{{count}} figurines sorties sur {{months}} mois",
+    "totalReleases_one": "{{count}} sortie",
+    "totalReleases_other": "{{count}} sorties",
+    "totalLineups_one": "{{count}} gamme",
+    "totalLineups_other": "{{count}} gammes",
+    "yearsWithReleases": "{{count}} années avec des sorties",
+    "totalActiveReleases": "{{count}} sorties au total",
+    "totalLineupsRepresented": "{{count}} gammes représentées",
+    "yearlySnapshot": {
+      "title": "Résumé annuel des sorties",
+      "description": "Sélectionnez une année pour consulter la composition de la gamme et le détail des sorties mensuelles.",
+      "yearFocus": "FOCUS ANNUEL",
+      "monthToMonth": "Répartition mensuelle des sorties avec les détails de chaque gamme et les fiches des figurines.",
+      "dismissYear": "Fermer l'année"
+    }
+  },
+  "charts": {},
+  "prices": {}
+}
