@@ -80,5 +80,119 @@
       "saving": "Saving...",
       "save": "Save Changes"
     }
+  },
+  "detail": {
+    "header": {
+      "eyebrow": "Collections",
+      "subtitle": "Browse this collection to track progress, review figurines, and manage purchases.",
+      "backToCollections": "Back to Collections"
+    },
+    "messages": {
+      "summaryUnavailable": "Collection summary is temporarily unavailable. Showing fallback values from figurines.",
+      "figurineRemoved": "Figurine removed from collection.",
+      "figurineAdded": "Figurine added to collection.",
+      "figurineQuantityIncreased": "Figurine quantity increased.",
+      "noPurchaseId": "Unable to identify purchase id for update.",
+      "purchaseUpdated": "Purchase updated successfully.",
+      "purchaseRecorded": "Purchase recorded successfully.",
+      "noPurchaseRecordFound": "No purchase record found for this figurine yet.",
+      "noCollectionFound": "Collection not found."
+    },
+    "progress": {
+      "description": "{{owned}} of {{total}} released figurines collected",
+      "completion": "completion",
+      "chips": {
+        "owned": {
+          "title": "Unique released figurines from the catalog that are currently in your collection.",
+          "label": "Owned released: {{owned}}"
+        },
+        "missing": {
+          "title": "Released catalog figurines that are still missing from your collection.",
+          "label": "Missing released: {{missing}}"
+        },
+        "upcoming": {
+          "title": "Coverage of announced figurines: distinct upcoming figurines preordered versus all upcoming figurines in the catalog.",
+          "label": "Upcoming: {{preordered}}/{{total}} ({{coverage}}%)"
+        },
+        "ownedCopies": {
+          "title": "Physical released copies currently owned, including duplicates.",
+          "label": "Owned copies: {{total}}"
+        },
+        "preorderedCopies": {
+          "title": "Physical copies of upcoming figurines that are preordered, including duplicate copies.",
+          "label": "Preordered copies: {{total}}"
+        },
+        "total": {
+          "title": "Total figurines available in the full catalog, including released and upcoming entries.",
+          "label": "Catalog total: {{total}}"
+        }
+      },
+      "pagination": {
+        "total_one": "{{count}} figurine · page {{page}} of {{total}}",
+        "total_other": "{{count}} figurines · page {{page}} of {{total}}",
+        "noFigurines": "No figurines available for this page.",
+        "zoomOut": "Zoom out",
+        "resetZoom": "Reset",
+        "zoomIn": "Zoom in",
+        "included": "Restocks included — click to exclude",
+        "excluded": "Restocks excluded — click to include"
+      }
+    },
+    "purchases": {
+      "titleEdit": "Edit Purchase",
+      "titleNew": "Record Purchase",
+      "labelEdit": "Update Purchase",
+      "labelNew": "Save Purchase",
+      "title": "Most Recent Purchases",
+      "description": "Figurine purchases are tracked separately from the current collection quantities.",
+      "hideSummary": "Hide Summary",
+      "showSummary": "Show Summary",
+      "open": "Open Purchases",
+      "record": "Record Purchase",
+      "noRecords": "No purchase records yet.",
+      "total": "Total purchases",
+      "latestOrderDate": "Latest order date",
+      "recent": "Recent purchases",
+      "storeNotSpecified": "Store not specified",
+      "date": "Date:",
+      "noOrderDate": "No order date",
+      "caption": "Access Purchases to review and manage your complete purchase history."
+    },
+    "figurines": {
+      "browse": "Browse Figurines",
+      "dialogDelete": {
+        "title": "Remove figurine",
+        "content": "Are you sure you want to remove this figurine from the collection? This action cannot be undone.",
+        "cancel": "Cancel",
+        "remove": "Remove"
+      },
+      "missing": "Missing Figurine",
+      "updatingQuantity": "Updating quantity...",
+      "increaseQuantity": "Double-click to increase quantity",
+      "preordered": "Preordered",
+      "collected": "Collected",
+      "announcedLabel": "Announced",
+      "missingLabel": "Missing",
+      "addToCollection": "Add this figurine to this collection",
+      "notCollectedYet": "Not collected yet",
+      "notInCollection": "Not part of the collection yet",
+      "announced": "Announced",
+      "released": "Released",
+      "loadingSticker": "Loading sticker name...",
+      "releaseDate": "Release date",
+      "quantity": "Qty",
+      "awaitingRelease": "Awaiting official release.",
+      "openTamashiiPage": "Open Tamashii page",
+      "link": "Link",
+      "viewDetails": "View figurine details",
+      "view": "View",
+      "editPurchase": "Edit purchase with this figurine",
+      "noPurchaseRecord": "No purchase record yet.",
+      "edit": "Edit",
+      "createPurchase": "Create purchase for this figurine",
+      "new": "New",
+      "removeFromCollection": "Remove from collection",
+      "remove": "Remove"
+    }
   }
 }

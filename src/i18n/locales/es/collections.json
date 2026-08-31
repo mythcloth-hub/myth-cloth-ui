@@ -80,5 +80,119 @@
       "saving": "Guardando...",
       "save": "Guardar cambios"
     }
+  },
+  "detail": {
+    "header": {
+      "eyebrow": "Colecciones",
+      "subtitle": "Explora esta colección para hacer un seguimiento de tu progreso, consultar las figuras y gestionar tus compras.",
+      "backToCollections": "Volver a Colecciones"
+    },
+    "messages": {
+      "summaryUnavailable": "El resumen de la colección no está disponible temporalmente. Se muestran valores de respaldo basados en las figuras.",
+      "figurineRemoved": "Figura eliminada de la colección.",
+      "figurineAdded": "Figura añadida a la colección.",
+      "figurineQuantityIncreased": "Cantidad de figuras aumentada.",
+      "noPurchaseId": "No se ha podido identificar el ID de la compra para actualizarla.",
+      "purchaseUpdated": "Compra actualizada correctamente.",
+      "purchaseRecorded": "Compra registrada correctamente.",
+      "noPurchaseRecordFound": "Todavía no hay ningún registro de compra para esta figura.",
+      "noCollectionFound": "No se ha encontrado la colección."
+    },
+    "progress": {
+      "description": "{{owned}} de {{total}} figuras lanzadas recopiladas",
+      "completion": "completado",
+      "chips": {
+        "owned": {
+          "title": "Figuras lanzadas únicas del catálogo que actualmente forman parte de tu colección.",
+          "label": "Lanzadas que tienes: {{owned}}"
+        },
+        "missing": {
+          "title": "Figuras lanzadas del catálogo que todavía faltan en tu colección.",
+          "label": "Lanzadas que faltan: {{missing}}"
+        },
+        "upcoming": {
+          "title": "Cobertura de figuras anunciadas: figuras próximas distintas que tienes reservadas frente al total de figuras próximas del catálogo.",
+          "label": "Próximas: {{preordered}}/{{total}} ({{coverage}}%)"
+        },
+        "ownedCopies": {
+          "title": "Copias físicas de figuras lanzadas que tienes actualmente, incluidas las duplicadas.",
+          "label": "Copias que tienes: {{total}}"
+        },
+        "preorderedCopies": {
+          "title": "Copias físicas de figuras próximas que tienes reservadas, incluidas las copias duplicadas.",
+          "label": "Copias reservadas: {{total}}"
+        },
+        "total": {
+          "title": "Total de figuras disponibles en el catálogo completo, incluidas las lanzadas y las próximas.",
+          "label": "Total del catálogo: {{total}}"
+        }
+      },
+      "pagination": {
+        "total_one": "{{count}} figura · página {{page}} de {{total}}",
+        "total_other": "{{count}} figuras · página {{page}} de {{total}}",
+        "noFigurines": "No hay figuras disponibles en esta página.",
+        "zoomOut": "Alejar",
+        "resetZoom": "Restablecer",
+        "zoomIn": "Acercar",
+        "included": "Relanzamientos incluidos — haz clic para excluirlos",
+        "excluded": "Relanzamientos excluidos — haz clic para incluirlos"
+      }
+    },
+    "purchases": {
+      "titleEdit": "Editar compra",
+      "titleNew": "Registrar compra",
+      "labelEdit": "Actualizar compra",
+      "labelNew": "Guardar compra",
+      "title": "Compras más recientes",
+      "description": "Las compras de figuras se registran por separado de las cantidades actuales de la colección.",
+      "hideSummary": "Ocultar resumen",
+      "showSummary": "Mostrar resumen",
+      "open": "Abrir compras",
+      "record": "Registrar compra",
+      "noRecords": "Todavía no hay registros de compras.",
+      "total": "Total de compras",
+      "latestOrderDate": "Fecha del último pedido",
+      "recent": "Compras recientes",
+      "storeNotSpecified": "Tienda no especificada",
+      "date": "Fecha:",
+      "noOrderDate": "Sin fecha de pedido",
+      "caption": "Accede a Compras para consultar y gestionar tu historial completo de compras."
+    },
+    "figurines": {
+      "browse": "Explorar figuras",
+      "dialogDelete": {
+        "title": "Eliminar figura",
+        "content": "¿Estás seguro de que quieres eliminar esta figura de la colección? Esta acción no se puede deshacer.",
+        "cancel": "Cancelar",
+        "remove": "Eliminar"
+      },
+      "missing": "Figura que falta",
+      "updatingQuantity": "Actualizando cantidad...",
+      "increaseQuantity": "Haz doble clic para aumentar la cantidad",
+      "preordered": "Reservada",
+      "collected": "Recopilada",
+      "announcedLabel": "Anunciada",
+      "missingLabel": "Falta",
+      "addToCollection": "Añadir esta figura a la colección",
+      "notCollectedYet": "Todavía no recopilada",
+      "notInCollection": "Todavía no forma parte de la colección",
+      "announced": "Anunciada",
+      "released": "Lanzada",
+      "loadingSticker": "Cargando nombre de la pegatina...",
+      "releaseDate": "Fecha de lanzamiento",
+      "quantity": "Cantidad",
+      "awaitingRelease": "A la espera del lanzamiento oficial.",
+      "openTamashiiPage": "Abrir página de Tamashii",
+      "link": "Enlace",
+      "viewDetails": "Ver detalles de la figura",
+      "view": "Ver",
+      "editPurchase": "Editar la compra de esta figura",
+      "noPurchaseRecord": "Todavía no hay ningún registro de compra.",
+      "edit": "Editar",
+      "createPurchase": "Crear una compra para esta figura",
+      "new": "Nueva",
+      "removeFromCollection": "Eliminar de la colección",
+      "remove": "Eliminar"
+    }
   }
 }

@@ -1,0 +1,125 @@
+{
+  "releases": {
+    "eyebrow": "Explore",
+    "title": "Releases",
+    "subtitle": "Explore your release history by lineup and drill down from yearly trends into month-by-month figurine drops.",
+    "noReleases": "No release data available.",
+    "sanctuaryReleaseMap": "SANCTUARY RELEASE MAP",
+    "description": "Track every era of Myth Cloth releases at a glance",
+    "totalActiveYears": "{{total}} active years",
+    "selectedYear_one": "{{year}}: {{count}} release",
+    "selectedYear_other": "{{year}}: {{count}} releases",
+    "noSelectedYear": "Select a year to inspect it",
+    "year_one": "{{year}}: {{count}} release",
+    "year_other": "{{year}}: {{count}} releases",
+    "noImage": "No image",
+    "noMonthlyReleases": "No monthly releases found for {{year}}.",
+    "yearOverview": "YEAR OVERVIEW",
+    "yearContent_one": "{{count}} figurine released across {{months}} months",
+    "yearContent_other": "{{count}} figurines released across {{months}} months",
+    "totalReleases_one": "{{count}} release",
+    "totalReleases_other": "{{count}} releases",
+    "totalLineups_one": "{{count}} lineup",
+    "totalLineups_other": "{{count}} lineups",
+    "yearsWithReleases": "{{count}} years with releases",
+    "totalActiveReleases": "{{count}} total releases",
+    "totalLineupsRepresented": "{{count}} lineups represented",
+    "yearlySnapshot": {
+      "title": "Yearly release snapshot",
+      "description": "Select a year to inspect lineup composition and monthly release details.",
+      "yearFocus": "YEAR FOCUS",
+      "monthToMonth": "Month-by-month release breakdown with lineup accents and figurine cards.",
+      "dismissYear": "Dismiss year"
+    }
+  },
+  "charts": {
+    "eyebrow": "Explore",
+    "title": "Charts",
+    "subtitle": "Get a quick overview of your collection, including total figurines, release status, and category distribution.",
+    "noDataAvailable": "No data available.",
+    "totalFigurines": "{{total}} total figurines",
+    "totalPending": "{{total}} pending",
+    "rate": "{{rate}}% release rate",
+    "totalReleased": "{{total}} released",
+    "releaseStatus": {
+      "announced": "Announced",
+      "released": "Released",
+      "rumored": "Rumored",
+      "prototype": "Prototype",
+      "unreleased": "Unreleased"
+    },
+    "insights": {
+      "noDataAvailable": "No {{noun}} data available yet.",
+      "topInsight_one": "{{label}} leads with {{count}} figurine in this category.",
+      "topInsight_other": "{{label}} leads with {{count}} figurines in this category."
+    },
+    "sections": {
+      "concentration": {
+        "title": "1. Catalog Concentration",
+        "noun": "lineup",
+        "topLineups": "Top Lineups",
+        "topSeries": "Top Series"
+      },
+      "releaseJourney": {
+        "title": "2. Release Journey",
+        "noun": "release status"
+      },
+      "groupEmphasis": {
+        "title": "3. Character Group Emphasis",
+        "noun": "group"
+      },
+      "anniversaryPresence": {
+        "title": "4. Anniversary Presence",
+        "noun": "anniversary"
+      }
+    }
+  },
+  "pricing": {
+    "eyebrow": "Explore",
+    "title": "Pricing",
+    "subtitle": "Track average, highest, and lowest release prices over time, plus yearly release volume and price extremes.",
+    "slowLoading": "We’re currently loading the pricing analysis and retrieving the latest information. This may take a little longer than usual. Please keep this page open while we finish loading the data.",
+    "noDataAvailable": "No pricing data available.",
+    "chartLabel": "Price trends by year",
+    "high": "High:",
+    "low": "Low:",
+    "noImageAvailable": "No image",
+    "noFigurineData": "No figurine data",
+    "level": {
+      "high": "High",
+      "average": "Average",
+      "low": "Low"
+    },
+    "hover": {
+      "instruction": "Hover a year in the chart to preview its highest and lowest price figurines.",
+      "high": "High:",
+      "low": "Low:"
+    },
+    "totalReleases": "{{totalReleases}} total releases",
+    "weightedAverage": "{{average}} weighted average",
+    "peakPrice": "{{price}} peak price",
+    "sections": {
+      "yearRange": "Year range",
+      "weightedAverage": "Weighted average",
+      "absoluteRange": "Absolute range",
+      "totalReleases": "Total releases"
+    },
+    "content": {
+      "title": "Yearly pricing snapshot",
+      "description": "Trend chart shows low, average, and high prices for each year, plus release volume distribution.",
+      "yearFocus": "Year focus: {{year}}",
+      "yearFocusDescription": "Snapshot for the selected year with key price metrics and release activity.",
+      "sections": {
+        "averagePrice": "Average price",
+        "releaseCount": "Release count",
+        "highest": "Highest",
+        "spread": "Spread (high-low)"
+      },
+      "releasesPerYear": "Releases per year",
+      "priceExtremes": "Price extremes",
+      "highestAndLowestPricedFigurines": "Highest and lowest priced figurines for {{year}}.",
+      "highestPriceFigurine": "Highest price figurine",
+      "lowestPriceFigurine": "Lowest price figurine"
+    }
+  }
+}
