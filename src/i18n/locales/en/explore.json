@@ -74,5 +74,52 @@
       }
     }
   },
-  "prices": {}
+  "pricing": {
+    "eyebrow": "Explore",
+    "title": "Pricing",
+    "subtitle": "Track average, highest, and lowest release prices over time, plus yearly release volume and price extremes.",
+    "slowLoading": "We’re currently loading the pricing analysis and retrieving the latest information. This may take a little longer than usual. Please keep this page open while we finish loading the data.",
+    "noDataAvailable": "No pricing data available.",
+    "chartLabel": "Price trends by year",
+    "high": "High:",
+    "low": "Low:",
+    "noImageAvailable": "No image",
+    "noFigurineData": "No figurine data",
+    "level": {
+      "high": "High",
+      "average": "Average",
+      "low": "Low"
+    },
+    "hover": {
+      "instruction": "Hover a year in the chart to preview its highest and lowest price figurines.",
+      "high": "High:",
+      "low": "Low:"
+    },
+    "totalReleases": "{{totalReleases}} total releases",
+    "weightedAverage": "{{average}} weighted average",
+    "peakPrice": "{{price}} peak price",
+    "sections": {
+      "yearRange": "Year range",
+      "weightedAverage": "Weighted average",
+      "absoluteRange": "Absolute range",
+      "totalReleases": "Total releases"
+    },
+    "content": {
+      "title": "Yearly pricing snapshot",
+      "description": "Trend chart shows low, average, and high prices for each year, plus release volume distribution.",
+      "yearFocus": "Year focus: {{year}}",
+      "yearFocusDescription": "Snapshot for the selected year with key price metrics and release activity.",
+      "sections": {
+        "averagePrice": "Average price",
+        "releaseCount": "Release count",
+        "highest": "Highest",
+        "spread": "Spread (high-low)"
+      },
+      "releasesPerYear": "Releases per year",
+      "priceExtremes": "Price extremes",
+      "highestAndLowestPricedFigurines": "Highest and lowest priced figurines for {{year}}.",
+      "highestPriceFigurine": "Highest price figurine",
+      "lowestPriceFigurine": "Lowest price figurine"
+    }
+  }
 }

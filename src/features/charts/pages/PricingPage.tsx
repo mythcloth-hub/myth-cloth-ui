@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
@@ -105,11 +106,13 @@ function PriceTrendChart({
   onSelectYear: (year: number) => void;
   selectedCurrency: SupportedCurrency | null;
 }) {
+  const { t } = useTranslation("explore");
+
   if (data.length === 0) {
     return (
       <Box sx={{ minHeight: 150, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Typography variant="body2" color="text.secondary">
-          No pricing data available.
+          {t("pricing.noDataAvailable")}
         </Typography>
       </Box>
     );
@@ -164,17 +167,17 @@ function PriceTrendChart({
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
         <Chip
           size="small"
-          label="High"
+          label={t("pricing.level.high")}
           sx={{ bgcolor: "rgba(129,199,132,0.16)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.28)" }}
         />
         <Chip
           size="small"
-          label="Average"
+          label={t("pricing.level.average")}
           sx={{ bgcolor: "rgba(79,195,247,0.16)", color: "#9fd7f4", border: "1px solid rgba(79,195,247,0.28)" }}
         />
         <Chip
           size="small"
-          label="Low"
+          label={t("pricing.level.low")}
           sx={{ bgcolor: "rgba(255,183,77,0.16)", color: "#ffd7a2", border: "1px solid rgba(255,183,77,0.28)" }}
         />
       </Stack>
@@ -193,22 +196,22 @@ function PriceTrendChart({
               {hoveredYearData.year}
             </Typography>
             <Typography variant="caption" sx={{ color: "#b8e5ba" }}>
-              High: {hoveredYearData.highestPriceFigurines?.name ?? "N/A"} ({formatCurrency(hoveredYearData.highestReleasePrice, selectedCurrency)})
+              {t("pricing.hover.high")} {hoveredYearData.highestPriceFigurines?.name ?? "N/A"} ({formatCurrency(hoveredYearData.highestReleasePrice, selectedCurrency)})
             </Typography>
             <Typography variant="caption" sx={{ color: "#ffd7a2" }}>
-              Low: {hoveredYearData.lowestPriceFigurines?.name ?? "N/A"} ({formatCurrency(hoveredYearData.lowestReleasePrice, selectedCurrency)})
+              {t("pricing.hover.low")} {hoveredYearData.lowestPriceFigurines?.name ?? "N/A"} ({formatCurrency(hoveredYearData.lowestReleasePrice, selectedCurrency)})
             </Typography>
           </Stack>
         ) : (
           <Typography variant="caption" sx={{ color: "text.secondary" }}>
-            Hover a year in the chart to preview its highest and lowest price figurines.
+            {t("pricing.hover.instruction")}
           </Typography>
         )}
       </Paper>
 
       <Box sx={{ overflowX: "auto", pb: 1 }}>
         <Box sx={{ width, minWidth: "100%" }}>
-          <svg width={width} height={height} role="img" aria-label="Price trends by year">
+          <svg width={width} height={height} role="img" aria-label={t("pricing.chartLabel")}>
             {yTicks.map((tick) => (
               <g key={tick.y}>
                 <line
@@ -309,7 +312,7 @@ function PriceTrendChart({
                   onMouseLeave={() => setHoveredYear(null)}
                 />
                 <title>
-                  {`${point.year}\nHigh: ${point.highestPriceFigurines?.name ?? "N/A"} (${formatCurrency(point.highestReleasePrice, selectedCurrency)})\nLow: ${point.lowestPriceFigurines?.name ?? "N/A"} (${formatCurrency(point.lowestReleasePrice, selectedCurrency)})`}
+                    {`${point.year}\n${t("pricing.high")}: ${point.highestPriceFigurines?.name ?? "N/A"} (${formatCurrency(point.highestReleasePrice, selectedCurrency)})\n${t("pricing.low")}: ${point.lowestPriceFigurines?.name ?? "N/A"} (${formatCurrency(point.lowestReleasePrice, selectedCurrency)})`}
                 </title>
               </g>
             ))}
@@ -333,6 +336,8 @@ function YearExtremeCard({
   accent: string;
   selectedCurrency: SupportedCurrency | null;
 }) {
+  const { t } = useTranslation("explore");
+
   return (
     <Paper
       sx={{
@@ -370,14 +375,14 @@ function YearExtremeCard({
             />
           ) : (
             <Typography variant="caption" color="text.secondary">
-              No image
+              {t("pricing.noImageAvailable")}
             </Typography>
           )}
         </Box>
 
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-            {figurine?.name ?? "No figurine data"}
+            {figurine?.name ?? t("pricing.noFigurineData")}
           </Typography>
           <Chip
             size="small"
@@ -444,6 +449,8 @@ function ReleaseCountBars({ data }: { data: ReleaseYearPriceStats[] }) {
 }
 
 export default function PricingPage() {
+  const { t } = useTranslation("explore");
+
   const { selectedCurrency } = useDisplayCurrency();
   const [priceData, setPriceData] = useState<ReleaseYearPriceStats[]>([]);
   const [loading, setLoading] = useState(true);
@@ -531,9 +538,9 @@ export default function PricingPage() {
       >
         <Box sx={{ mb: 2 }}>
           <AppPageHeader
-            eyebrow="Explore"
-            title="Pricing"
-            subtitle="Track average, highest, and lowest release prices over time, plus yearly release volume and price extremes."
+            eyebrow={t("pricing.eyebrow")}
+            title={t("pricing.title")}
+            subtitle={t("pricing.subtitle")}
           />
         </Box>
 
@@ -557,9 +564,9 @@ export default function PricingPage() {
               sx={{ mt: 1.5 }}
             >
               <Chip label={`${summary.firstYear} - ${summary.lastYear}`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
-              <Chip label={`${formatCount(summary.totalReleases)} total releases`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
-              <Chip label={`${formatCurrency(summary.weightedAverage, selectedCurrency)} weighted avg`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
-              <Chip label={`${formatCurrency(summary.highestPrice, selectedCurrency)} peak price`} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
+              <Chip label={t("pricing.totalReleases", { totalReleases: formatCount(summary.totalReleases) })} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
+              <Chip label={t("pricing.weightedAverage", { average: formatCurrency(summary.weightedAverage, selectedCurrency) })} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
+              <Chip label={t("pricing.peakPrice", { price: formatCurrency(summary.highestPrice, selectedCurrency) })} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
             </Stack>
           )}
 
@@ -567,28 +574,28 @@ export default function PricingPage() {
             <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} sx={{ mt: 1.75 }}>
               <Box sx={{ flex: 1 }}>
                 <PriceMetricCard
-                  label="Year range"
+                  label={t("pricing.sections.yearRange")}
                   value={`${summary.firstYear} - ${summary.lastYear}`}
                   accent="#d4af37"
                 />
               </Box>
               <Box sx={{ flex: 1 }}>
                 <PriceMetricCard
-                  label="Weighted average"
+                  label={t("pricing.sections.weightedAverage")}
                   value={formatCurrency(summary.weightedAverage, selectedCurrency)}
                   accent="#4fc3f7"
                 />
               </Box>
               <Box sx={{ flex: 1 }}>
                 <PriceMetricCard
-                  label="Absolute range"
+                  label={t("pricing.sections.absoluteRange")}
                   value={`${formatCurrency(summary.lowestPrice, selectedCurrency)} - ${formatCurrency(summary.highestPrice, selectedCurrency)}`}
                   accent="#81c784"
                 />
               </Box>
               <Box sx={{ flex: 1 }}>
                 <PriceMetricCard
-                  label="Total releases"
+                  label={t("pricing.sections.totalReleases")}
                   value={formatCount(summary.totalReleases)}
                   accent="#ffb74d"
                 />
@@ -618,7 +625,7 @@ export default function PricingPage() {
           }}
         >
           <Alert severity="info" sx={{ maxWidth: 640, width: "100%", pointerEvents: "auto" }}>
-            We’re currently loading the pricing analysis and retrieving the latest information. This may take a little longer than usual. Please keep this page open while we finish loading the data.
+            {t("pricing.slowLoading")}
           </Alert>
         </Box>
       )}
@@ -632,10 +639,10 @@ export default function PricingPage() {
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-          Yearly pricing snapshot
+          {t("pricing.content.title")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Trend chart shows low, average, and high prices for each year, plus release volume distribution.
+          {t("pricing.content.description")}
         </Typography>
 
         {loading ? (
@@ -668,10 +675,10 @@ export default function PricingPage() {
                   }}
                 >
                   <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
-                    Year focus: {selectedYearData.year}
+                    {t("pricing.content.yearFocus", { year: selectedYearData.year })}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, mb: 1.25 }}>
-                    Snapshot for the selected year with key price metrics and release activity.
+                    {t("pricing.content.yearFocusDescription")}
                   </Typography>
 
                   <Box
@@ -683,29 +690,29 @@ export default function PricingPage() {
                     }}
                   >
                     <PriceMetricCard
-                      label="Average price"
+                      label={t("pricing.content.sections.averagePrice")}
                       value={formatCurrency(selectedYearData.averageReleasePrice, selectedCurrency)}
                       accent="#4fc3f7"
                     />
                     <PriceMetricCard
-                      label="Release count"
+                      label={t("pricing.content.sections.releaseCount")}
                       value={formatCount(selectedYearData.releaseCount)}
                       accent="#d4af37"
                     />
                     <PriceMetricCard
-                      label="Highest"
+                      label={t("pricing.content.sections.highest")}
                       value={formatCurrency(selectedYearData.highestReleasePrice, selectedCurrency)}
                       accent="#81c784"
                     />
                     <PriceMetricCard
-                      label="Spread (high-low)"
+                      label={t("pricing.content.sections.spread")}
                       value={formatCurrency(selectedYearData.highestReleasePrice - selectedYearData.lowestReleasePrice, selectedCurrency)}
                       accent="#ffb74d"
                     />
                   </Box>
 
                   <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                    Releases per year
+                    {t("pricing.content.releasesPerYear")}
                   </Typography>
                   <ReleaseCountBars data={priceData} />
                 </Paper>
@@ -722,22 +729,22 @@ export default function PricingPage() {
                   }}
                 >
                   <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
-                    Price extremes
+                    {t("pricing.content.priceExtremes")}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, mb: 1.25 }}>
-                    Highest and lowest priced figurines for {selectedYearData.year}.
+                    {t("pricing.content.highestAndLowestPricedFigurines", { year: selectedYearData.year })}
                   </Typography>
 
                   <Stack spacing={1.5}>
                     <YearExtremeCard
-                      title="Highest price figurine"
+                      title={t("pricing.content.highestPriceFigurine")}
                       figurine={selectedYearData.highestPriceFigurines}
                       price={selectedYearData.highestReleasePrice}
                       accent="#81c784"
                       selectedCurrency={selectedCurrency}
                     />
                     <YearExtremeCard
-                      title="Lowest price figurine"
+                      title={t("pricing.content.lowestPriceFigurine")}
                       figurine={selectedYearData.lowestPriceFigurines}
                       price={selectedYearData.lowestReleasePrice}
                       accent="#ffb74d"

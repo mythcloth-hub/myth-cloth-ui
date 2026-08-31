@@ -73,7 +73,53 @@
         "noun": "aniversario"
       }
     }
+  },
+  "pricing": {
+    "eyebrow": "Descubre",
+    "title": "Precios",
+    "subtitle": "Sigue la evolución de los precios de lanzamiento promedio, más altos y más bajos a lo largo del tiempo, además del volumen de lanzamientos y los extremos de precios anuales.",
+    "slowLoading": "Actualmente estamos cargando el análisis de precios y recuperando la información más reciente. Esto puede tardar un poco más de lo habitual. Por favor, mantén esta página abierta mientras terminamos de cargar los datos.",
+    "noDataAvailable": "No hay datos de precios disponibles.",
+    "chartLabel": "Tendencias de precios por año",
+    "high": "Alto:",
+    "low": "Bajo:",
+    "noImageAvailable": "No hay imagen",
+    "noFigurineData": "No hay datos de figuras",
+    "level": {
+      "high": "Alto",
+      "average": "Promedio",
+      "low": "Bajo"
+    },
+    "hover": {
+      "instruction": "Pasa el cursor sobre un año en el gráfico para previsualizar sus figuras con los precios más altos y más bajos.",
+      "high": "Alto:",
+      "low": "Bajo:"
+    },
+    "totalReleases": "{{totalReleases}} lanzamientos totales",
+    "weightedAverage": "{{average}} promedio ponderado",
+    "peakPrice": "{{price}} precio máximo",
+    "sections": {
+      "yearRange": "Rango de años",
+      "weightedAverage": "Promedio ponderado",
+      "absoluteRange": "Rango absoluto",
+      "totalReleases": "Total de lanzamientos"
+    },
+    "content": {
+      "title": "Resumen anual de precios",
+      "description": "El gráfico de tendencias muestra los precios bajos, promedio y altos de cada año, además de la distribución del volumen de lanzamientos.",
+      "yearFocus": "Enfoque del año: {{year}}",
+      "yearFocusDescription": "Resumen del año seleccionado con métricas clave de precios y actividad de lanzamientos.",
+      "sections": {
+        "averagePrice": "Precio promedio",
+        "releaseCount": "Cantidad de lanzamientos",
+        "highest": "Más alto",
+        "spread": "Rango (alto-bajo)"
+      },
+      "releasesPerYear": "Lanzamientos por año",
+      "priceExtremes": "Extremos de precios",
+      "highestAndLowestPricedFigurines": "Figuras con los precios más altos y más bajos de {{year}}.",
+      "highestPriceFigurine": "Figura con el precio más alto",
+      "lowestPriceFigurine": "Figura con el precio más bajo"
+    }
   }
-,
-  "prices": {}
 }

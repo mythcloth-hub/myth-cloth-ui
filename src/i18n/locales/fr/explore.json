@@ -74,5 +74,52 @@
       }
     }
   },
-  "prices": {}
+  "pricing": {
+    "eyebrow": "Découvrez",
+    "title": "Prix",
+    "subtitle": "Suivez l’évolution des prix de sortie moyens, les plus élevés et les plus bas au fil du temps, ainsi que le volume annuel des sorties et les extrêmes de prix.",
+    "slowLoading": "Nous chargeons actuellement l’analyse des prix et récupérons les informations les plus récentes. Cela peut prendre un peu plus de temps que d’habitude. Veuillez garder cette page ouverte pendant que nous terminons le chargement des données.",
+    "noDataAvailable": "Aucune donnée sur les prix disponible.",
+    "chartLabel": "Tendances des prix par année",
+    "high": "Élevé :",
+    "low": "Bas :",
+    "noImageAvailable": "Pas d’image",
+    "noFigurineData": "Pas de données sur les figurines",
+    "level": {
+      "high": "Élevé",
+      "average": "Moyen",
+      "low": "Bas"
+    },
+    "hover": {
+      "instruction": "Survolez une année dans le graphique pour prévisualiser ses figurines aux prix les plus élevés et les plus bas.",
+      "high": "Élevé :",
+      "low": "Bas :"
+    },
+    "totalReleases": "{{totalReleases}} sorties totales",
+    "weightedAverage": "{{average}} moyenne pondérée",
+    "peakPrice": "{{price}} prix maximum",
+    "sections": {
+      "yearRange": "Plage d’années",
+      "weightedAverage": "Moyenne pondérée",
+      "absoluteRange": "Plage absolue",
+      "totalReleases": "Total des sorties"
+    },
+    "content": {
+      "title": "Aperçu annuel des prix",
+      "description": "Le graphique de tendances montre les prix bas, moyens et élevés de chaque année, ainsi que la distribution du volume des sorties.",
+      "yearFocus": "Focus sur l’année : {{year}}",
+      "yearFocusDescription": "Aperçu de l’année sélectionnée avec les principales métriques de prix et l’activité des sorties.",
+      "sections": {
+        "averagePrice": "Prix moyen",
+        "releaseCount": "Nombre de sorties",
+        "highest": "Le plus élevé",
+        "spread": "Écart (haut-bas)"
+      },
+      "releasesPerYear": "Sorties par année",
+      "priceExtremes": "Extrêmes de prix",
+      "highestAndLowestPricedFigurines": "Figurines aux prix les plus élevés et les plus bas de {{year}}.",
+      "highestPriceFigurine": "Figurine au prix le plus élevé",
+      "lowestPriceFigurine": "Figurine au prix le plus bas"
+    }
+  }
 }
