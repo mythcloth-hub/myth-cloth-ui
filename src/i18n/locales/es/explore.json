@@ -32,6 +32,47 @@
       "dismissYear": "Cerrar año"
     }
   },
-  "charts": {},
+  "charts": {
+    "eyebrow": "Explora",
+    "title": "Gráficos",
+    "subtitle": "Obtén una visión general de tu colección, con el total de figuras, el estado de los lanzamientos y su distribución por categorías.",
+    "noDataAvailable": "No hay datos disponibles.",
+    "totalFigurines": "{{total}} figuras en total",
+    "totalPending": "{{total}} pendientes",
+    "rate": "{{rate}}% de lanzamientos",
+    "totalReleased": "{{total}} lanzadas",
+    "releaseStatus": {
+      "announced": "Anunciadas",
+      "released": "Lanzadas",
+      "rumored": "Rumoreadas",
+      "prototype": "Prototipos",
+      "unreleased": "No lanzadas"
+    },
+    "insights": {
+      "noDataAvailable": "Todavía no hay datos disponibles para {{noun}}.",
+      "topInsight_one": "{{label}} lidera con {{count}} figura en esta categoría.",
+      "topInsight_other": "{{label}} lidera con {{count}} figuras en esta categoría."
+    },
+    "sections": {
+      "concentration": {
+        "title": "1. Distribución del Catálogo",
+        "noun": "línea",
+        "topLineups": "Principales Líneas",
+        "topSeries": "Principales Series"
+      },
+      "releaseJourney": {
+        "title": "2. Evolución de los Lanzamientos",
+        "noun": "estado de lanzamiento"
+      },
+      "groupEmphasis": {
+        "title": "3. Distribución por Grupos de Personajes",
+        "noun": "grupo"
+      },
+      "anniversaryPresence": {
+        "title": "4. Presencia en Aniversarios",
+        "noun": "aniversario"
+      }
+    }
+  },
   "prices": {}
 }

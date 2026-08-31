@@ -32,6 +32,47 @@
       "dismissYear": "Dismiss year"
     }
   },
-  "charts": {},
+  "charts": {
+    "eyebrow": "Explore",
+    "title": "Charts",
+    "subtitle": "Get a quick overview of your collection, including total figurines, release status, and category distribution.",
+    "noDataAvailable": "No data available.",
+    "totalFigurines": "{{total}} total figurines",
+    "totalPending": "{{total}} pending",
+    "rate": "{{rate}}% release rate",
+    "totalReleased": "{{total}} released",
+    "releaseStatus": {
+      "announced": "Announced",
+      "released": "Released",
+      "rumored": "Rumored",
+      "prototype": "Prototype",
+      "unreleased": "Unreleased"
+    },
+    "insights": {
+      "noDataAvailable": "No {{noun}} data available yet.",
+      "topInsight_one": "{{label}} leads with {{count}} figurine in this category.",
+      "topInsight_other": "{{label}} leads with {{count}} figurines in this category."
+    },
+    "sections": {
+      "concentration": {
+        "title": "1. Catalog Concentration",
+        "noun": "lineup",
+        "topLineups": "Top Lineups",
+        "topSeries": "Top Series"
+      },
+      "releaseJourney": {
+        "title": "2. Release Journey",
+        "noun": "release status"
+      },
+      "groupEmphasis": {
+        "title": "3. Character Group Emphasis",
+        "noun": "group"
+      },
+      "anniversaryPresence": {
+        "title": "4. Anniversary Presence",
+        "noun": "anniversary"
+      }
+    }
+  },
   "prices": {}
 }

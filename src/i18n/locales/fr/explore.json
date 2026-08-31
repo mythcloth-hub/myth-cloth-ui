@@ -32,6 +32,47 @@
       "dismissYear": "Fermer l'année"
     }
   },
-  "charts": {},
+  "charts": {
+    "eyebrow": "Découvrez",
+    "title": "Graphiques",
+    "subtitle": "Obtenez une vue d’ensemble de votre collection, avec le nombre total de figurines, l’état des sorties et leur répartition par catégorie.",
+    "noDataAvailable": "Aucune donnée disponible.",
+    "totalFigurines": "{{total}} figurines au total",
+    "totalPending": "{{total}} en attente",
+    "rate": "{{rate}} % des sorties",
+    "totalReleased": "{{total}} sorties",
+    "releaseStatus": {
+      "announced": "Annoncées",
+      "released": "Sorties",
+      "rumored": "Rumorées",
+      "prototype": "Prototypes",
+      "unreleased": "Non sorties"
+    },
+    "insights": {
+      "noDataAvailable": "Aucune donnée disponible pour {{noun}} pour le moment.",
+      "topInsight_one": "{{label}} arrive en tête avec {{count}} figurine dans cette catégorie.",
+      "topInsight_other": "{{label}} arrive en tête avec {{count}} figurines dans cette catégorie."
+    },
+    "sections": {
+      "concentration": {
+        "title": "1. Répartition du catalogue",
+        "noun": "ligne",
+        "topLineups": "Principales gammes",
+        "topSeries": "Principales séries"
+      },
+      "releaseJourney": {
+        "title": "2. Évolution des sorties",
+        "noun": "état de sortie"
+      },
+      "groupEmphasis": {
+        "title": "3. Répartition par groupes de personnages",
+        "noun": "groupe"
+      },
+      "anniversaryPresence": {
+        "title": "4. Présence lors des anniversaires",
+        "noun": "anniversaire"
+      }
+    }
+  },
   "prices": {}
 }

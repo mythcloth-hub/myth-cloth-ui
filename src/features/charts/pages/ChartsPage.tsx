@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import {
   Alert,
   Box,
@@ -14,12 +16,22 @@ import { getStats, type StatsResponse } from "../api/statsApi";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
 
-const RELEASE_STATUS_META: Record<string, { label: string; color: string }> = {
-  ANNOUNCED: { label: "Announced", color: "#4fc3f7" },
-  RELEASED: { label: "Released", color: "#81c784" },
-  RUMORED: { label: "Rumored", color: "#ffb74d" },
-  PROTOTYPE: { label: "Prototype", color: "#90a4ae" },
-  UNRELEASED: { label: "Unreleased", color: "#e57373" },
+type ReleaseStatusMeta = {
+  labelKey:
+    | "charts.releaseStatus.announced"
+    | "charts.releaseStatus.released"
+    | "charts.releaseStatus.rumored"
+    | "charts.releaseStatus.prototype"
+    | "charts.releaseStatus.unreleased";
+  color: string;
+};
+
+const RELEASE_STATUS_META: Record<string, ReleaseStatusMeta> = {
+  ANNOUNCED: { labelKey: "charts.releaseStatus.announced", color: "#4fc3f7" },
+  RELEASED: { labelKey: "charts.releaseStatus.released", color: "#81c784" },
+  RUMORED: { labelKey: "charts.releaseStatus.rumored", color: "#ffb74d" },
+  PROTOTYPE: { labelKey: "charts.releaseStatus.prototype", color: "#90a4ae" },
+  UNRELEASED: { labelKey: "charts.releaseStatus.unreleased", color: "#e57373" },
 };
 
 type CountDatum = {
@@ -39,7 +51,7 @@ type DashboardData = {
   lineupData: CountDatum[];
   groupData: CountDatum[];
   anniversaryData: CountDatum[];
-}
+};
 
 function toSortedData(entries: Record<string, number>) {
   return Object.entries(entries)
@@ -47,11 +59,11 @@ function toSortedData(entries: Record<string, number>) {
     .sort((left, right) => right.value - left.value);
 }
 
-function buildDashboardData(stats: StatsResponse): DashboardData {
+function buildDashboardData(stats: StatsResponse, t: TFunction<"explore">): DashboardData {
   const statusData = Object.entries(stats.totalByReleaseStatus)
     .map(([key, value]) => ({
       key,
-      label: RELEASE_STATUS_META[key]?.label ?? key,
+      label: t(RELEASE_STATUS_META[key]?.labelKey ?? key),
       color: RELEASE_STATUS_META[key]?.color ?? "#b39ddb",
       value,
     }))
@@ -99,6 +111,7 @@ function SectionCard({
 }
 
 function HorizontalBars({ data }: { data: CountDatum[] }) {
+  const { t } = useTranslation("explore");
   const [animateBars, setAnimateBars] = useState(false);
 
   useEffect(() => {
@@ -115,7 +128,7 @@ function HorizontalBars({ data }: { data: CountDatum[] }) {
     return (
       <Box sx={{ minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Typography variant="body2" color="text.secondary">
-          No data available.
+          {t("charts.noDataAvailable")}
         </Typography>
       </Box>
     );
@@ -200,29 +213,31 @@ function StatusStack({ data }: { data: StatusDatum[] }) {
   );
 }
 
-function getTopInsight(data: CountDatum[], noun: string) {
-  if (data.length === 0) return `No ${noun} data available yet.`;
+function getTopInsight(data: CountDatum[], noun: string, t: TFunction<"explore">) {
+  if (data.length === 0) return t("charts.insights.noDataAvailable", { noun });
   const top = data[0];
-  return `${top.label} leads with ${top.value} figurines in this category.`;
+  return t("charts.insights.topInsight", { label: top.label, count: top.value });
 }
 
 function StoryLayout({ dashboard }: { dashboard: DashboardData }) {
+  const { t } = useTranslation("explore");
+
   return (
     <Stack spacing={2}>
       <SectionCard
-        title="1. Catalog Concentration"
-        subtitle={getTopInsight(dashboard.lineupData, "lineup")}
+        title={t("charts.sections.concentration.title")}
+        subtitle={getTopInsight(dashboard.lineupData, t("charts.sections.concentration.noun"), t)}
       >
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, xl: 6 }}>
             <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-              Top Lineups
+              {t("charts.sections.concentration.topLineups")}
             </Typography>
             <HorizontalBars data={dashboard.lineupData.slice(0, 10)} />
           </Grid>
           <Grid size={{ xs: 12, xl: 6 }}>
             <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-              Top Series
+              {t("charts.sections.concentration.topSeries")}
             </Typography>
             <HorizontalBars data={dashboard.seriesData.slice(0, 10)} />
           </Grid>
@@ -230,22 +245,22 @@ function StoryLayout({ dashboard }: { dashboard: DashboardData }) {
       </SectionCard>
 
       <SectionCard
-        title="2. Release Journey"
-        subtitle={getTopInsight(dashboard.statusData, "release status")}
+        title={t("charts.sections.releaseJourney.title")}
+        subtitle={getTopInsight(dashboard.statusData, t("charts.sections.releaseJourney.noun"), t)}
       >
         <StatusStack data={dashboard.statusData} />
       </SectionCard>
 
       <SectionCard
-        title="3. Character Group Emphasis"
-        subtitle={getTopInsight(dashboard.groupData, "group")}
+        title={t("charts.sections.groupEmphasis.title")}
+        subtitle={getTopInsight(dashboard.groupData, t("charts.sections.groupEmphasis.noun"), t)}
       >
         <HorizontalBars data={dashboard.groupData.slice(0, 12)} />
       </SectionCard>
 
       <SectionCard
-        title="4. Anniversary Presence"
-        subtitle={getTopInsight(dashboard.anniversaryData, "anniversary")}
+        title={t("charts.sections.anniversaryPresence.title")}
+        subtitle={getTopInsight(dashboard.anniversaryData, t("charts.sections.anniversaryPresence.noun"), t)}
       >
         <HorizontalBars data={dashboard.anniversaryData.slice(0, 12)} />
       </SectionCard>
@@ -254,6 +269,8 @@ function StoryLayout({ dashboard }: { dashboard: DashboardData }) {
 }
 
 export default function ChartsPage() {
+  const { t } = useTranslation("explore");
+
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -287,7 +304,7 @@ export default function ChartsPage() {
     };
   }, []);
 
-  const dashboard = useMemo(() => (stats ? buildDashboardData(stats) : null), [stats]);
+  const dashboard = useMemo(() => (stats ? buildDashboardData(stats, t) : null), [stats, t]);
   const released = dashboard?.statusData.find((item) => item.key === "RELEASED")?.value ?? 0;
   const releaseRate = dashboard && dashboard.totalFigurines > 0
     ? Math.round((released / dashboard.totalFigurines) * 100)
@@ -317,9 +334,9 @@ export default function ChartsPage() {
       >
         <Box sx={{ mb: 2 }}>
           <AppPageHeader
-            eyebrow="Explore"
-            title="Charts"
-            subtitle="Get a quick overview of your collection, including total figurines, release status, and category distribution."
+            eyebrow={t("charts.eyebrow")}
+            title={t("charts.title")}
+            subtitle={t("charts.subtitle")}
           />
         </Box>
 
@@ -334,10 +351,10 @@ export default function ChartsPage() {
         >
           {dashboard && (
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
-              <Chip label={`${dashboard.totalFigurines} total figurines`} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
-              <Chip label={`${dashboard.totalFigurines - released} pending`} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
-              <Chip label={`${releaseRate}% release rate`} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
-              <Chip label={`${released} released`} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
+              <Chip label={t("charts.totalFigurines", { total: dashboard.totalFigurines })} sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700 }} />
+              <Chip label={t("charts.totalPending", { total: dashboard.totalFigurines - released })} sx={{ bgcolor: "rgba(212,175,55,0.14)", color: "#F3D36B", border: "1px solid rgba(212,175,55,0.24)", fontWeight: 700 }} />
+              <Chip label={t("charts.rate", { rate: releaseRate })} sx={{ bgcolor: "rgba(79,195,247,0.14)", color: "#9FD7F4", border: "1px solid rgba(79,195,247,0.24)", fontWeight: 700 }} />
+              <Chip label={t("charts.totalReleased", { total: released })} sx={{ bgcolor: "rgba(129,199,132,0.14)", color: "#b8e5ba", border: "1px solid rgba(129,199,132,0.24)", fontWeight: 700 }} />
             </Stack>
           )}
         </Paper>
