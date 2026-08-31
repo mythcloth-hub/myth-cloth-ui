@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
@@ -126,6 +127,8 @@ const getNearestScrollContainer = (element: HTMLElement | null): HTMLElement | n
 };
 
 export default function CollectionDetailPage() {
+  const { t } = useTranslation("collections");
+
   const theme = useTheme();
   const { hasPermission } = useAuth();
   const { id } = useParams<{ id: string }>();
@@ -342,7 +345,7 @@ export default function CollectionDetailPage() {
       }
 
       if (summaryResult.status === "rejected" && figurinesResult.status === "fulfilled") {
-        setErrorMessage("Collection summary is temporarily unavailable. Showing fallback values from figurines.");
+        setErrorMessage(t("detail.messages.summaryUnavailable"));
       }
     } catch (err) {
       setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "collection" }));
@@ -400,7 +403,7 @@ export default function CollectionDetailPage() {
     try {
       await removeFigurineFromCollection(collection.id, pendingDeleteFigurineId);
       await loadCollection({ preserveScroll: true });
-      setSuccessMessage("Figurine removed from collection.");
+      setSuccessMessage(t("detail.messages.figurineRemoved"));
     } catch (err) {
       setErrorMessage(
         getApiErrorMessage(err, { action: "delete", resource: "figurine from collection" })
@@ -419,7 +422,7 @@ export default function CollectionDetailPage() {
       await addFigurineToCollection(collection.id, figurineId);
       await loadCollection({ preserveScroll: true });
       setRecentlyAddedFigurineId(figurineId);
-      setSuccessMessage("Figurine added to collection.");
+      setSuccessMessage(t("detail.messages.figurineAdded"));
     } catch (err) {
       setErrorMessage(
         getApiErrorMessage(err, { action: "update", resource: "figurine to collection" })
@@ -437,7 +440,7 @@ export default function CollectionDetailPage() {
       await addFigurineToCollection(collection.id, figurineId);
       await loadCollection({ preserveScroll: true });
       setRecentlyAddedFigurineId(figurineId);
-      setSuccessMessage("Figurine quantity increased.");
+      setSuccessMessage(t("detail.messages.figurineQuantityIncreased"));
     } catch (err) {
       setErrorMessage(
         getApiErrorMessage(err, { action: "update", resource: "figurine quantity" })
@@ -631,7 +634,7 @@ export default function CollectionDetailPage() {
       const existingBackendPurchaseId = currentEditingPurchase?.purchaseId ?? Number(editingPurchaseId);
 
       if (!Number.isFinite(existingBackendPurchaseId) || existingBackendPurchaseId <= 0) {
-        throw new Error("Unable to identify purchase id for update.");
+        throw new Error(t("detail.messages.noPurchaseId"));
       }
 
       await updatePurchaseSummaryLineItems(existingBackendPurchaseId, input);
@@ -646,7 +649,7 @@ export default function CollectionDetailPage() {
     }
 
     setErrorMessage(null);
-    setSuccessMessage(editingPurchaseId ? "Purchase updated successfully." : "Purchase recorded successfully.");
+    setSuccessMessage(editingPurchaseId ? t("detail.messages.purchaseUpdated") : t("detail.messages.purchaseRecorded"));
     setEditingPurchaseId(null);
     setPurchaseInitialDraft(null);
     setPurchaseDialogOpen(false);
@@ -705,7 +708,7 @@ export default function CollectionDetailPage() {
     );
 
     if (!relatedPurchase) {
-      setSuccessMessage("No purchase record found for this figurine yet.");
+      setSuccessMessage(t("detail.messages.noPurchaseRecordFound"));
       return;
     }
 
@@ -732,7 +735,7 @@ export default function CollectionDetailPage() {
   if (!collection) {
     return (
       <Box sx={{ padding: 3 }}>
-        <Alert severity="error">Collection not found.</Alert>
+        <Alert severity="error">{t("detail.messages.noCollectionFound")}</Alert>
       </Box>
     );
   }
@@ -774,7 +777,7 @@ export default function CollectionDetailPage() {
             mb: 1.5,
           }}
         >
-          <Tooltip title="Back to Collections">
+          <Tooltip title={t("detail.header.backToCollections")}>
             <IconButton onClick={() => navigate("/collections")} sx={{ mt: 0.5 }}>
               <ArrowBackIcon />
             </IconButton>
@@ -782,9 +785,9 @@ export default function CollectionDetailPage() {
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <AppPageHeader
-              eyebrow="Collections"
+              eyebrow={t("detail.header.eyebrow")}
               title={collection.name}
-              subtitle={collection.description?.trim() || "Browse this collection to track progress, review figurines, and manage purchases."}
+              subtitle={collection.description?.trim() || t("detail.header.subtitle")}
               compact
             />
           </Box>
@@ -820,7 +823,7 @@ export default function CollectionDetailPage() {
             >
               <Box>
                 <Typography variant="body2" sx={{ color: alpha(theme.palette.text.primary, 0.74), fontWeight: 600 }}>
-                  {ownedReleasedFigurines} of {totalReleased} released figurines collected
+                  {t("detail.progress.description", { owned: ownedReleasedFigurines, total: totalReleased })}
                 </Typography>
               </Box>
               <Box sx={{ textAlign: "right" }}>
@@ -828,7 +831,7 @@ export default function CollectionDetailPage() {
                   {releasedProgressPercent}%
                 </Typography>
                 <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.66), fontWeight: 700 }}>
-                  completion
+                  {t("detail.progress.completion")}
                 </Typography>
               </Box>
             </Stack>
@@ -873,51 +876,51 @@ export default function CollectionDetailPage() {
                 },
               }}
             >
-              <Tooltip title="Unique released figurines from the catalog that are currently in your collection.">
+              <Tooltip title={t("detail.progress.chips.owned.title")}>
                 <Chip
                   size="small"
                   icon={<InfoOutlinedIcon />}
-                  label={`Owned released: ${ownedReleasedFigurines}`}
+                  label={t("detail.progress.chips.owned.label", { owned: ownedReleasedFigurines })}
                   sx={{ bgcolor: alpha(ownedColor, 0.2), color: ownedColor, fontWeight: 800 }}
                 />
               </Tooltip>
-              <Tooltip title="Released catalog figurines that are still missing from your collection.">
+              <Tooltip title={t("detail.progress.chips.missing.title")}>
                 <Chip
                   size="small"
                   icon={<InfoOutlinedIcon />}
-                  label={`Missing released: ${missingReleasedFigurines}`}
+                  label={t("detail.progress.chips.missing.label", { missing: missingReleasedFigurines })}
                   sx={{ bgcolor: alpha(missingColor, 0.2), color: missingColor, fontWeight: 800 }}
                 />
               </Tooltip>
-              <Tooltip title="Coverage of announced figurines: distinct upcoming figurines preordered versus all upcoming figurines in the catalog.">
+              <Tooltip title={t("detail.progress.chips.upcoming.title")}>
                 <Chip
                   size="small"
                   icon={<InfoOutlinedIcon />}
-                  label={`Upcoming: ${preorderedFigurines}/${totalUpcoming} (${upcomingCoveragePercent}%)`}
+                  label={t("detail.progress.chips.upcoming.label", { preordered: preorderedFigurines, total: totalUpcoming, coverage: upcomingCoveragePercent })}
                   sx={{ bgcolor: alpha(theme.palette.secondary.main, 0.16), color: theme.palette.secondary.light, fontWeight: 800 }}
                 />
               </Tooltip>
-              <Tooltip title="Physical released copies currently owned, including duplicates.">
+              <Tooltip title={t("detail.progress.chips.ownedCopies.title")}>
                 <Chip
                   size="small"
                   icon={<InfoOutlinedIcon />}
-                  label={`Owned copies: ${ownedCopies}`}
+                  label={t("detail.progress.chips.ownedCopies.label", { total: ownedCopies })}
                   sx={{ bgcolor: alpha(theme.palette.info.main, 0.2), color: theme.palette.info.light, fontWeight: 800 }}
                 />
               </Tooltip>
-              <Tooltip title="Physical copies of upcoming figurines that are preordered, including duplicate copies.">
+              <Tooltip title={t("detail.progress.chips.preorderedCopies.title")}>
                 <Chip
                   size="small"
                   icon={<InfoOutlinedIcon />}
-                  label={`Preordered copies: ${preorderedCopies}`}
+                  label={t("detail.progress.chips.preorderedCopies.label", { total: preorderedCopies })}
                   sx={{ bgcolor: alpha(theme.palette.warning.main, 0.2), color: theme.palette.warning.light, fontWeight: 800 }}
                 />
               </Tooltip>
-              <Tooltip title="Total figurines available in the full catalog, including released and upcoming entries.">
+              <Tooltip title={t("detail.progress.chips.total.title")}>
                 <Chip
                   size="small"
                   icon={<InfoOutlinedIcon />}
-                  label={`Catalog total: ${catalogTotalFigurines}`}
+                  label={t("detail.progress.chips.total.label", { total: catalogTotalFigurines })}
                   sx={{ bgcolor: alpha(theme.palette.common.white, 0.1), color: alpha(theme.palette.text.primary, 0.84), fontWeight: 800 }}
                 />
               </Tooltip>
@@ -938,8 +941,8 @@ export default function CollectionDetailPage() {
           >
             <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
               {pageInfo.totalElements > 0
-                ? `${pageInfo.totalElements.toLocaleString()} figurines · page ${page} of ${totalPages}`
-                : "No figurines available for this page."}
+                ? t("detail.progress.pagination.total", { count: pageInfo.totalElements.toLocaleString(), page: page, total: totalPages })
+                : t("detail.progress.pagination.noFigurines")}
             </Typography>
 
             <Stack
@@ -964,7 +967,7 @@ export default function CollectionDetailPage() {
                 WebkitOverflowScrolling: "touch",
               }}
             >
-              <Tooltip title="Zoom out">
+              <Tooltip title={t("detail.progress.pagination.zoomOut")}>
                 <span>
                   <IconButton
                     size="small"
@@ -1001,10 +1004,10 @@ export default function CollectionDetailPage() {
                   bgcolor: alpha(theme.palette.background.paper, 0.22),
                 }}
               >
-                Reset
+                {t("detail.progress.pagination.resetZoom")}
               </Button>
 
-              <Tooltip title="Zoom in">
+              <Tooltip title={t("detail.progress.pagination.zoomIn")}>
                 <span>
                   <IconButton
                     size="small"
@@ -1026,7 +1029,7 @@ export default function CollectionDetailPage() {
                 }}
               />
 
-              <Tooltip title={includeRestocks ? "Restocks included — click to exclude" : "Restocks excluded — click to include"}>
+              <Tooltip title={includeRestocks ? t("detail.progress.pagination.included") : t("detail.progress.pagination.excluded")}>
                 <IconButton
                   size="small"
                   onClick={handleToggleIncludeRestocks}
@@ -1110,15 +1113,15 @@ export default function CollectionDetailPage() {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Remove figurine</DialogTitle>
+        <DialogTitle>{t("detail.figurines.dialogDelete.title")}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            Are you sure you want to remove this figurine from the collection? This action cannot be undone.
+            {t("detail.figurines.dialogDelete.content")}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteFigurineDialog} disabled={isDeletingFigurine} startIcon={<CancelOutlinedIcon />}>
-            Cancel
+            {t("detail.figurines.dialogDelete.cancel")}
           </Button>
           <Button
             onClick={() => void handleConfirmDeleteFigurine()}
@@ -1127,15 +1130,15 @@ export default function CollectionDetailPage() {
             disabled={isDeletingFigurine}
             startIcon={<DeleteIcon />}
           >
-            {isDeletingFigurine ? <CircularProgress size={20} color="inherit" /> : "Remove"}
+            {isDeletingFigurine ? <CircularProgress size={20} color="inherit" /> : t("detail.figurines.dialogDelete.remove")}
           </Button>
         </DialogActions>
       </Dialog>
 
       <PurchaseFormDialog
         open={purchaseDialogOpen}
-        title={editingPurchase ? "Edit Purchase" : "Record Purchase"}
-        submitLabel={editingPurchase ? "Update Purchase" : "Save Purchase"}
+        title={editingPurchase ? t("detail.purchases.titleEdit") : t("detail.purchases.titleNew")}
+        submitLabel={editingPurchase ? t("detail.purchases.labelEdit") : t("detail.purchases.labelNew")}
         initialPurchase={editingPurchase}
         initialDraft={purchaseInitialDraft}
         onClose={handleClosePurchaseDialog}
@@ -1155,7 +1158,7 @@ export default function CollectionDetailPage() {
               fontWeight: 700,
             }}
           >
-            Browse Figurines
+            {t("detail.figurines.browse")}
           </Button>
         </Box>
       )}
@@ -1175,11 +1178,11 @@ export default function CollectionDetailPage() {
                 <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.4 }}>
                   <ReceiptLongOutlinedIcon fontSize="small" sx={{ color: "primary.main" }} />
                   <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                    Most Recent Purchases
+                    {t("detail.purchases.title")}
                   </Typography>
                 </Stack>
                 <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  Figurine purchases are tracked separately from the current collection quantities.
+                  {t("detail.purchases.description")}
                 </Typography>
               </Box>
               <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
@@ -1195,14 +1198,14 @@ export default function CollectionDetailPage() {
                     startIcon={<VisibilityOutlinedIcon />}
                     onClick={() => setShowRecentPurchasesSummary((current) => !current)}
                   >
-                    {showRecentPurchasesSummary ? "Hide Summary" : "Show Summary"}
+                    {showRecentPurchasesSummary ? t("detail.purchases.hideSummary") : t("detail.purchases.showSummary")}
                   </Button>
                   <Button
                     variant="text"
                     startIcon={<ReceiptLongOutlinedIcon />}
                     onClick={() => navigate(`/purchases?collectionId=${collection.id}`)}
                   >
-                    Open Purchases
+                    {t("detail.purchases.open")}
                   </Button>
                   {hasPermission("purchases:create") && (
                     <Button
@@ -1211,7 +1214,7 @@ export default function CollectionDetailPage() {
                       onClick={handleOpenCreatePurchaseDialog}
                       sx={{ flexShrink: 0 }}
                     >
-                      Record Purchase
+                      {t("detail.purchases.record")}
                     </Button>
                   )}
                 </Stack>
@@ -1222,7 +1225,7 @@ export default function CollectionDetailPage() {
               <Stack spacing={1} sx={{ mt: 1.3 }}>
                 {purchases.length === 0 ? (
                   <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    No purchase records yet.
+                    {t("detail.purchases.noRecords")}
                   </Typography>
                 ) : (
                   <>
@@ -1237,7 +1240,7 @@ export default function CollectionDetailPage() {
                         }}
                       >
                         <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                          Total purchases
+                          {t("detail.purchases.total")}
                         </Typography>
                         <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
                           {purchases.length}
@@ -1253,7 +1256,7 @@ export default function CollectionDetailPage() {
                         }}
                       >
                         <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                          Latest order date
+                          {t("detail.purchases.latestOrderDate")}
                         </Typography>
                         <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
                           {purchases[0]?.orderDate ?? "N/A"}
@@ -1269,7 +1272,7 @@ export default function CollectionDetailPage() {
                         }}
                       >
                         <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                          Recent purchases
+                          {t("detail.purchases.recent")}
                         </Typography>
                         <Stack spacing={0.55} sx={{ mt: 0.45 }}>
                           {purchases.slice(0, 3).map((purchase) => (
@@ -1283,10 +1286,10 @@ export default function CollectionDetailPage() {
                               }}
                             >
                               <Typography variant="caption" sx={{ display: "block", color: "text.primary", fontWeight: 700 }}>
-                                {purchase.store?.trim() ? purchase.store : "Store not specified"}
+                                {purchase.store?.trim() ? purchase.store : t("detail.purchases.storeNotSpecified")}
                               </Typography>
                               <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                                Date: {purchase.orderDate?.trim() ? purchase.orderDate : "No order date"} · {purchase.totalAmount} {purchase.currency}
+                                {t("detail.purchases.date")} {purchase.orderDate?.trim() ? purchase.orderDate : t("detail.purchases.noOrderDate")} · {purchase.totalAmount} {purchase.currency}
                               </Typography>
                             </Box>
                           ))}
@@ -1294,7 +1297,7 @@ export default function CollectionDetailPage() {
                       </Box>
                     </Stack>
                     <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                      Access Purchases to review and manage your complete purchase history.
+                      {t("detail.purchases.caption")}
                     </Typography>
                   </>
                 )}
@@ -1528,7 +1531,7 @@ export default function CollectionDetailPage() {
                         }}
                       >
                         <Typography sx={{ fontSize: "1.2rem", lineHeight: 1 }}>☆</Typography>
-                        <Typography variant="caption">Missing Figurine</Typography>
+                        <Typography variant="caption">{t("detail.figurines.missing")}</Typography>
                       </Box>
                     )}
 
@@ -1570,7 +1573,7 @@ export default function CollectionDetailPage() {
                       >
                         <CircularProgress size={22} sx={{ color: theme.palette.info.light }} />
                         <Typography variant="caption" sx={{ color: "rgba(230,240,255,0.94)", fontWeight: 700 }}>
-                          Updating quantity...
+                          {t("detail.figurines.updatingQuantity")}
                         </Typography>
                       </Box>
                     )}
@@ -1595,9 +1598,9 @@ export default function CollectionDetailPage() {
                     )}
 
                     {slot.figurine && slot.owned && (
-                      <Tooltip title="Double-click to increase quantity">
+                      <Tooltip title={t("detail.figurines.increaseQuantity")}>
                         <Chip
-                          label={isAnnounced ? "Preordered" : "Collected"}
+                          label={isAnnounced ? t("detail.figurines.preordered") : t("detail.figurines.collected")}
                           size="small"
                           sx={{
                             position: "absolute",
@@ -1617,7 +1620,7 @@ export default function CollectionDetailPage() {
 
                     {slot.figurine && !slot.owned && (
                       <Chip
-                        label={isAnnounced ? "Announced" : "Missing"}
+                        label={isAnnounced ? t("detail.figurines.announcedLabel") : t("detail.figurines.missingLabel")}
                         size="small"
                         sx={{
                           position: "absolute",
@@ -1639,7 +1642,7 @@ export default function CollectionDetailPage() {
                     )}
 
                     {hasPermission("collections:figurines:add") && slot.figurine && !slot.owned && (
-                      <Tooltip title="Add this figurine to this collection">
+                      <Tooltip title={t("detail.figurines.addToCollection")}>
                         <span>
                           <IconButton
                             size="small"
@@ -1689,7 +1692,7 @@ export default function CollectionDetailPage() {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {slot.owned ? slot.figurine?.displayableName : slot.figurine?.displayableName ?? "Not collected yet"}
+                        {slot.owned ? slot.figurine?.displayableName : slot.figurine?.displayableName ?? t("detail.figurines.notCollectedYet")}
                       </Typography>
                       {isAnnounced && (
                         <Typography
@@ -1702,7 +1705,7 @@ export default function CollectionDetailPage() {
                             lineHeight: 1.15,
                           }}
                         >
-                          Not part of the collection yet
+                          {t("detail.figurines.notInCollection")}
                         </Typography>
                       )}
                       {slot.figurine && noteText.length > 0 && (
@@ -1802,7 +1805,7 @@ export default function CollectionDetailPage() {
                           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={0.6}>
                             <Chip
                               size="small"
-                              label={isAnnounced ? "Announced" : "Released"}
+                              label={isAnnounced ? t("detail.figurines.announced") : t("detail.figurines.released")}
                               sx={{
                                 height: 18,
                                 fontSize: "0.62rem",
@@ -1849,7 +1852,7 @@ export default function CollectionDetailPage() {
                               lineHeight: 1.2,
                             }}
                           >
-                            {isBackDisplayNameLoading ? "Loading sticker name..." : backDisplayName ?? slot.figurine.displayableName}
+                            {isBackDisplayNameLoading ? t("detail.figurines.loadingSticker") : backDisplayName ?? slot.figurine.displayableName}
                           </Typography>
                         </Box>
 
@@ -1869,7 +1872,7 @@ export default function CollectionDetailPage() {
                             }}
                           >
                             <Typography variant="caption" sx={{ display: "block", color: alpha(theme.palette.text.primary, 0.64), fontWeight: 700, lineHeight: 1 }}>
-                              Release
+                              {t("detail.figurines.releaseDate")}
                             </Typography>
                             <Typography variant="caption" sx={{ display: "block", mt: 0.2, color: backTextPrimary, fontWeight: 800, lineHeight: 1.2 }}>
                               {backDetail?.releaseDateLabel ?? "N/A"}
@@ -1884,7 +1887,7 @@ export default function CollectionDetailPage() {
                             }}
                           >
                             <Typography variant="caption" sx={{ display: "block", color: alpha(theme.palette.text.primary, 0.64), fontWeight: 700, lineHeight: 1 }}>
-                              Qty
+                              {t("detail.figurines.quantity")}
                             </Typography>
                             <Typography variant="caption" sx={{ display: "block", mt: 0.2, color: backTextPrimary, fontWeight: 800, lineHeight: 1.2 }}>
                               x{Math.max(1, slot.figurine.ownedQuantity)}
@@ -1906,7 +1909,7 @@ export default function CollectionDetailPage() {
                               lineHeight: 1.2,
                             }}
                           >
-                            Awaiting official release.
+                            {t("detail.figurines.awaitingRelease")}
                           </Typography>
                         )}
 
@@ -1960,7 +1963,7 @@ export default function CollectionDetailPage() {
                       >
                         {backDetail?.tamashiiUrl && (
                           <Stack alignItems="center" sx={{ minWidth: 40 }}>
-                            <Tooltip title="Open Tamashii page">
+                            <Tooltip title={t("detail.figurines.openTamashiiPage")}>
                               <IconButton
                                 component="a"
                                 href={backDetail.tamashiiUrl}
@@ -1975,13 +1978,13 @@ export default function CollectionDetailPage() {
                             </Tooltip>
                             {showBackActionLabels && (
                               <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
-                                Link
+                                {t("detail.figurines.link")}
                               </Typography>
                             )}
                           </Stack>
                         )}
                         <Stack alignItems="center" sx={{ minWidth: 40 }}>
-                          <Tooltip title="View figurine details">
+                          <Tooltip title={t("detail.figurines.viewDetails")}>
                             <IconButton
                               size="small"
                               onClick={(e) => {
@@ -1995,13 +1998,13 @@ export default function CollectionDetailPage() {
                           </Tooltip>
                           {showBackActionLabels && (
                             <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
-                              View
+                              {t("detail.figurines.view")}
                             </Typography>
                           )}
                         </Stack>
                         {hasPermission("purchases:update") && (
                           <Stack alignItems="center" sx={{ minWidth: 40 }}>
-                            <Tooltip title={hasPurchaseForFigurine ? "Edit purchase with this figurine" : "No purchase record yet"}>
+                            <Tooltip title={hasPurchaseForFigurine ? t("detail.figurines.editPurchase") : t("detail.figurines.noPurchaseRecord")}>
                               <span>
                                 <IconButton
                                   size="small"
@@ -2018,14 +2021,14 @@ export default function CollectionDetailPage() {
                             </Tooltip>
                             {showBackActionLabels && (
                               <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
-                                Edit
+                                {t("detail.figurines.edit")}
                               </Typography>
                             )}
                           </Stack>
                         )}
                         {hasPermission("purchases:create") && (
                           <Stack alignItems="center" sx={{ minWidth: 40 }}>
-                            <Tooltip title="Create purchase for this figurine">
+                            <Tooltip title={t("detail.figurines.createPurchase")}>
                               <IconButton
                                 size="small"
                                 onClick={(e) => {
@@ -2039,14 +2042,14 @@ export default function CollectionDetailPage() {
                             </Tooltip>
                             {showBackActionLabels && (
                               <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
-                                New
+                                {t("detail.figurines.new")}
                               </Typography>
                             )}
                           </Stack>
                         )}
                         {hasPermission("collections:figurines:delete") && (
                           <Stack alignItems="center" sx={{ minWidth: 40 }}>
-                            <Tooltip title="Remove from collection">
+                            <Tooltip title={t("detail.figurines.removeFromCollection")}>
                               <IconButton
                                 size="small"
                                 onClick={(e) => {
@@ -2060,7 +2063,7 @@ export default function CollectionDetailPage() {
                             </Tooltip>
                             {showBackActionLabels && (
                               <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
-                                Remove
+                                {t("detail.figurines.remove")}
                               </Typography>
                             )}
                           </Stack>
