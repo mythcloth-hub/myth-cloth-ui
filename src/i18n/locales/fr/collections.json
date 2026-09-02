@@ -18,6 +18,8 @@
   },
   "overview": {
     "title": "Aperçu des collections",
+    "showDetails": "Afficher les détails",
+    "hideDetails": "Masquer les détails",
     "description": "Suivez l'évolution de vos collections et comparez les figurines uniques avec celles qui apparaissent plusieurs fois. « Entrées totales » compte chaque apparition d'une figurine dans chaque collection, tandis que « Figurines uniques » ne compte chaque figurine qu'une seule fois. Les totaux incluent les prochaines sorties que vous avez réservées ainsi que les figurines que vous possédez déjà, lorsqu'elles sont disponibles dans vos collections.",
     "largestCollectionDesc_one": "Collection la plus importante : {{name}} avec {{count}} figurine",
     "largestCollectionDesc_other": "Collection la plus importante : {{name}} avec {{count}} figurines",
