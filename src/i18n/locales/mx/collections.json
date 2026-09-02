@@ -18,6 +18,8 @@
   },
   "overview": {
     "title": "Resumen de Colecciones",
+    "showDetails": "Mostrar detalles",
+    "hideDetails": "Ocultar detalles",
     "description": "Da seguimiento a tus colecciones a medida que crecen y compara las figuras únicas con las que se repiten. \"Entradas totales\" cuenta cada vez que una figura aparece en una colección, mientras que \"Figuras únicas\" cuenta cada figura una sola vez. Los conteos incluyen tanto los próximos lanzamientos que tengas reservados como las figuras que ya tengas en tu colección, cuando estén disponibles en tus colecciones.",
     "largestCollectionDesc_one": "Colección más grande: {{name}} con {{count}} figura",
     "largestCollectionDesc_other": "Colección más grande: {{name}} con {{count}} figuras",

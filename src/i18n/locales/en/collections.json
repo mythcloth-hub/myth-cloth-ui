@@ -18,6 +18,8 @@
   },
   "overview": {
     "title": "Collections Overview",
+    "showDetails": "Show details",
+    "hideDetails": "Hide details",
     "description": "Track your collections as they grow and compare what is unique versus repeated. \"Total entries\" counts every figurine placement in every collection, while \"Unique figurines\" counts each figurine only once. Counts include both upcoming reserved releases and items already in hand when available in your collections.",
     "largestCollectionDesc_one": "Largest collection: {{name}} with {{count}} figurine",
     "largestCollectionDesc_other": "Largest collection: {{name}} with {{count}} figurines",

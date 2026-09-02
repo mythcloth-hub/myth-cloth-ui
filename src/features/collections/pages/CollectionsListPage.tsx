@@ -8,6 +8,7 @@ import {
   CardContent,
   CardMedia,
   CircularProgress,
+  Collapse,
   Grid,
   Typography,
   Alert,
@@ -30,6 +31,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
+import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
 import { alpha, useTheme } from "@mui/material/styles";
 import { deleteCollection, duplicateCollection, getCollections, updateCollection } from "../api/collectionApi";
 import type { Collection } from "../types/collection";
@@ -58,6 +61,7 @@ export default function CollectionsListPage() {
   const [deletingCollection, setDeletingCollection] = useState(false);
   const [duplicatingCollection, setDuplicatingCollection] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [overviewExpanded, setOverviewExpanded] = useState(false);
   const totalFigurinesAcrossCollections = collections.reduce(
     (total, collection) => total + collection.figurineIds.length,
     0
@@ -330,12 +334,27 @@ export default function CollectionsListPage() {
             }}
           >
             <CardContent>
-              <Typography variant="overline" sx={{ color: "info.main", letterSpacing: 1.1, lineHeight: 1 }}>
-                {t("overview.title")}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5, maxWidth: 760 }}>
-                {t("overview.description")}
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="overline" sx={{ color: "info.main", letterSpacing: 1.1, lineHeight: 1 }}>
+                    {t("overview.title")}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5, maxWidth: 760 }}>
+                    {t("overview.description")}
+                  </Typography>
+                </Box>
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => setOverviewExpanded((current) => !current)}
+                  endIcon={overviewExpanded ? <KeyboardArrowUpOutlinedIcon /> : <KeyboardArrowDownOutlinedIcon />}
+                  sx={{ flexShrink: 0, whiteSpace: "nowrap" }}
+                >
+                  {overviewExpanded ? t("overview.hideDetails") : t("overview.showDetails")}
+                </Button>
+              </Box>
+
+              <Collapse in={overviewExpanded}>
               {largestCollection && (
                 <Typography variant="caption" sx={{ color: "primary.main", mt: 0.75, display: "block", fontWeight: 600 }}>
                   {t("overview.largestCollectionDesc", { name: largestCollection.name, count: largestCollection.figurineIds.length })}
@@ -571,6 +590,7 @@ export default function CollectionsListPage() {
                   </Typography>
                 </Box>
               </Box>
+              </Collapse>
             </CardContent>
           </Card>
 

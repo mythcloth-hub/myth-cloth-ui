@@ -15,6 +15,7 @@ const API_ERROR_CODE_MESSAGES: Record<string, string> = {
   COLLECTOR_INVALID_EMAIL_OR_PASSWORD: "Invalid email or password. Please try again.",
   FIGURINE_NOT_FOUND: "We couldn't find this figurine. It may have been removed or is no longer available.",
   CATALOG_NOT_FOUND: "We couldn't find this catalog item. It may have been removed or is no longer available.",
+  COLLECTOR_COLLECTION_LIMIT_REACHED: "You have reached the maximum number of collections allowed.",
   UNEXPECTED_ERROR: "An unexpected error occurred. Please try again later.",
 };
 
