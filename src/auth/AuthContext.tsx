@@ -7,7 +7,7 @@ import {
   type EmailLoginRequest,
   type EmailSignUpRequest,
 } from "./localAccountApi";
-import { getApiErrorMessage } from "../utils/apiErrorMessage";
+import { getApiErrorDetails } from "../utils/apiErrorMessage";
 import {
   AUTH_SESSION_CHANGED_EVENT,
   AUTH_SESSION_STORAGE_KEY,
@@ -22,7 +22,7 @@ import { Alert, Snackbar } from "@mui/material";
 
 type AuthNotice = {
   message: string;
-  severity: "success" | "error" | "info";
+  severity: "success" | "error" | "warning" | "info";
 };
 
 type AuthContextType = {
@@ -154,7 +154,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setSession(nextSession);
               setNotice({ message: `Welcome, ${nextSession.displayName}!`, severity: "success" });
             } catch (err) {
-              setNotice({ message: getApiErrorMessage(err, { action: "create", resource: "login session" }), severity: "error" });
+              const { message, severity } = getApiErrorDetails(err, { action: "create", resource: "login session" });
+              setNotice({ message, severity });
             }
           })();
         } else {
@@ -209,7 +210,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(nextSession);
           setNotice({ message: `Welcome, ${nextSession.displayName}!`, severity: "success" });
         } catch (err) {
-          setNotice({ message: getApiErrorMessage(err, { action: "create", resource: "login session" }), severity: "error" });
+          const { message, severity } = getApiErrorDetails(err, { action: "create", resource: "login session" });
+          setNotice({ message, severity });
         }
       },
     });
@@ -251,7 +253,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         severity: "info",
       });
     } catch (err) {
-      setNotice({ message: getApiErrorMessage(err, { action: "create", resource: "login session" }), severity: "error" });
+      const { message, severity } = getApiErrorDetails(err, { action: "create", resource: "login session" });
+      setNotice({ message, severity });
     }
   }, [demoAvailability]);
 

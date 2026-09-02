@@ -36,7 +36,7 @@ import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutl
 import { alpha, useTheme } from "@mui/material/styles";
 import { deleteCollection, duplicateCollection, getCollections, updateCollection } from "../api/collectionApi";
 import type { Collection } from "../types/collection";
-import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import { getApiErrorDetails, type ApiErrorSeverity } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
 
@@ -50,6 +50,7 @@ export default function CollectionsListPage() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorSeverity, setErrorSeverity] = useState<ApiErrorSeverity>("error");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -123,7 +124,9 @@ export default function CollectionsListPage() {
       const data = await getCollections();
       setCollections(data);
     } catch (err) {
-      setError(getApiErrorMessage(err, { action: "load", resource: "collections" }));
+      const { message, severity } = getApiErrorDetails(err, { action: "load", resource: "collections" });
+      setError(message);
+      setErrorSeverity(severity);
     } finally {
       setLoading(false);
     }
@@ -165,7 +168,9 @@ export default function CollectionsListPage() {
       await loadCollections();
       setSuccessMessage(t("messages.duplicationStarted", { name: selectedCollection.name }));
     } catch (err) {
-      setError(getApiErrorMessage(err, { action: "update", resource: "collection" }));
+      const { message, severity } = getApiErrorDetails(err, { action: "update", resource: "collection" });
+      setError(message);
+      setErrorSeverity(severity);
     } finally {
       setDuplicatingCollection(false);
     }
@@ -185,7 +190,9 @@ export default function CollectionsListPage() {
       setDeleteDialogOpen(false);
       setSelectedCollection(null);
     } catch (err) {
-      setError(getApiErrorMessage(err, { action: "delete", resource: "collection" }));
+      const { message, severity } = getApiErrorDetails(err, { action: "delete", resource: "collection" });
+      setError(message);
+      setErrorSeverity(severity);
     } finally {
       setDeletingCollection(false);
     }
@@ -197,6 +204,7 @@ export default function CollectionsListPage() {
     const nextName = editName.trim();
     if (!nextName) {
       setError(t("messages.required"));
+      setErrorSeverity("error");
       return;
     }
 
@@ -218,7 +226,9 @@ export default function CollectionsListPage() {
       setEditDialogOpen(false);
       setSuccessMessage(t("messages.updated", { name: updated.name }));
     } catch (err) {
-      setError(getApiErrorMessage(err, { action: "update", resource: "collection" }));
+      const { message, severity } = getApiErrorDetails(err, { action: "update", resource: "collection" });
+      setError(message);
+      setErrorSeverity(severity);
     } finally {
       setSavingEdit(false);
     }
@@ -273,7 +283,7 @@ export default function CollectionsListPage() {
 
       {/* Error message */}
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity={errorSeverity} sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}

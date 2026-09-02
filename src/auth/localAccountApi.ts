@@ -1,5 +1,6 @@
 import axios from "axios";
 import httpClient from "../api/httpClient";
+import { getApiErrorSeverity, type ApiErrorSeverity } from "../utils/apiErrorMessage";
 import type { AuthApiResponse } from "./authSession";
 
 const MOCK_LATENCY_MS = 650;
@@ -40,11 +41,13 @@ export type LocalAuthErrorCode =
 
 export class LocalAuthError extends Error {
   readonly code: LocalAuthErrorCode;
+  readonly severity: ApiErrorSeverity;
 
-  constructor(code: LocalAuthErrorCode) {
+  constructor(code: LocalAuthErrorCode, severity: ApiErrorSeverity = "error") {
     super(code);
     this.name = "LocalAuthError";
     this.code = code;
+    this.severity = severity;
   }
 }
 
@@ -142,7 +145,7 @@ export async function signUpWithEmailAccount(request: EmailSignUpRequest): Promi
     return res.data;
   } catch (error) {
     if (isEmailAlreadyRegistered(error)) {
-      throw new LocalAuthError("EMAIL_ALREADY_REGISTERED");
+      throw new LocalAuthError("EMAIL_ALREADY_REGISTERED", getApiErrorSeverity(error));
     }
 
     const fieldErrors = extractFieldErrors(error);
@@ -170,11 +173,11 @@ export async function loginWithEmailAccount(request: EmailLoginRequest): Promise
     const code = extractErrorCode(error);
 
     if (code === "COLLECTOR_EMAIL_NOT_FOUND") {
-      throw new LocalAuthError("ACCOUNT_NOT_FOUND");
+      throw new LocalAuthError("ACCOUNT_NOT_FOUND", getApiErrorSeverity(error));
     }
 
     if (code === "COLLECTOR_INVALID_EMAIL_OR_PASSWORD") {
-      throw new LocalAuthError("INVALID_CREDENTIALS");
+      throw new LocalAuthError("INVALID_CREDENTIALS", getApiErrorSeverity(error));
     }
 
     const fieldErrors = extractFieldErrors(error);

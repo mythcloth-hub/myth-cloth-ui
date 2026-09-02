@@ -38,7 +38,7 @@ import {
   type SignUpField,
   type SignUpFieldErrors,
 } from "./localAccountApi";
-import { getApiErrorMessage } from "../utils/apiErrorMessage";
+import { getApiErrorDetails } from "../utils/apiErrorMessage";
 
 export type AuthDialogStep = "options" | "signup" | "login";
 
@@ -105,6 +105,7 @@ export default function AuthDialog({ open, initialStep = "options", onClose }: A
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorKey, setErrorKey] = useState<AuthDialogErrorKey | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [errorSeverity, setErrorSeverity] = useState<"error" | "warning">("error");
   const [fieldErrors, setFieldErrors] = useState<SignUpFieldErrors>({});
   const [justSignedUpEmail, setJustSignedUpEmail] = useState<string | null>(null);
 
@@ -119,6 +120,7 @@ export default function AuthDialog({ open, initialStep = "options", onClose }: A
     setLoginPassword("");
     setErrorKey(null);
     setApiError(null);
+    setErrorSeverity("error");
     setFieldErrors({});
     setIsSubmitting(false);
     setJustSignedUpEmail(null);
@@ -134,6 +136,7 @@ export default function AuthDialog({ open, initialStep = "options", onClose }: A
   const goToStep = useCallback((next: AuthDialogStep) => {
     setErrorKey(null);
     setApiError(null);
+    setErrorSeverity("error");
     setFieldErrors({});
     if (next !== "login") {
       setJustSignedUpEmail(null);
@@ -153,10 +156,13 @@ export default function AuthDialog({ open, initialStep = "options", onClose }: A
 
     if (error instanceof LocalAuthError) {
       setErrorKey(ERROR_KEY_BY_CODE[error.code]);
+      setErrorSeverity(error.severity);
       return;
     }
 
-    setApiError(getApiErrorMessage(error, { action, resource: "account" }));
+    const details = getApiErrorDetails(error, { action, resource: "account" });
+    setApiError(details.message);
+    setErrorSeverity(details.severity);
   }, []);
 
   const canSubmitSignUp = useMemo(
@@ -175,6 +181,7 @@ export default function AuthDialog({ open, initialStep = "options", onClose }: A
     setIsSubmitting(true);
     setErrorKey(null);
     setApiError(null);
+    setErrorSeverity("error");
     setFieldErrors({});
     try {
       await signUpWithEmail({ fullName, email: signUpEmail, password: signUpPassword });
@@ -196,6 +203,7 @@ export default function AuthDialog({ open, initialStep = "options", onClose }: A
     setIsSubmitting(true);
     setErrorKey(null);
     setApiError(null);
+    setErrorSeverity("error");
     setFieldErrors({});
     setJustSignedUpEmail(null);
     try {
@@ -371,7 +379,7 @@ export default function AuthDialog({ open, initialStep = "options", onClose }: A
                 slotProps={{ htmlInput: { maxLength: PASSWORD_MAX_LENGTH } }}
               />
 
-              {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+              {errorMessage && <Alert severity={errorSeverity}>{errorMessage}</Alert>}
 
               <Typography variant="body2" sx={{ textAlign: "center", color: "text.secondary" }}>
                 {t("auth:dialog.alreadyMember")}{" "}
@@ -459,7 +467,7 @@ export default function AuthDialog({ open, initialStep = "options", onClose }: A
                 slotProps={{ htmlInput: { maxLength: PASSWORD_MAX_LENGTH } }}
               />
 
-              {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+              {errorMessage && <Alert severity={errorSeverity}>{errorMessage}</Alert>}
 
               <Stack spacing={0.5}>
                 <Typography
