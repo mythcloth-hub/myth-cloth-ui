@@ -34,8 +34,8 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
 import { alpha, useTheme } from "@mui/material/styles";
-import { deleteCollection, duplicateCollection, getCollections, updateCollection } from "../api/collectionApi";
-import type { Collection } from "../types/collection";
+import { deleteCollection, duplicateCollection, getCollectionSummary, getCollections, updateCollection } from "../api/collectionApi";
+import type { Collection, CollectionSummaryResponse } from "../types/collection";
 import { getApiErrorDetails, type ApiErrorSeverity } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
@@ -63,6 +63,7 @@ export default function CollectionsListPage() {
   const [duplicatingCollection, setDuplicatingCollection] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [overviewExpanded, setOverviewExpanded] = useState(false);
+  const [collectionSummaries, setCollectionSummaries] = useState<Record<number, CollectionSummaryResponse>>({});
   const totalFigurinesAcrossCollections = collections.reduce(
     (total, collection) => total + collection.figurineIds.length,
     0
@@ -123,6 +124,7 @@ export default function CollectionsListPage() {
     try {
       const data = await getCollections();
       setCollections(data);
+      void loadCollectionSummaries(data);
     } catch (err) {
       const { message, severity } = getApiErrorDetails(err, { action: "load", resource: "collections" });
       setError(message);
@@ -130,6 +132,22 @@ export default function CollectionsListPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadCollectionSummaries = async (items: Collection[]) => {
+    if (items.length === 0) {
+      setCollectionSummaries({});
+      return;
+    }
+
+    const results = await Promise.allSettled(items.map((item) => getCollectionSummary(item.id)));
+    const nextSummaries: Record<number, CollectionSummaryResponse> = {};
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        nextSummaries[items[index].id] = result.value;
+      }
+    });
+    setCollectionSummaries(nextSummaries);
   };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, collection: Collection) => {
@@ -186,6 +204,11 @@ export default function CollectionsListPage() {
       setCollections((currentCollections) =>
         currentCollections.filter((collection) => collection.id !== selectedCollection.id)
       );
+      setCollectionSummaries((current) => {
+        const next = { ...current };
+        delete next[selectedCollection.id];
+        return next;
+      });
       setSuccessMessage(t("messages.removed", { name: selectedCollection.name }));
       setDeleteDialogOpen(false);
       setSelectedCollection(null);
@@ -605,7 +628,14 @@ export default function CollectionsListPage() {
           </Card>
 
           <Grid container spacing={3}>
-          {collections.map((collection) => (
+          {collections.map((collection, index) => {
+            const summary = collectionSummaries[collection.id];
+            const totalReleased = summary?.summary.totalReleased ?? 0;
+            const ownedFigurines = summary?.collection.ownedFigurines ?? 0;
+            const hasProgressData = totalReleased > 0;
+            const progressPercent = hasProgressData ? Math.round((ownedFigurines / totalReleased) * 100) : 0;
+
+            return (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={collection.id}>
               <Card
                 sx={{
@@ -743,10 +773,71 @@ export default function CollectionsListPage() {
                       {t("myCollection.totalFigurines", { count: collection.figurineIds.length })}
                     </Typography>
                   </Box>
+
+                  {/* Owned vs. released progress */}
+                  <Tooltip title={t("myCollection.progress.tooltip")} arrow>
+                    <Box sx={{ mt: 1.25, display: "flex", alignItems: "center", gap: 1.25 }}>
+                      <Box
+                        key={summary ? "loaded" : "loading"}
+                        sx={{
+                          width: 52,
+                          height: 52,
+                          borderRadius: "50%",
+                          p: 0.55,
+                          flexShrink: 0,
+                          background: summary
+                            ? `conic-gradient(${theme.palette.success.main} 0% ${progressPercent}%, ${alpha(theme.palette.common.white, 0.14)} ${progressPercent}% 100%)`
+                            : alpha(theme.palette.common.white, 0.12),
+                          boxShadow: summary ? `0 0 12px ${alpha(theme.palette.success.main, 0.28)}` : "none",
+                          transition: "background 500ms ease, box-shadow 500ms ease",
+                          ...(summary && {
+                            animation: `donutRingReveal 650ms cubic-bezier(0.2, 0.9, 0.2, 1) ${Math.min(index * 60, 360)}ms both`,
+                          }),
+                          "@keyframes donutRingReveal": {
+                            "0%": { transform: "scale(0.7)", opacity: 0 },
+                            "65%": { transform: "scale(1.08)", opacity: 1 },
+                            "100%": { transform: "scale(1)", opacity: 1 },
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: "50%",
+                            bgcolor: alpha(theme.palette.background.paper, 0.96),
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {summary ? (
+                            <Typography sx={{ fontSize: "0.78rem", fontWeight: 800, color: "success.main", lineHeight: 1 }}>
+                              {progressPercent}%
+                            </Typography>
+                          ) : (
+                            <CircularProgress size={16} sx={{ color: "text.disabled" }} />
+                          )}
+                        </Box>
+                      </Box>
+
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700, display: "block" }}>
+                          {t("myCollection.progress.title")}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 700 }}>
+                          {summary
+                            ? t("myCollection.progress.label", { owned: ownedFigurines, total: totalReleased })
+                            : t("myCollection.progress.loading")}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Tooltip>
                 </CardContent>
               </Card>
             </Grid>
-          ))}
+            );
+          })}
           </Grid>
         </>
       )}

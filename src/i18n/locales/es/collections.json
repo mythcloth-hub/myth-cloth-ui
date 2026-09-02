@@ -61,6 +61,12 @@
   "myCollection": {
     "totalFigurines_one": "{{count}} figura en esta colección",
     "totalFigurines_other": "{{count}} figuras en esta colección",
+    "progress": {
+      "title": "Figuras lanzadas obtenidas",
+      "label": "{{owned}} / {{total}} lanzadas",
+      "tooltip": "Porcentaje de figuras lanzadas que ya tienes. Las figuras próximas o sin lanzar no se cuentan.",
+      "loading": "Cargando progreso…"
+    },
     "edit": "Editar",
     "duplicate": "Duplicar",
     "delete": "Eliminar",

@@ -61,6 +61,12 @@
   "myCollection": {
     "totalFigurines_one": "{{count}} figurine dans cette collection",
     "totalFigurines_other": "{{count}} figurines dans cette collection",
+    "progress": {
+      "title": "Figurines sorties obtenues",
+      "label": "{{owned}} / {{total}} sorties",
+      "tooltip": "Pourcentage de figurines sorties que vous possédez. Les figurines à venir ou non sorties ne sont pas comptées.",
+      "loading": "Chargement de la progression…"
+    },
     "edit": "Modifier",
     "duplicate": "Dupliquer",
     "delete": "Supprimer",
