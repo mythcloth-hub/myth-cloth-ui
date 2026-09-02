@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthContext";
+import AuthDialog from "../auth/AuthDialog";
 import type { resources } from "../i18n";
 import Button from "@mui/material/Button";
-import FacebookIcon from "@mui/icons-material/Facebook";
-import GoogleIcon from "@mui/icons-material/Google";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Avatar,
@@ -218,12 +218,13 @@ function useGoogleSDK() {
 }
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { isAuthenticated, session, hasPermission, loginWithFacebook, loginWithGoogle, loginWithDemo, facebookEnabled, googleEnabled, demoEnabled, logout } = useAuth();
+  const { isAuthenticated, session, hasPermission, loginWithDemo, demoEnabled, logout } = useAuth();
   const { t } = useTranslation(["common", "navigation", "auth"]);
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
   const [isDemoSigningIn, setIsDemoSigningIn] = useState(false);
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const navScrollRef = useRef<HTMLDivElement | null>(null);
   const [showScrollUpHint, setShowScrollUpHint] = useState(false);
   const [showScrollDownHint, setShowScrollDownHint] = useState(false);
@@ -690,84 +691,39 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </Box>
         ) : (
           <Box sx={authCardSx}>
-            {!facebookEnabled && !googleEnabled && !demoEnabled && (
-              <Box
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  px: 0.9,
-                  py: 0.35,
-                  mb: 0.9,
-                  borderRadius: 99,
-                  border: `1px solid ${alpha(theme.palette.warning.main, 0.45)}`,
-                  backgroundColor: alpha(theme.palette.warning.main, 0.14),
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontSize: "0.68rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.04em",
-                    color: theme.palette.warning.main,
-                    textTransform: "uppercase",
-                    lineHeight: 1,
-                  }}
-                >
-                  {t("auth:setupRequired")}
-                </Typography>
-              </Box>
-            )}
-            {facebookEnabled && (
-              <Button
-                onClick={loginWithFacebook}
-                startIcon={<FacebookIcon sx={{ fontSize: 20, color: "inherit" }} />}
-                variant="outlined"
-                sx={{
-                  ...authButtonBaseSx,
-                  color: theme.palette.primary.main,
-                  borderColor: alpha(theme.palette.primary.main, 0.5),
-                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                  "&:hover": {
-                    borderColor: alpha(theme.palette.primary.main, 0.95),
-                    backgroundColor: alpha(theme.palette.primary.main, 0.16),
-                  },
-                }}
-              >
-                {t("auth:providers.facebook")}
-              </Button>
-            )}
-            {!facebookEnabled && (
-              <Typography
-                sx={{
-                  color: "text.secondary",
-                  fontSize: "0.76rem",
-                  px: 0.5,
-                  mb: googleEnabled ? 0.8 : 0,
-                }}
-              >
-                {t("auth:facebookUnavailable")}
+            <Box
+              sx={{
+                px: 0.5,
+                pt: 0.25,
+                pb: 1.25,
+              }}
+            >
+              <Typography sx={{ fontWeight: 800, fontSize: "0.95rem", mb: 0.35 }}>
+                {t("auth:signUpCard.title", { brand: t("common:brand.name") })}
               </Typography>
-            )}
-            {googleEnabled && (
-              <Button
-                onClick={loginWithGoogle}
-                startIcon={<GoogleIcon sx={{ fontSize: 20, color: "inherit" }} />}
-                variant="outlined"
-                sx={{
-                  ...authButtonBaseSx,
-                  mt: 1,
-                  color: theme.palette.text.primary,
-                  borderColor: alpha(theme.palette.text.primary, 0.35),
-                  backgroundColor: alpha(theme.palette.text.primary, 0.06),
-                  "&:hover": {
-                    borderColor: alpha(theme.palette.text.primary, 0.7),
-                    backgroundColor: alpha(theme.palette.text.primary, 0.12),
-                  },
-                }}
-              >
-                {t("auth:providers.google")}
-              </Button>
-            )}
+              <Typography sx={{ color: "text.secondary", fontSize: "0.76rem" }}>
+                {t("auth:signUpCard.subtitle")}
+              </Typography>
+            </Box>
+
+            <Button
+              onClick={() => setIsAuthDialogOpen(true)}
+              startIcon={<PersonAddAltOutlinedIcon sx={{ fontSize: 20, color: "inherit" }} />}
+              variant="outlined"
+              sx={{
+                ...authButtonBaseSx,
+                color: theme.palette.primary.main,
+                borderColor: alpha(theme.palette.primary.main, 0.5),
+                backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                "&:hover": {
+                  borderColor: alpha(theme.palette.primary.main, 0.95),
+                  backgroundColor: alpha(theme.palette.primary.main, 0.16),
+                },
+              }}
+            >
+              {t("auth:signUpCard.signUp")}
+            </Button>
+
             {demoEnabled && (
               <Button
                 onClick={handleDemoLogin}
@@ -793,21 +749,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {isDemoSigningIn ? t("auth:signingIn") : t("auth:providers.demo")}
               </Button>
             )}
-            {!googleEnabled && (
-              <Typography
-                sx={{
-                  color: "text.secondary",
-                  fontSize: "0.76rem",
-                  px: 0.5,
-                  mt: facebookEnabled ? 0.8 : 0,
-                }}
-              >
-                {t("auth:googleUnavailable")}
-              </Typography>
-            )}
           </Box>
         )}
       </Box>
+
+      <AuthDialog open={isAuthDialogOpen} onClose={() => setIsAuthDialogOpen(false)} />
     </Box>
   );
 }

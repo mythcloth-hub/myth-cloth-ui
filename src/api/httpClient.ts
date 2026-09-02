@@ -28,7 +28,10 @@ httpClient.interceptors.request.use((config) => {
 httpClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response?.status === 401) {
+    // A rejected login attempt must not clear an unrelated existing session.
+    const isLoginAttempt = error?.config?.url?.includes("/collectors/auth/");
+
+    if (error?.response?.status === 401 && !isLoginAttempt) {
       clearAuthSession();
     }
     return Promise.reject(error);
