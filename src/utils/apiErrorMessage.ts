@@ -10,6 +10,9 @@ type GetApiErrorMessageOptions = {
 const API_ERROR_CODE_MESSAGES: Record<string, string> = {
   FIGURINE_IMPORT_ERROR: "There was an error while importing the figurines. Please check the data and try again.",
   COLLECTOR_NOT_FOUND: "We couldn't find this collector. It may have been removed or is no longer available.",
+  COLLECTOR_EMAIL_NOT_FOUND: "We couldn't find an account with that email address.",
+  COLLECTOR_EMAIL_ALREADY_EXISTS: "That email address is already registered.",
+  COLLECTOR_INVALID_EMAIL_OR_PASSWORD: "Invalid email or password. Please try again.",
   FIGURINE_NOT_FOUND: "We couldn't find this figurine. It may have been removed or is no longer available.",
   CATALOG_NOT_FOUND: "We couldn't find this catalog item. It may have been removed or is no longer available.",
   UNEXPECTED_ERROR: "An unexpected error occurred. Please try again later.",

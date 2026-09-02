@@ -1,5 +1,12 @@
 import { validateFacebookToken, validateGoogleToken } from "./facebookApi";
 import { getDemoAvailability, loginWithDemoUser, type DemoAvailabilityResponse } from "./demoApi";
+import {
+  loginWithEmailAccount,
+  requestPasswordReset,
+  signUpWithEmailAccount,
+  type EmailLoginRequest,
+  type EmailSignUpRequest,
+} from "./localAccountApi";
 import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   AUTH_SESSION_CHANGED_EVENT,
@@ -29,6 +36,9 @@ type AuthContextType = {
   loginWithFacebook: () => void;
   loginWithGoogle: () => void;
   loginWithDemo: () => void;
+  signUpWithEmail: (request: EmailSignUpRequest) => Promise<void>;
+  loginWithEmail: (request: EmailLoginRequest) => Promise<void>;
+  sendPasswordReset: (email: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -43,6 +53,9 @@ export const AuthContext = createContext<AuthContextType>({
   loginWithFacebook: () => { },
   loginWithGoogle: () => { },
   loginWithDemo: () => { },
+  signUpWithEmail: async () => { },
+  loginWithEmail: async () => { },
+  sendPasswordReset: async () => { },
   logout: () => { },
 });
 
@@ -242,6 +255,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [demoAvailability]);
 
+  const signUpWithEmail = useCallback(async (request: EmailSignUpRequest) => {
+    const created = await signUpWithEmailAccount(request);
+    setNotice({ message: `Account created for ${created.email}. You can log in now.`, severity: "success" });
+  }, []);
+
+  const loginWithEmail = useCallback(async (request: EmailLoginRequest) => {
+    const authResponse = await loginWithEmailAccount(request);
+    const nextSession = buildAuthSession(authResponse);
+    saveAuthSession(nextSession);
+    setSession(nextSession);
+    setNotice({ message: `Welcome back, ${nextSession.displayName}!`, severity: "success" });
+  }, []);
+
+  const sendPasswordReset = useCallback(async (email: string) => {
+    await requestPasswordReset(email);
+    setNotice({ message: "If that account exists, we sent a reset link.", severity: "info" });
+  }, []);
+
   const logout = useCallback(() => {
     clearAuthSession();
     setSession(null);
@@ -269,9 +300,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithFacebook,
       loginWithGoogle,
       loginWithDemo,
+      signUpWithEmail,
+      loginWithEmail,
+      sendPasswordReset,
       logout,
     }),
-    [session, facebookAppId, googleClientId, demoAvailability, hasPermission, loginWithFacebook, loginWithGoogle, loginWithDemo, logout]
+    [session, facebookAppId, googleClientId, demoAvailability, hasPermission, loginWithFacebook, loginWithGoogle, loginWithDemo, signUpWithEmail, loginWithEmail, sendPasswordReset, logout]
   );
 
   return (
