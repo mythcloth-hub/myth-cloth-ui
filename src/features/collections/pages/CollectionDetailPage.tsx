@@ -941,7 +941,12 @@ export default function CollectionDetailPage() {
           >
             <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
               {pageInfo.totalElements > 0
-                ? t("detail.progress.pagination.total", { count: pageInfo.totalElements.toLocaleString(), page: page, total: totalPages })
+                ? t("detail.progress.pagination.total", {
+                    count: pageInfo.totalElements,
+                    countLabel: pageInfo.totalElements.toLocaleString(),
+                    page: page,
+                    total: totalPages,
+                  })
                 : t("detail.progress.pagination.noFigurines")}
             </Typography>
 

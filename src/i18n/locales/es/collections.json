@@ -128,8 +128,8 @@
         }
       },
       "pagination": {
-        "total_one": "{{count}} figura · página {{page}} de {{total}}",
-        "total_other": "{{count}} figuras · página {{page}} de {{total}}",
+        "total_one": "{{countLabel}} figura · página {{page}} de {{total}}",
+        "total_other": "{{countLabel}} figuras · página {{page}} de {{total}}",
         "noFigurines": "No hay figuras disponibles en esta página.",
         "zoomOut": "Alejar",
         "resetZoom": "Restablecer",

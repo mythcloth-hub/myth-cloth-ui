@@ -128,8 +128,8 @@
         }
       },
       "pagination": {
-        "total_one": "{{count}} figurine · page {{page}} of {{total}}",
-        "total_other": "{{count}} figurines · page {{page}} of {{total}}",
+        "total_one": "{{countLabel}} figurine · page {{page}} of {{total}}",
+        "total_other": "{{countLabel}} figurines · page {{page}} of {{total}}",
         "noFigurines": "Aucune figurine disponible sur cette page.",
         "zoomOut": "Dézoomer",
         "resetZoom": "Réinitialiser",
