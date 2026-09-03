@@ -1,12 +1,17 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   Avatar,
   Box,
   Button,
+  Card,
+  CardContent,
+  CardMedia,
   Chip,
+  CircularProgress,
   Divider,
+  IconButton,
   Paper,
   Stack,
   Typography,
@@ -24,9 +29,15 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import ExploreOutlinedIcon from "@mui/icons-material/ExploreOutlined";
 import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import NewReleasesOutlinedIcon from "@mui/icons-material/NewReleasesOutlined";
+import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 
 import { useAuth } from "../../../auth/AuthContext";
 import AppPageHeader from "../../../components/AppPageHeader";
+import { getLatestFavoriteCollectionFigurines } from "../../collections/api/collectionApi";
+import type { LatestFavoriteCollectionFigurine } from "../../collections/types/collection";
 
 type HomeTranslationKey =
     | "eyebrow"
@@ -46,6 +57,9 @@ type HomeTranslationKey =
     | "profilePicture"
     | "role"
     | "featuredPlaces"
+    | "recentAdditions.title"
+    | "recentAdditions.empty"
+    | "recentAdditions.browseFigurines"
     | "openSection"
     | "morePlaces"
     | "morePlacesDescription"
@@ -183,6 +197,41 @@ export default function HomePage() {
   const { t } = useTranslation("home");
   const navigate = useNavigate();
   const { isAuthenticated, session, hasPermission } = useAuth();
+  const [latestFigurines, setLatestFigurines] = useState<LatestFavoriteCollectionFigurine[]>([]);
+  const [latestLoading, setLatestLoading] = useState(false);
+  const latestScrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLatestFigurines([]);
+      return;
+    }
+
+    let isActive = true;
+    setLatestLoading(true);
+
+    getLatestFavoriteCollectionFigurines()
+      .then((items) => {
+        if (isActive) setLatestFigurines(items);
+      })
+      .catch(() => {
+        if (isActive) setLatestFigurines([]);
+      })
+      .finally(() => {
+        if (isActive) setLatestLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [isAuthenticated]);
+
+  const scrollLatest = (direction: "left" | "right") => {
+    const el = latestScrollRef.current;
+    if (!el) return;
+    const amount = Math.min(el.clientWidth * 0.8, 480);
+    el.scrollBy({ left: direction === "left" ? -amount : amount, behavior: "smooth" });
+  };
 
   const visibleLinks = useMemo(
     () => HOME_LINKS.filter((link) => !link.permission || hasPermission(link.permission)),
@@ -374,6 +423,199 @@ export default function HomePage() {
           </Box>
         </Stack>
       </Paper>
+
+      {isAuthenticated && (
+        <Paper
+          sx={{
+            p: { xs: 1.75, md: 2 },
+            mb: 2,
+            borderRadius: 1.5,
+            border: "1px solid rgba(255,255,255,0.08)",
+            background: "linear-gradient(135deg, rgba(212,175,55,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.25 }}>
+            <NewReleasesOutlinedIcon sx={{ color: "primary.main", fontSize: 18 }} />
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+              {t("recentAdditions.title")}
+            </Typography>
+          </Box>
+
+          <Box sx={{ position: "relative" }}>
+            {latestLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+                <CircularProgress size={26} />
+              </Box>
+            ) : latestFigurines.length === 0 ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center",
+                  gap: 1,
+                  py: 2.5,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  {t("recentAdditions.empty")}
+                </Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<WorkspacePremiumOutlinedIcon />}
+                  onClick={() => navigate("/figurines")}
+                >
+                  {t("recentAdditions.browseFigurines")}
+                </Button>
+              </Box>
+            ) : (
+              <>
+                <IconButton
+                  onClick={() => scrollLatest("left")}
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    left: -6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    zIndex: 2,
+                    bgcolor: "background.paper",
+                    border: "1px solid rgba(212,175,55,0.25)",
+                    "&:hover": { bgcolor: "rgba(212,175,55,0.12)" },
+                  }}
+                >
+                  <ChevronLeftIcon fontSize="small" />
+                </IconButton>
+
+                <Box
+                  ref={latestScrollRef}
+                  sx={{
+                    display: "flex",
+                    gap: 1.25,
+                    overflowX: "auto",
+                    scrollSnapType: "x mandatory",
+                    px: 3,
+                    py: 0.5,
+                    "&::-webkit-scrollbar": { display: "none" },
+                    scrollbarWidth: "none",
+                  }}
+                >
+                  {latestFigurines.map((figurine) => (
+                    <Card
+                      key={figurine.id}
+                      onClick={() => navigate(`/figurines/${figurine.id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          navigate(`/figurines/${figurine.id}`);
+                        }
+                      }}
+                      sx={{
+                        flex: "0 0 auto",
+                        width: 140,
+                        scrollSnapAlign: "start",
+                        cursor: "pointer",
+                        transition: "transform 0.2s, box-shadow 0.2s",
+                        "&:hover": {
+                          transform: "translateY(-3px)",
+                          boxShadow: "0 12px 40px rgba(212, 175, 55, 0.25)",
+                        },
+                      }}
+                    >
+                      <Box sx={{ position: "relative", paddingTop: "120%", bgcolor: "#0a0b14" }}>
+                        {figurine.imageUrl ? (
+                          <CardMedia
+                            component="img"
+                            image={figurine.imageUrl}
+                            alt={figurine.name}
+                            sx={{
+                              position: "absolute",
+                              top: 0, left: 0,
+                              width: "100%", height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: 0, left: 0,
+                              width: "100%", height: "100%",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              color: "text.secondary",
+                            }}
+                          >
+                            <ImageNotSupportedOutlinedIcon sx={{ fontSize: 32, opacity: 0.3 }} />
+                          </Box>
+                        )}
+
+                        {figurine.ownedQuantity > 1 && (
+                          <Chip
+                            label={`x${figurine.ownedQuantity}`}
+                            size="small"
+                            sx={{
+                              position: "absolute",
+                              top: 6,
+                              right: 6,
+                              height: 20,
+                              fontSize: "0.65rem",
+                              fontWeight: 800,
+                              bgcolor: "rgba(10,11,20,0.78)",
+                              color: "primary.main",
+                              border: "1px solid rgba(212,175,55,0.4)",
+                            }}
+                          />
+                        )}
+
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            bottom: 0, left: 0, right: 0,
+                            height: "40%",
+                            background: "linear-gradient(transparent, rgba(10, 11, 20, 0.92))",
+                          }}
+                        />
+                      </Box>
+
+                      <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
+                        <Typography
+                          variant="caption"
+                          fontWeight={700}
+                          noWrap
+                          title={figurine.name}
+                          sx={{ color: "text.primary", display: "block", fontSize: "0.72rem", lineHeight: 1.3 }}
+                        >
+                          {figurine.name}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </Box>
+
+                <IconButton
+                  onClick={() => scrollLatest("right")}
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    right: -6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    zIndex: 2,
+                    bgcolor: "background.paper",
+                    border: "1px solid rgba(212,175,55,0.25)",
+                    "&:hover": { bgcolor: "rgba(212,175,55,0.12)" },
+                  }}
+                >
+                  <ChevronRightIcon fontSize="small" />
+                </IconButton>
+              </>
+            )}
+          </Box>
+        </Paper>
+      )}
 
       <Box sx={{ mb: 1.25, display: "flex", alignItems: "center", gap: 1 }}>
         <AutoAwesomeOutlinedIcon sx={{ color: "primary.main", fontSize: 18 }} />

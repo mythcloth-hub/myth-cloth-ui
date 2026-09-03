@@ -22,6 +22,11 @@
   "role": "Rôle : {{role}}",
 
   "featuredPlaces": "Lieux en vedette pour commencer",
+  "recentAdditions": {
+    "title": "Ajoutés récemment à votre collection",
+    "empty": "Vous n'avez pas encore ajouté de figurines à votre collection.",
+    "browseFigurines": "Explorer les figurines"
+  },
   "openSection": "Ouvrir la section",
 
   "morePlaces": "Plus de lieux dans l'application",
