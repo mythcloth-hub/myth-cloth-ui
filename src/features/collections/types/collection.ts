@@ -6,6 +6,7 @@ export interface Collection {
   figurineIds: number[];
   totalFigurines: number;
   isPublic?: boolean;
+  isFavorite?: boolean;
   createdAt: string;
   updatedAt: string;
 }

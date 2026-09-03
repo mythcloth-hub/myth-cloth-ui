@@ -27,6 +27,7 @@ import AddIcon from "@mui/icons-material/Add";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import StarOutlineOutlinedIcon from "@mui/icons-material/StarOutlineOutlined";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditIcon from "@mui/icons-material/EditOutlined";
@@ -34,7 +35,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
 import { alpha, useTheme } from "@mui/material/styles";
-import { deleteCollection, duplicateCollection, getCollectionSummary, getCollections, updateCollection } from "../api/collectionApi";
+import { deleteCollection, duplicateCollection, getCollectionSummary, getCollections, setCollectionFavorite, updateCollection } from "../api/collectionApi";
 import type { Collection, CollectionSummaryResponse } from "../types/collection";
 import { getApiErrorDetails, type ApiErrorSeverity } from "../../../utils/apiErrorMessage";
 import AppPageHeader from "../../../components/AppPageHeader";
@@ -61,6 +62,7 @@ export default function CollectionsListPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingCollection, setDeletingCollection] = useState(false);
   const [duplicatingCollection, setDuplicatingCollection] = useState(false);
+  const [settingFavoriteId, setSettingFavoriteId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [overviewExpanded, setOverviewExpanded] = useState(false);
   const [collectionSummaries, setCollectionSummaries] = useState<Record<number, CollectionSummaryResponse>>({});
@@ -194,6 +196,27 @@ export default function CollectionsListPage() {
     }
   };
 
+  const handleSetFavoriteClick = async () => {
+    if (!selectedCollection) return;
+
+    const collectionId = selectedCollection.id;
+    setSettingFavoriteId(collectionId);
+    setError(null);
+    handleMenuClose();
+
+    try {
+      await setCollectionFavorite(collectionId);
+      await loadCollections();
+      setSuccessMessage(t("messages.favoriteSet", { name: selectedCollection.name }));
+    } catch (err) {
+      const { message, severity } = getApiErrorDetails(err, { action: "update", resource: "collection" });
+      setError(message);
+      setErrorSeverity(severity);
+    } finally {
+      setSettingFavoriteId((current) => (current === collectionId ? null : current));
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!selectedCollection) return;
 
@@ -201,14 +224,7 @@ export default function CollectionsListPage() {
     setError(null);
     try {
       await deleteCollection(selectedCollection.id);
-      setCollections((currentCollections) =>
-        currentCollections.filter((collection) => collection.id !== selectedCollection.id)
-      );
-      setCollectionSummaries((current) => {
-        const next = { ...current };
-        delete next[selectedCollection.id];
-        return next;
-      });
+      await loadCollections();
       setSuccessMessage(t("messages.removed", { name: selectedCollection.name }));
       setDeleteDialogOpen(false);
       setSelectedCollection(null);
@@ -240,11 +256,7 @@ export default function CollectionsListPage() {
         description: editDescription.trim() || undefined,
       });
 
-      setCollections((currentCollections) =>
-        currentCollections.map((collection) =>
-          collection.id === updated.id ? updated : collection
-        )
-      );
+      await loadCollections();
       setSelectedCollection(updated);
       setEditDialogOpen(false);
       setSuccessMessage(t("messages.updated", { name: updated.name }));
@@ -642,11 +654,22 @@ export default function CollectionsListPage() {
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
+                  position: "relative",
+                  overflow: "hidden",
                   cursor: canReadCollectionFigurines ? "pointer" : "default",
                   transition: "all 0.3s ease",
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.22)}`,
+                  border: collection.isFavorite
+                    ? `1px solid ${alpha(theme.palette.warning.main, 0.6)}`
+                    : `1px solid ${alpha(theme.palette.primary.main, 0.22)}`,
                   background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.94)} 0%, ${alpha(theme.palette.background.default, 0.96)} 100%)`,
                   backdropFilter: "blur(10px)",
+                  ...(collection.isFavorite && {
+                    animation: "favoriteCollectionPulse 3.6s ease-in-out infinite",
+                    "@keyframes favoriteCollectionPulse": {
+                      "0%, 100%": { boxShadow: `0 0 0 0 ${alpha(theme.palette.warning.main, 0.55)}` },
+                      "50%": { boxShadow: `0 0 22px 5px ${alpha(theme.palette.warning.main, 0.55)}` },
+                    },
+                  }),
                   ...(canReadCollectionFigurines
                     ? {}
                     : {
@@ -662,6 +685,38 @@ export default function CollectionsListPage() {
                 }}
                 onClick={canReadCollectionFigurines ? () => navigate(`/collections/${collection.id}`, { state: { collection } }) : undefined}
               >
+                {collection.isFavorite && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 16,
+                      right: -38,
+                      zIndex: 2,
+                      width: 150,
+                      py: 0.35,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transform: "rotate(45deg)",
+                      background: `linear-gradient(135deg, ${theme.palette.warning.light} 0%, ${theme.palette.warning.main} 100%)`,
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.38)}`,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: "0.66rem",
+                        fontWeight: 800,
+                        color: "#000",
+                        letterSpacing: "0.05em",
+                        textTransform: "uppercase",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {t("myCollection.favorite")}
+                    </Typography>
+                  </Box>
+                )}
+
                 {/* Collection cover gradient */}
                 {collection.imageUrl ? (
                   <Box
@@ -847,6 +902,15 @@ export default function CollectionsListPage() {
         {hasPermission("collections:update") && (
           <MenuItem onClick={handleEdit} sx={{ gap: 1 }}>
             <EditIcon fontSize="small" /> {t("myCollection.edit")}
+          </MenuItem>
+        )}
+        {hasPermission("collections:update") && selectedCollection && !selectedCollection.isFavorite && (
+          <MenuItem
+            onClick={() => void handleSetFavoriteClick()}
+            sx={{ gap: 1 }}
+            disabled={settingFavoriteId === selectedCollection.id}
+          >
+            <StarOutlineOutlinedIcon fontSize="small" /> {t("myCollection.setAsFavorite")}
           </MenuItem>
         )}
         {hasPermission("collections:duplicate") && (

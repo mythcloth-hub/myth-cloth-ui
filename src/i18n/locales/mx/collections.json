@@ -9,7 +9,8 @@
     "duplicationStarted": "La duplicación de la colección \"{{name}}\" ha comenzado.",
     "removed": "La colección \"{{name}}\" fue eliminada.",
     "required": "El nombre de la colección es obligatorio.",
-    "updated": "La colección \"{{name}}\" fue actualizada."
+    "updated": "La colección \"{{name}}\" fue actualizada.",
+    "favoriteSet": "La colección \"{{name}}\" ahora es tu favorita."
   },
   "empty": {
     "noCollections": "Aún no hay colecciones",
@@ -59,6 +60,9 @@
     }
   },
   "myCollection": {
+    "favorite": "Favorita",
+    "setAsFavorite": "Marcar como favorita",
+    "setAsFavorite": "Marcar como favorita",
     "totalFigurines_one": "{{count}} figura en esta colección",
     "totalFigurines_other": "{{count}} figuras en esta colección",
     "progress": {
