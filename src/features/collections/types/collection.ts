@@ -82,3 +82,10 @@ export interface CollectionSummaryResponse {
   summary: CollectionCatalogSummary;
   collection: CollectionProgressSummary;
 }
+
+export interface LatestFavoriteCollectionFigurine {
+  id: number;
+  name: string;
+  imageUrl?: string;
+  ownedQuantity: number;
+}

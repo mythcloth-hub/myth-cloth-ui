@@ -6,6 +6,7 @@ import type {
   CollectionFigurinesPageInfo,
   CollectionSummaryResponse,
   CreateCollectionRequest,
+  LatestFavoriteCollectionFigurine,
   PaginatedCollectionFigurinesResponse,
   UpdateCollectionRequest,
 } from "../types/collection";
@@ -295,6 +296,11 @@ export async function duplicateCollection(id: number): Promise<void> {
 
 export async function setCollectionFavorite(id: number): Promise<void> {
   await httpClient.patch(`${API_BASE}/${id}/favorite`);
+}
+
+export async function getLatestFavoriteCollectionFigurines(): Promise<LatestFavoriteCollectionFigurine[]> {
+  const response = await httpClient.get<LatestFavoriteCollectionFigurine[]>(`${API_BASE}/favorite/figurines/latest`);
+  return response.data;
 }
 
 export async function deleteCollection(id: number): Promise<void> {

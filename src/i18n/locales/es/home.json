@@ -17,6 +17,11 @@
   "profilePicture": "Foto de perfil",
   "role": "Rol: {{role}}",
   "featuredPlaces": "Secciones destacadas para empezar",
+  "recentAdditions": {
+    "title": "Añadido recientemente a tu colección",
+    "empty": "Aún no has añadido ninguna figura a tu colección.",
+    "browseFigurines": "Explorar figuras"
+  },
   "openSection": "Abrir sección",
   "morePlaces": "Más secciones de la aplicación",
   "morePlacesDescription": "Estas áreas están disponibles según tus permisos actuales y pueden ayudarte a profundizar en la aplicación cuando estés preparado.",
