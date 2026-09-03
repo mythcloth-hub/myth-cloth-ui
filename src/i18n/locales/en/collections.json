@@ -9,7 +9,8 @@
     "duplicationStarted": "Collection \"{{name}}\" duplication started.",
     "removed": "Collection \"{{name}}\" was removed.",
     "required": "Collection name is required.",
-    "updated": "Collection \"{{name}}\" was updated."
+    "updated": "Collection \"{{name}}\" was updated.",
+    "favoriteSet": "Collection \"{{name}}\" is now your favorite."
   },
   "empty": {
     "noCollections": "No collections yet",
@@ -59,6 +60,9 @@
     }
   },
   "myCollection": {
+    "favorite": "Favorite",
+    "setAsFavorite": "Set as favorite",
+    "setAsFavorite": "Set as favorite",
     "totalFigurines_one": "{{count}} figurine in this collection",
     "totalFigurines_other": "{{count}} figurines in this collection",
     "progress": {

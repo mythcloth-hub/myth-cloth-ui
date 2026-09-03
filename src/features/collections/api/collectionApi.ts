@@ -117,6 +117,7 @@ function normalizeCollection(collection: Partial<Collection>): Collection {
           ? collection.figurineIds.length
           : 0,
     isPublic: collection.isPublic,
+    isFavorite: collection.isFavorite ?? false,
     createdAt: collection.createdAt ?? "",
     updatedAt: collection.updatedAt ?? "",
   };
@@ -290,6 +291,10 @@ export async function updateCollection(id: number, data: UpdateCollectionRequest
 
 export async function duplicateCollection(id: number): Promise<void> {
   await httpClient.post(`${API_BASE}/${id}/duplicate`);
+}
+
+export async function setCollectionFavorite(id: number): Promise<void> {
+  await httpClient.patch(`${API_BASE}/${id}/favorite`);
 }
 
 export async function deleteCollection(id: number): Promise<void> {
