@@ -303,6 +303,11 @@ export async function getLatestFavoriteCollectionFigurines(): Promise<LatestFavo
   return response.data;
 }
 
+// Backend endpoint is still pending; the path is the expected contract.
+export async function addFigurineToFavoriteCollection(figurineId: number): Promise<void> {
+  await httpClient.post(`${API_BASE}/favorite/figurines/${figurineId}`);
+}
+
 export async function deleteCollection(id: number): Promise<void> {
   await httpClient.delete(`${API_BASE}/${id}`);
 }

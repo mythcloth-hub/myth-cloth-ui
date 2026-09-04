@@ -18,9 +18,22 @@
   "role": "Rol: {{role}}",
   "featuredPlaces": "Secciones destacadas para empezar",
   "recentAdditions": {
-    "title": "Añadido recientemente a tu colección",
+    "title": "Añadido recientemente a tu colección favorita",
     "empty": "Aún no has añadido ninguna figura a tu colección.",
-    "browseFigurines": "Explorar figuras"
+    "browseFigurines": "Explorar figuras",
+    "dropHint": "Arrastra aquí una figura recomendada para añadirla a tu colección favorita.",
+    "dropActive": "Suéltala aquí para añadirla a tu colección favorita.",
+    "added": "{{name}} se añadió a tu colección favorita.",
+    "alreadyInCollection": "{{name}} ya está en tu colección favorita."
+  },
+  "recommended": {
+    "title": "Recomendado para ti",
+    "guestDescription": "Crea tu cuenta gratuita y empieza a añadir estas figuras recomendadas a tu propia colección.",
+    "createAccount": "Crear tu cuenta",
+    "emptyCollectionDescription": "¿Listo para empezar? Crea tu primera colección con alguna de estas figuras recomendadas.",
+    "startCollection": "Crea tu primera colección",
+    "hasCollectionDescription": "Según tu colección, estas son otras figuras que podrían gustarte.",
+    "addMore": "Añadir más figuras"
   },
   "openSection": "Abrir sección",
   "morePlaces": "Más secciones de la aplicación",

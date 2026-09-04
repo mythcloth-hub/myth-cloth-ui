@@ -23,6 +23,12 @@ export type FigurineAverageRealtimePrice = {
   currency: SupportedCurrency | null;
 };
 
+export type RecommendedFigurine = {
+  id: number;
+  name: string;
+  imageUrl?: string;
+};
+
 export type StoreSummary = {
   id: number;
   name: string;
@@ -117,6 +123,11 @@ export const getFigurines = async (
 ): Promise<PaginatedFigurines> => {
   const queryParams = buildFigurineQueryParams(page, size, params);
   const res = await httpClient.get(BASE, { params: queryParams });
+  return res.data;
+};
+
+export const getRecommendedFigurines = async (): Promise<RecommendedFigurine[]> => {
+  const res = await httpClient.get<RecommendedFigurine[]>(`${BASE}/recommended`);
   return res.data;
 };
 
