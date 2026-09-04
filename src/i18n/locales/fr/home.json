@@ -28,8 +28,7 @@
     "browseFigurines": "Explorer les figurines",
     "dropHint": "Faites glisser une figurine recommandée ici pour l'ajouter à votre collection favorite.",
     "dropActive": "Déposez-la ici pour l'ajouter à votre collection favorite.",
-    "added": "{{name}} a été ajoutée à votre collection favorite.",
-    "alreadyInCollection": "{{name}} est déjà dans votre collection favorite."
+    "added": "{{name}} a été ajoutée à votre collection favorite."
   },
   "recommended": {
     "title": "Recommandé pour vous",

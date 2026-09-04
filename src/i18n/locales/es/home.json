@@ -23,8 +23,7 @@
     "browseFigurines": "Explorar figuras",
     "dropHint": "Arrastra aquí una figura recomendada para añadirla a tu colección favorita.",
     "dropActive": "Suéltala aquí para añadirla a tu colección favorita.",
-    "added": "{{name}} se añadió a tu colección favorita.",
-    "alreadyInCollection": "{{name}} ya está en tu colección favorita."
+    "added": "{{name}} se añadió a tu colección favorita."
   },
   "recommended": {
     "title": "Recomendado para ti",

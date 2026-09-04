@@ -74,7 +74,6 @@ type HomeTranslationKey =
     | "recentAdditions.dropHint"
     | "recentAdditions.dropActive"
     | "recentAdditions.added"
-    | "recentAdditions.alreadyInCollection"
     | "recommended.title"
     | "recommended.guestDescription"
     | "recommended.createAccount"
@@ -315,13 +314,6 @@ export default function HomePage() {
 
     const figurine = recommendedFigurines.find((item) => item.id === figurineId);
     if (!figurine) return;
-
-    if (latestFigurines.some((item) => item.id === figurineId)) {
-      setSuccessMessage(null);
-      setErrorSeverity("warning");
-      setError(t("recentAdditions.alreadyInCollection", { name: figurine.name }));
-      return;
-    }
 
     setDroppingFigurineId(figurineId);
     setError(null);

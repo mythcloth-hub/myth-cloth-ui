@@ -28,8 +28,7 @@
     "browseFigurines": "Browse Figurines",
     "dropHint": "Drag a recommended figurine here to add it to your favorite collection.",
     "dropActive": "Drop it here to add it to your favorite collection.",
-    "added": "{{name}} was added to your favorite collection.",
-    "alreadyInCollection": "{{name}} is already in your favorite collection."
+    "added": "{{name}} was added to your favorite collection."
   },
   "recommended": {
     "title": "Recommended for you",
