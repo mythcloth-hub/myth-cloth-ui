@@ -9,9 +9,10 @@ export type FormatCurrencyAmountOptions = {
   fallbackCurrency?: string;
 };
 
+const DEFAULT_FALLBACK_CURRENCY = "JPY";
 const ZERO_DECIMAL_CURRENCIES = new Set(["JPY"]);
 
-function normalizeCurrencyCode(currency?: string | null, fallbackCurrency = "USD"): string {
+function normalizeCurrencyCode(currency?: string | null, fallbackCurrency = DEFAULT_FALLBACK_CURRENCY): string {
   const normalized = currency?.trim().toUpperCase();
   return normalized && normalized.length > 0 ? normalized : fallbackCurrency;
 }
@@ -20,23 +21,36 @@ function getFractionDigits(
   currencyCode: string,
   options: FormatCurrencyAmountOptions,
 ): { minimumFractionDigits: number; maximumFractionDigits: number } {
+  const isZeroDecimal = ZERO_DECIMAL_CURRENCIES.has(currencyCode);
+  const defaultDigits = isZeroDecimal ? 0 : 2;
+
   const providedMin = options.minimumFractionDigits;
   const providedMax = options.maximumFractionDigits;
 
   if (typeof providedMin === "number" && typeof providedMax === "number") {
     return {
+      minimumFractionDigits: Math.min(providedMin, providedMax),
+      maximumFractionDigits: Math.max(providedMin, providedMax),
+    };
+  }
+
+  if (typeof providedMin === "number") {
+    return {
       minimumFractionDigits: providedMin,
+      maximumFractionDigits: Math.max(providedMin, defaultDigits),
+    };
+  }
+
+  if (typeof providedMax === "number") {
+    return {
+      minimumFractionDigits: Math.min(defaultDigits, providedMax),
       maximumFractionDigits: providedMax,
     };
   }
 
-  const defaults = ZERO_DECIMAL_CURRENCIES.has(currencyCode)
-    ? { minimumFractionDigits: 0, maximumFractionDigits: 0 }
-    : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
-
   return {
-    minimumFractionDigits: typeof providedMin === "number" ? providedMin : defaults.minimumFractionDigits,
-    maximumFractionDigits: typeof providedMax === "number" ? providedMax : defaults.maximumFractionDigits,
+    minimumFractionDigits: defaultDigits,
+    maximumFractionDigits: defaultDigits,
   };
 }
 
@@ -61,7 +75,7 @@ export function formatCurrencyAmount(
   currency?: string | null,
   options: FormatCurrencyAmountOptions = {},
 ): string {
-  const currencyCode = normalizeCurrencyCode(currency, options.fallbackCurrency ?? "USD");
+  const currencyCode = normalizeCurrencyCode(currency, options.fallbackCurrency ?? DEFAULT_FALLBACK_CURRENCY);
 
   if (!Number.isFinite(amount)) {
     return `- ${currencyCode}`;

@@ -2,6 +2,8 @@ export const SUPPORTED_CURRENCIES = ["JPY", "MXN", "EUR", "USD", "CNY", "CAD"] a
 
 export type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];
 
+export const DEFAULT_CURRENCY: SupportedCurrency = "JPY";
+
 const SUPPORTED_CURRENCY_SET = new Set<SupportedCurrency>(SUPPORTED_CURRENCIES);
 
 const REGION_TO_CURRENCY: Record<string, SupportedCurrency> = {

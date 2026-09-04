@@ -30,12 +30,7 @@ type PriceSummary = {
 };
 
 function formatCurrency(value: number, currency?: SupportedCurrency | null) {
-  return formatCurrencyAmount(value, currency ?? "JPY", {
-    style: "currency",
-    locale: "en-US",
-    maximumFractionDigits: 0,
-    fallbackCurrency: "JPY",
-  });
+  return formatCurrencyAmount(value, currency);
 }
 
 function formatCount(value: number) {
