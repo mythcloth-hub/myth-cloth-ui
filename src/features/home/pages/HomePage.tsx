@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -13,6 +14,7 @@ import {
   Divider,
   IconButton,
   Paper,
+  Snackbar,
   Stack,
   Typography,
 } from "@mui/material";
@@ -31,13 +33,22 @@ import ExploreOutlinedIcon from "@mui/icons-material/ExploreOutlined";
 import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import NewReleasesOutlinedIcon from "@mui/icons-material/NewReleasesOutlined";
+import StarOutlineIcon from "@mui/icons-material/StarOutline";
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
+import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
+import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import AddIcon from "@mui/icons-material/Add";
 
 import { useAuth } from "../../../auth/AuthContext";
+import AuthDialog from "../../../auth/AuthDialog";
 import AppPageHeader from "../../../components/AppPageHeader";
-import { getLatestFavoriteCollectionFigurines } from "../../collections/api/collectionApi";
+import {
+  addFigurineToFavoriteCollection,
+  getLatestFavoriteCollectionFigurines,
+} from "../../collections/api/collectionApi";
+import { getApiErrorDetails, type ApiErrorSeverity } from "../../../utils/apiErrorMessage";
 import type { LatestFavoriteCollectionFigurine } from "../../collections/types/collection";
+import { getRecommendedFigurines, type RecommendedFigurine } from "../../figurines/api/figurineApi";
 
 type HomeTranslationKey =
     | "eyebrow"
@@ -60,6 +71,16 @@ type HomeTranslationKey =
     | "recentAdditions.title"
     | "recentAdditions.empty"
     | "recentAdditions.browseFigurines"
+    | "recentAdditions.dropHint"
+    | "recentAdditions.dropActive"
+    | "recentAdditions.added"
+    | "recommended.title"
+    | "recommended.guestDescription"
+    | "recommended.createAccount"
+    | "recommended.emptyCollectionDescription"
+    | "recommended.startCollection"
+    | "recommended.hasCollectionDescription"
+    | "recommended.addMore"
     | "openSection"
     | "morePlaces"
     | "morePlacesDescription"
@@ -175,6 +196,8 @@ const HOME_LINKS: HomeLink[] = [
 
 const FEATURED_PATHS = ["/figurines", "/collections", "/charts", "/releases"];
 
+const FIGURINE_DRAG_MIME = "application/x-myth-cloth-figurine-id";
+
 const START_STEPS: StartStep[] = [
   {
     titleKey: "startSteps.browseCatalog.title",
@@ -200,6 +223,15 @@ export default function HomePage() {
   const [latestFigurines, setLatestFigurines] = useState<LatestFavoriteCollectionFigurine[]>([]);
   const [latestLoading, setLatestLoading] = useState(false);
   const latestScrollRef = useRef<HTMLDivElement | null>(null);
+  const [recommendedFigurines, setRecommendedFigurines] = useState<RecommendedFigurine[]>([]);
+  const [recommendedLoading, setRecommendedLoading] = useState(false);
+  const recommendedScrollRef = useRef<HTMLDivElement | null>(null);
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const [isDropTargetActive, setIsDropTargetActive] = useState(false);
+  const [droppingFigurineId, setDroppingFigurineId] = useState<number | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [errorSeverity, setErrorSeverity] = useState<ApiErrorSeverity>("error");
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -231,6 +263,76 @@ export default function HomePage() {
     if (!el) return;
     const amount = Math.min(el.clientWidth * 0.8, 480);
     el.scrollBy({ left: direction === "left" ? -amount : amount, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    let isActive = true;
+    setRecommendedLoading(true);
+
+    getRecommendedFigurines()
+      .then((items) => {
+        if (isActive) setRecommendedFigurines(items);
+      })
+      .catch(() => {
+        if (isActive) setRecommendedFigurines([]);
+      })
+      .finally(() => {
+        if (isActive) setRecommendedLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [isAuthenticated]);
+
+  const scrollRecommended = (direction: "left" | "right") => {
+    const el = recommendedScrollRef.current;
+    if (!el) return;
+    const amount = Math.min(el.clientWidth * 0.8, 480);
+    el.scrollBy({ left: direction === "left" ? -amount : amount, behavior: "smooth" });
+  };
+
+  const handleFigurineDragStart = (event: React.DragEvent<HTMLDivElement>, figurine: RecommendedFigurine) => {
+    event.dataTransfer.effectAllowed = "copy";
+    event.dataTransfer.setData(FIGURINE_DRAG_MIME, String(figurine.id));
+    event.dataTransfer.setData("text/plain", figurine.name);
+  };
+
+  const handleDropZoneDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    if (!event.dataTransfer.types.includes(FIGURINE_DRAG_MIME)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    setIsDropTargetActive(true);
+  };
+
+  const handleDropZoneDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDropTargetActive(false);
+
+    const figurineId = Number(event.dataTransfer.getData(FIGURINE_DRAG_MIME));
+    if (!Number.isFinite(figurineId) || figurineId <= 0) return;
+
+    const figurine = recommendedFigurines.find((item) => item.id === figurineId);
+    if (!figurine) return;
+
+    setDroppingFigurineId(figurineId);
+    setError(null);
+    try {
+      await addFigurineToFavoriteCollection(figurineId);
+      const [latestItems, recommendedItems] = await Promise.all([
+        getLatestFavoriteCollectionFigurines(),
+        getRecommendedFigurines(),
+      ]);
+      setLatestFigurines(latestItems);
+      setRecommendedFigurines(recommendedItems);
+      setSuccessMessage(t("recentAdditions.added", { name: figurine.name }));
+    } catch (err) {
+      const { message, severity } = getApiErrorDetails(err, { action: "update", resource: "collection" });
+      setErrorSeverity(severity);
+      setError(message);
+    } finally {
+      setDroppingFigurineId(null);
+    }
   };
 
   const visibleLinks = useMemo(
@@ -276,6 +378,12 @@ export default function HomePage() {
           }
         />
       </Box>
+
+      {error && (
+        <Alert severity={errorSeverity} sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
       <Paper
         sx={{
@@ -426,20 +534,33 @@ export default function HomePage() {
 
       {isAuthenticated && (
         <Paper
+          onDragOver={handleDropZoneDragOver}
+          onDragLeave={() => setIsDropTargetActive(false)}
+          onDrop={handleDropZoneDrop}
           sx={{
             p: { xs: 1.75, md: 2 },
             mb: 2,
             borderRadius: 1.5,
-            border: "1px solid rgba(255,255,255,0.08)",
-            background: "linear-gradient(135deg, rgba(212,175,55,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+            border: isDropTargetActive
+              ? "1px dashed rgba(212,175,55,0.85)"
+              : "1px solid rgba(255,255,255,0.08)",
+            background: isDropTargetActive
+              ? "linear-gradient(135deg, rgba(212,175,55,0.16) 0%, rgba(255,255,255,0.04) 100%)"
+              : "linear-gradient(135deg, rgba(212,175,55,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+            transition: "background 0.2s, border-color 0.2s",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.25 }}>
-            <NewReleasesOutlinedIcon sx={{ color: "primary.main", fontSize: 18 }} />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.4 }}>
+            <StarOutlineIcon sx={{ color: "primary.main", fontSize: 18 }} />
             <Typography variant="h6" sx={{ fontWeight: 800 }}>
               {t("recentAdditions.title")}
             </Typography>
+            {droppingFigurineId !== null && <CircularProgress size={14} />}
           </Box>
+
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.25 }}>
+            {isDropTargetActive ? t("recentAdditions.dropActive") : t("recentAdditions.dropHint")}
+          </Typography>
 
           <Box sx={{ position: "relative" }}>
             {latestLoading ? (
@@ -616,6 +737,272 @@ export default function HomePage() {
           </Box>
         </Paper>
       )}
+
+      {(recommendedLoading || recommendedFigurines.length > 0) && (
+        <Paper
+          sx={{
+            p: { xs: 1.75, md: 2 },
+            mb: 2,
+            borderRadius: 1.5,
+            border: "1px solid rgba(255,255,255,0.08)",
+            background: "linear-gradient(135deg, rgba(79,195,247,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.4 }}>
+            <AutoAwesomeMosaicOutlinedIcon sx={{ color: "primary.main", fontSize: 18 }} />
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+              {t("recommended.title")}
+            </Typography>
+          </Box>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            {!isAuthenticated
+              ? t("recommended.guestDescription")
+              : latestFigurines.length === 0
+                ? t("recommended.emptyCollectionDescription")
+                : t("recommended.hasCollectionDescription")}
+          </Typography>
+
+          {!isAuthenticated && (
+            <Button
+              size="small"
+              variant="contained"
+              startIcon={<PersonAddAltOutlinedIcon />}
+              onClick={() => setIsAuthDialogOpen(true)}
+              sx={{ mb: 1.5 }}
+            >
+              {t("recommended.createAccount")}
+            </Button>
+          )}
+
+          {isAuthenticated && (
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<WorkspacePremiumOutlinedIcon />}
+              onClick={() => navigate("/figurines")}
+              sx={{ mb: 1.5 }}
+            >
+              {latestFigurines.length === 0 ? t("recommended.startCollection") : t("recommended.addMore")}
+            </Button>
+          )}
+
+          <Box sx={{ position: "relative" }}>
+            {recommendedLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+                <CircularProgress size={26} />
+              </Box>
+            ) : (
+              <>
+                <IconButton
+                  onClick={() => scrollRecommended("left")}
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    left: -6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    zIndex: 2,
+                    bgcolor: "background.paper",
+                    border: "1px solid rgba(212,175,55,0.25)",
+                    "&:hover": { bgcolor: "rgba(212,175,55,0.12)" },
+                  }}
+                >
+                  <ChevronLeftIcon fontSize="small" />
+                </IconButton>
+
+                <Box
+                  ref={recommendedScrollRef}
+                  sx={{
+                    display: "flex",
+                    gap: 1.25,
+                    overflowX: "auto",
+                    scrollSnapType: "x mandatory",
+                    px: 3,
+                    py: 0.5,
+                    "&::-webkit-scrollbar": { display: "none" },
+                    scrollbarWidth: "none",
+                  }}
+                >
+                  {recommendedFigurines.map((figurine) => (
+                    <Card
+                      key={figurine.id}
+                      draggable={isAuthenticated}
+                      onDragStart={(event) => handleFigurineDragStart(event, figurine)}
+                      onClick={() => navigate(`/figurines/${figurine.id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          navigate(`/figurines/${figurine.id}`);
+                        }
+                      }}
+                      sx={{
+                        flex: "0 0 auto",
+                        width: 140,
+                        scrollSnapAlign: "start",
+                        cursor: isAuthenticated ? "grab" : "pointer",
+                        opacity: droppingFigurineId === figurine.id ? 0.5 : 1,
+                        "&:active": isAuthenticated ? { cursor: "grabbing" } : undefined,
+                        transition: "transform 0.2s, box-shadow 0.2s, opacity 0.2s",
+                        "&:hover": {
+                          transform: "translateY(-3px)",
+                          boxShadow: "0 12px 40px rgba(79, 195, 247, 0.25)",
+                        },
+                      }}
+                    >
+                      <Box sx={{ position: "relative", paddingTop: "120%", bgcolor: "#0a0b14" }}>
+                        {figurine.imageUrl ? (
+                          <CardMedia
+                            component="img"
+                            image={figurine.imageUrl}
+                            alt={figurine.name}
+                            sx={{
+                              position: "absolute",
+                              top: 0, left: 0,
+                              width: "100%", height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: 0, left: 0,
+                              width: "100%", height: "100%",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              color: "text.secondary",
+                            }}
+                          >
+                            <ImageNotSupportedOutlinedIcon sx={{ fontSize: 32, opacity: 0.3 }} />
+                          </Box>
+                        )}
+
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            bottom: 0, left: 0, right: 0,
+                            height: "40%",
+                            background: "linear-gradient(transparent, rgba(10, 11, 20, 0.92))",
+                          }}
+                        />
+                      </Box>
+
+                      <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
+                        <Typography
+                          variant="caption"
+                          fontWeight={700}
+                          noWrap
+                          title={figurine.name}
+                          sx={{ color: "text.primary", display: "block", fontSize: "0.72rem", lineHeight: 1.3 }}
+                        >
+                          {figurine.name}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  ))}
+
+                  <Card
+                    onClick={() =>
+                      isAuthenticated ? navigate("/figurines") : setIsAuthDialogOpen(true)
+                    }
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        if (isAuthenticated) navigate("/figurines");
+                        else setIsAuthDialogOpen(true);
+                      }
+                    }}
+                    sx={{
+                      flex: "0 0 auto",
+                      width: 140,
+                      scrollSnapAlign: "start",
+                      cursor: "pointer",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1,
+                      textAlign: "center",
+                      px: 1.25,
+                      bgcolor: "transparent",
+                      border: "1px dashed rgba(79,195,247,0.45)",
+                      boxShadow: "none",
+                      transition: "transform 0.2s, box-shadow 0.2s, border-color 0.2s, background-color 0.2s",
+                      "&:hover": {
+                        transform: "translateY(-3px)",
+                        borderColor: "rgba(79,195,247,0.85)",
+                        bgcolor: "rgba(79,195,247,0.08)",
+                        boxShadow: "0 12px 40px rgba(79, 195, 247, 0.25)",
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: "50%",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#4fc3f7",
+                        bgcolor: "rgba(79,195,247,0.12)",
+                        border: "1px solid rgba(79,195,247,0.35)",
+                      }}
+                    >
+                      <AddIcon />
+                    </Box>
+                    <Typography
+                      variant="caption"
+                      fontWeight={800}
+                      sx={{ color: "text.primary", fontSize: "0.72rem", lineHeight: 1.3 }}
+                    >
+                      {!isAuthenticated
+                        ? t("recommended.createAccount")
+                        : latestFigurines.length === 0
+                          ? t("recommended.startCollection")
+                          : t("recommended.addMore")}
+                    </Typography>
+                  </Card>
+                </Box>
+
+                <IconButton
+                  onClick={() => scrollRecommended("right")}
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    right: -6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    zIndex: 2,
+                    bgcolor: "background.paper",
+                    border: "1px solid rgba(212,175,55,0.25)",
+                    "&:hover": { bgcolor: "rgba(212,175,55,0.12)" },
+                  }}
+                >
+                  <ChevronRightIcon fontSize="small" />
+                </IconButton>
+              </>
+            )}
+          </Box>
+        </Paper>
+      )}
+
+      <AuthDialog open={isAuthDialogOpen} onClose={() => setIsAuthDialogOpen(false)} />
+
+      <Snackbar
+        open={Boolean(successMessage)}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="success" onClose={() => setSuccessMessage(null)}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
 
       <Box sx={{ mb: 1.25, display: "flex", alignItems: "center", gap: 1 }}>
         <AutoAwesomeOutlinedIcon sx={{ color: "primary.main", fontSize: 18 }} />

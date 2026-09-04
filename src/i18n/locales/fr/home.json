@@ -23,9 +23,21 @@
 
   "featuredPlaces": "Lieux en vedette pour commencer",
   "recentAdditions": {
-    "title": "Ajoutés récemment à votre collection",
+    "title": "Récemment ajouté à votre collection préférée",
     "empty": "Vous n'avez pas encore ajouté de figurines à votre collection.",
-    "browseFigurines": "Explorer les figurines"
+    "browseFigurines": "Explorer les figurines",
+    "dropHint": "Faites glisser une figurine recommandée ici pour l'ajouter à votre collection favorite.",
+    "dropActive": "Déposez-la ici pour l'ajouter à votre collection favorite.",
+    "added": "{{name}} a été ajoutée à votre collection favorite."
+  },
+  "recommended": {
+    "title": "Recommandé pour vous",
+    "guestDescription": "Créez votre compte gratuit et commencez à ajouter ces figurines recommandées à votre propre collection.",
+    "createAccount": "Créer votre compte",
+    "emptyCollectionDescription": "Prêt à commencer ? Créez votre première collection avec l'une de ces figurines recommandées.",
+    "startCollection": "Créez votre première collection",
+    "hasCollectionDescription": "D'après votre collection, voici d'autres figurines susceptibles de vous plaire.",
+    "addMore": "Ajouter plus de figurines"
   },
   "openSection": "Ouvrir la section",
 
