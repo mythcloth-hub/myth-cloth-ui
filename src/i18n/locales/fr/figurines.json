@@ -94,6 +94,7 @@
     "clearSelection": "Effacer",
     "addToCollection": "Ajouter à la Collection",
     "bulkAddToCollectionModal": {
+      "or": "ou",
       "title_one": "Ajouter {{count}} figurine à la Collection",
       "title_other": "Ajouter {{count}} figurines à la Collection",
       "selected": "Figurines Sélectionnées :",

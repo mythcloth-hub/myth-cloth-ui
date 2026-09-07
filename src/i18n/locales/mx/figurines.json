@@ -94,6 +94,7 @@
     "clearSelection": "Limpiar",
     "addToCollection": "Agregar a tu Colección",
     "bulkAddToCollectionModal": {
+      "or": "o",
       "title_one": "Agregar {{count}} figura a la Colección",
       "title_other": "Agregar {{count}} figuras a la Colección",
       "selected": "Figuras Seleccionadas:",

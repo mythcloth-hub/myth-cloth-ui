@@ -94,6 +94,7 @@
     "clearSelection": "Clear",
     "addToCollection": "Add to Collection",
     "bulkAddToCollectionModal": {
+      "or": "or",
       "title_one": "Add {{count}} figurine to Collection",
       "title_other": "Add {{count}} figurines to Collection",
       "selected": "Selected Figurines:",

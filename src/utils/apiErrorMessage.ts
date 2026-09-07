@@ -45,6 +45,9 @@ const API_ERROR_CODE_CONFIG: Record<string, ApiErrorCodeConfig> = {
     message: "You have reached the maximum number of collections allowed.",
     severity: "warning",
   },
+  RESOURCE_NOT_FOUND: {
+    message: "The requested resource could not be found. It may have been removed or is no longer available.",
+  },
   UNEXPECTED_ERROR: {
     message: "An unexpected error occurred. Please try again later.",
   },
