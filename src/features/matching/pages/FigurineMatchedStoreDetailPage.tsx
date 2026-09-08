@@ -23,6 +23,7 @@ import {
   Typography,
   Snackbar,
 } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import CompareArrowsOutlinedIcon from "@mui/icons-material/CompareArrowsOutlined";
 import ChecklistIcon from "@mui/icons-material/Checklist";
@@ -215,6 +216,7 @@ function buildSparklinePath(values: number[], width: number, height: number): st
 
 export default function FigurineMatchedStoreDetailPage() {
   const navigate = useNavigate();
+  const theme = useTheme();
   const { storeId } = useParams<{ storeId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { hasPermission } = useAuth();
@@ -991,9 +993,9 @@ export default function FigurineMatchedStoreDetailPage() {
             bottom: 0,
             left: 0,
             right: 0,
-            background: "linear-gradient(135deg, rgba(6,8,24,0.98) 0%, rgba(20,15,40,0.98) 100%)",
+            bgcolor: "background.paper",
             backdropFilter: "blur(20px)",
-            borderTop: "2px solid rgba(212,175,55,0.2)",
+            borderTop: `2px solid ${alpha(theme.palette.primary.main, 0.25)}`,
             p: 2,
             display: "flex",
             alignItems: "center",
@@ -1005,7 +1007,7 @@ export default function FigurineMatchedStoreDetailPage() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "#d4af37" }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
               {bulkSelection.selectedCount} match{bulkSelection.selectedCount === 1 ? "" : "es"} selected
             </Typography>
             <Button

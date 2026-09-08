@@ -21,6 +21,7 @@ import {
   Chip,
   Stack,
 } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -44,6 +45,7 @@ export default function BulkAddToCollectionModal({
   onSuccess,
 }: BulkAddToCollectionModalProps) {
   const { t } = useTranslation("figurines");
+  const theme = useTheme();
 
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollections, setSelectedCollections] = useState<Set<number>>(new Set());
@@ -176,10 +178,6 @@ export default function BulkAddToCollectionModal({
       PaperProps={{
         sx: {
           borderRadius: 2,
-          background: "linear-gradient(135deg, rgba(6,8,24,0.95) 0%, rgba(20,15,40,0.95) 100%)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(212,175,55,0.1)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
         },
       }}
     >
@@ -187,10 +185,10 @@ export default function BulkAddToCollectionModal({
         sx={{
           fontSize: "1.5rem",
           fontWeight: 700,
-          color: "#d4af37",
+          color: "primary.main",
           textAlign: "center",
           pb: 1,
-          borderBottom: "1px solid rgba(212,175,55,0.1)",
+          borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
         }}
       >
         💫 {t("collection.bulkAddToCollectionModal.title", { count: selectedCount })}
@@ -198,14 +196,14 @@ export default function BulkAddToCollectionModal({
 
       <DialogContent sx={{ pt: 2 }}>
         {/* Selected count info */}
-        <Box sx={{ mb: 2, p: 1.5, background: "rgba(79,195,247,0.05)", borderRadius: 1 }}>
+        <Box sx={{ mb: 2, p: 1.5, bgcolor: alpha(theme.palette.secondary.main, 0.08), borderRadius: 1 }}>
           <Typography variant="caption" sx={{ color: "text.secondary" }}>
             {t("collection.bulkAddToCollectionModal.selected")}
           </Typography>
           <Typography
             variant="body2"
             sx={{
-              color: "#4fc3f7",
+              color: "secondary.main",
               fontWeight: 600,
               mt: 0.5,
             }}
@@ -231,7 +229,7 @@ export default function BulkAddToCollectionModal({
         {/* Loading state */}
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
-            <CircularProgress sx={{ color: "#d4af37" }} />
+            <CircularProgress color="primary" />
           </Box>
         ) : (
           <>
@@ -239,7 +237,7 @@ export default function BulkAddToCollectionModal({
             <Box sx={{ mb: 3 }}>
               <Typography
                 variant="subtitle2"
-                sx={{ color: "#d4af37", fontWeight: 600, mb: 1 }}
+                sx={{ color: "primary.main", fontWeight: 600, mb: 1 }}
               >
                 {t("collection.bulkAddToCollectionModal.existing.title")}
               </Typography>
@@ -251,8 +249,8 @@ export default function BulkAddToCollectionModal({
               ) : (
                 <List
                   sx={{
-                    bgcolor: "rgba(212,175,55,0.02)",
-                    border: "1px solid rgba(212,175,55,0.1)",
+                    bgcolor: alpha(theme.palette.primary.main, 0.03),
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                     borderRadius: 1,
                     maxHeight: 300,
                     overflow: "auto",
@@ -266,10 +264,10 @@ export default function BulkAddToCollectionModal({
                           onClick={() => toggleCollection(collection.id)}
                           sx={{
                             backgroundColor: isSelected
-                              ? "rgba(212,175,55,0.08)"
+                              ? alpha(theme.palette.primary.main, 0.1)
                               : "transparent",
                             "&:hover": {
-                              backgroundColor: "rgba(212,175,55,0.12)",
+                              backgroundColor: alpha(theme.palette.primary.main, 0.15),
                             },
                             transition: "all 0.2s ease",
                           }}
@@ -281,7 +279,7 @@ export default function BulkAddToCollectionModal({
                               tabIndex={-1}
                               disableRipple
                               sx={{
-                                color: isSelected ? "#d4af37" : "rgba(212,175,55,0.3)",
+                                color: isSelected ? "primary.main" : alpha(theme.palette.primary.main, 0.35),
                               }}
                             />
                           </ListItemIcon>
@@ -290,7 +288,7 @@ export default function BulkAddToCollectionModal({
                               <Typography
                                 variant="body2"
                                 sx={{
-                                  color: isSelected ? "#d4af37" : "text.primary",
+                                  color: isSelected ? "primary.main" : "text.primary",
                                   fontWeight: isSelected ? 600 : 500,
                                 }}
                               >
@@ -310,15 +308,15 @@ export default function BulkAddToCollectionModal({
                                   sx={{
                                     height: 20,
                                     fontSize: "0.65rem",
-                                    bgcolor: "rgba(79,195,247,0.1)",
-                                    color: "#4fc3f7",
+                                    bgcolor: alpha(theme.palette.secondary.main, 0.12),
+                                    color: "secondary.main",
                                   }}
                                 />
                               </Stack>
                             }
                           />
                           {isSelected && (
-                            <FavoriteIcon sx={{ color: "#d4af37", ml: 1 }} />
+                            <FavoriteIcon sx={{ color: "primary.main", ml: 1 }} />
                           )}
                         </ListItemButton>
                         {index < collections.length - 1 && (
@@ -337,7 +335,7 @@ export default function BulkAddToCollectionModal({
             <Box sx={{ mb: 2 }}>
               <Typography
                 variant="subtitle2"
-                sx={{ color: "#d4af37", fontWeight: 600, mb: 1, display: "flex", alignItems: "center", gap: 1 }}
+                sx={{ color: "primary.main", fontWeight: 600, mb: 1, display: "flex", alignItems: "center", gap: 1 }}
               >
                 <AddIcon sx={{ fontSize: "1.1rem" }} />
                 {t("collection.bulkAddToCollectionModal.new.title")}
@@ -350,25 +348,7 @@ export default function BulkAddToCollectionModal({
                 onChange={(e) => setNewCollectionName(e.target.value)}
                 size="small"
                 disabled={creating}
-                sx={{
-                  mb: 1,
-                  "& .MuiOutlinedInput-root": {
-                    color: "text.primary",
-                    "& fieldset": {
-                      borderColor: "rgba(212,175,55,0.2)",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(212,175,55,0.4)",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#d4af37",
-                    },
-                  },
-                  "& .MuiInputBase-input::placeholder": {
-                    color: "rgba(255,255,255,0.3)",
-                    opacity: 1,
-                  },
-                }}
+                sx={{ mb: 1 }}
               />
 
               <TextField
@@ -378,25 +358,7 @@ export default function BulkAddToCollectionModal({
                 onChange={(e) => setNewCollectionImageUrl(e.target.value)}
                 size="small"
                 disabled={creating}
-                sx={{
-                  mb: 1,
-                  "& .MuiOutlinedInput-root": {
-                    color: "text.primary",
-                    "& fieldset": {
-                      borderColor: "rgba(212,175,55,0.2)",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(212,175,55,0.4)",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#d4af37",
-                    },
-                  },
-                  "& .MuiInputBase-input::placeholder": {
-                    color: "rgba(255,255,255,0.3)",
-                    opacity: 1,
-                  },
-                }}
+                sx={{ mb: 1 }}
               />
 
               <TextField
@@ -408,20 +370,6 @@ export default function BulkAddToCollectionModal({
                 multiline
                 rows={2}
                 disabled={creating}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    color: "text.primary",
-                    "& fieldset": {
-                      borderColor: "rgba(212,175,55,0.2)",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(212,175,55,0.4)",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#d4af37",
-                    },
-                  },
-                }}
               />
             </Box>
           </>
@@ -430,7 +378,7 @@ export default function BulkAddToCollectionModal({
 
       <DialogActions
         sx={{
-          borderTop: "1px solid rgba(212,175,55,0.1)",
+          borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
           p: 2,
           gap: 1,
         }}
@@ -439,10 +387,6 @@ export default function BulkAddToCollectionModal({
           startIcon={<CancelOutlinedIcon />}
           onClick={handleModalClose}
           disabled={creating}
-          sx={{
-            color: "text.secondary",
-            "&:hover": { bgcolor: "rgba(255,255,255,0.05)" },
-          }}
         >
           {t("collection.bulkAddToCollectionModal.actions.cancel")}
         </Button>
@@ -452,18 +396,8 @@ export default function BulkAddToCollectionModal({
             onClick={handleCreateAndAdd}
             disabled={creating || !newCollectionName.trim()}
             variant="contained"
+            color="primary"
             startIcon={creating ? <CircularProgress size={20} /> : <AddIcon />}
-            sx={{
-              background: "linear-gradient(135deg, #d4af37 0%, #e6c547 100%)",
-              color: "#000",
-              fontWeight: 600,
-              "&:hover": {
-                background: "linear-gradient(135deg, #e6c547 0%, #d4af37 100%)",
-              },
-              "&:disabled": {
-                opacity: 0.7,
-              },
-            }}
           >
             {creating ? t("collection.bulkAddToCollectionModal.actions.creating") : t("collection.bulkAddToCollectionModal.actions.create", { count: selectedCount })}
           </Button>
@@ -474,18 +408,8 @@ export default function BulkAddToCollectionModal({
             onClick={handleAddToSelected}
             disabled={creating}
             variant="contained"
+            color="secondary"
             startIcon={creating ? <CircularProgress size={20} /> : <FavoriteIcon />}
-            sx={{
-              background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
-              color: "#000",
-              fontWeight: 600,
-              "&:hover": {
-                background: "linear-gradient(135deg, #81d4fa 0%, #4fc3f7 100%)",
-              },
-              "&:disabled": {
-                opacity: 0.7,
-              },
-            }}
           >
             {creating ? t("collection.bulkAddToCollectionModal.actions.adding") : t("collection.bulkAddToCollectionModal.actions.add", { count: selectedCollections.size })}
           </Button>
