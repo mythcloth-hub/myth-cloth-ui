@@ -28,6 +28,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Checkbox } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -550,6 +551,7 @@ function CardSkeleton() {
 export default function FigurineCollectionPage() {
   const { t } = useTranslation("figurines");
 
+  const theme = useTheme();
   const navigate = useNavigate();
   const location  = useLocation();
   const { hasPermission, isAuthenticated } = useAuth();
@@ -937,9 +939,9 @@ export default function FigurineCollectionPage() {
                 }}
                 sx={{
                   ml: 0.5,
-                  bgcolor: "rgba(6,8,24,0.3)",
+                  bgcolor: alpha(theme.palette.background.paper, 0.6),
                   borderRadius: 1.2,
-                  border: "1px solid rgba(255,255,255,0.14)",
+                  border: `1px solid ${theme.palette.divider}`,
                   p: 0.3,
                   "& .MuiToggleButtonGroup-grouped": {
                     border: "none",
@@ -951,8 +953,8 @@ export default function FigurineCollectionPage() {
                     color: "text.secondary",
                   },
                   "& .MuiToggleButtonGroup-grouped.Mui-selected": {
-                    bgcolor: "rgba(79,195,247,0.22)",
-                    color: "#4fc3f7",
+                    bgcolor: alpha(theme.palette.secondary.main, 0.22),
+                    color: "secondary.main",
                     boxShadow: "none",
                   },
                 }}
@@ -1477,9 +1479,9 @@ export default function FigurineCollectionPage() {
             bottom: 0,
             left: 0,
             right: 0,
-            background: "linear-gradient(135deg, rgba(6,8,24,0.98) 0%, rgba(20,15,40,0.98) 100%)",
+            bgcolor: "background.paper",
             backdropFilter: "blur(20px)",
-            borderTop: "2px solid rgba(212,175,55,0.2)",
+            borderTop: `2px solid ${alpha(theme.palette.primary.main, 0.25)}`,
             p: 2,
             display: "flex",
             alignItems: "center",
@@ -1491,7 +1493,7 @@ export default function FigurineCollectionPage() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "#d4af37" }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
               ✓ {t("collection.totalSelected", { count: bulkSelection.selectedCount })}
             </Typography>
             <Button
@@ -1510,7 +1512,7 @@ export default function FigurineCollectionPage() {
                 variant="outlined"
                 onClick={handleSelectAllPages}
                 disabled={selectingAllPages}
-                sx={{ fontSize: "0.75rem", color: "#d4af37", borderColor: "rgba(212,175,55,0.5)" }}
+                sx={{ fontSize: "0.75rem" }}
               >
                 {selectingAllPages ? t("collection.selectAllPagesLoading") : t("collection.selectAllPages", { count: totalCollectableElements })}
               </Button>
@@ -1530,16 +1532,9 @@ export default function FigurineCollectionPage() {
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             <Button
               variant="contained"
+              color="secondary"
               startIcon={<ChecklistIcon />}
               onClick={() => setBulkAddModalOpen(true)}
-              sx={{
-                background: "linear-gradient(135deg, #4fc3f7 0%, #81d4fa 100%)",
-                color: "#000",
-                fontWeight: 600,
-                "&:hover": {
-                  background: "linear-gradient(135deg, #81d4fa 0%, #4fc3f7 100%)",
-                },
-              }}
             >
               {t("collection.addToCollection")}
             </Button>
