@@ -111,6 +111,7 @@ function normalizeCollection(collection: Partial<Collection>): Collection {
     imageUrl: typeof collection.imageUrl === "string" ? collection.imageUrl : undefined,
     description: collection.description,
     figurineIds: Array.isArray(collection.figurineIds) ? collection.figurineIds : [],
+    collectedFigurines: collection.collectedFigurines ?? 0,
     totalFigurines:
       typeof collection.totalFigurines === "number"
         ? collection.totalFigurines

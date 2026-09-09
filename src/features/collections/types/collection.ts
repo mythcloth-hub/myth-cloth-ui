@@ -4,6 +4,7 @@ export interface Collection {
   imageUrl?: string;
   description?: string;
   figurineIds: number[];
+  collectedFigurines: number;
   totalFigurines: number;
   isPublic?: boolean;
   isFavorite?: boolean;
@@ -34,6 +35,7 @@ export interface AssignFigurinesRequest {
   collectionMode: "AUTO" | "CREATE" | "EXISTING";
   collectionIds?: number[];
   collection?: {
+    subCollection: boolean;
     name: string;
     description?: string;
     imageUrl?: string;

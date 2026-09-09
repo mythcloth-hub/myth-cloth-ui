@@ -103,11 +103,12 @@
       "existing": {
         "title": "Tus Colecciones",
         "noCollections": "Aún no hay colecciones. ¡Crea una aquí abajo!",
-        "figurinesPerCollection_one": "{{count}} figura",
-        "figurinesPerCollection_other": "{{count}} figuras"
+        "figurinesPerCollection_one": "{{owned}} de {{count}} figura",
+        "figurinesPerCollection_other": "{{owned}} de {{count}} figuras"
       },
       "new": {
         "title": "Crear Nueva Colección",
+        "createFromSelected": "Crear colección de las figuras seleccionadas",
         "name": {
           "label": "Nombre de la colección",
           "required": "El nombre de la colección es obligatorio."
@@ -118,6 +119,7 @@
       "actions": {
         "cancel": "Cancelar",
         "creating": "Creando...",
+        "createCollection": "Crear colección",
         "create_one": "Crear y Agregar {{count}} figura",
         "create_other": "Crear y Agregar {{count}} figuras",
         "adding": "Agregando...",

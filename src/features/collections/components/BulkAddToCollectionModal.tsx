@@ -1,18 +1,34 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Box, Button, DialogActions, TextField, FormControlLabel } from "@mui/material";
-
 import axios from "axios";
 import {
+  Alert,
+  Box,
+  Button,
   Checkbox,
+  Chip,
+  CircularProgress,
   Dialog,
-  DialogTitle,
+  DialogActions,
   DialogContent,
+  DialogTitle,
   Divider,
+  FormControlLabel,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Stack,
+  TextField,
   Typography,
 } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import { getCollections, assignFigurinesToCollections } from "../api/collectionApi";
+import type { Collection } from "../types/collection";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 interface BulkAddToCollectionModalProps {
   open: boolean;
@@ -24,22 +40,144 @@ interface BulkAddToCollectionModalProps {
 
 export default function BulkAddToCollectionModal({
   open,
+  onClose,
   figurineIds,
-  
+  selectedCount,
+  onSuccess,
 }: BulkAddToCollectionModalProps) {
   const { t } = useTranslation("figurines");
+  const theme = useTheme();
+
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [selectedCollections, setSelectedCollections] = useState<Set<number>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newCollectionName, setNewCollectionName] = useState("");
+  const [createFromSelected, setCreateFromSelected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const handleModalClose = () => {
+    setError(null);
+    setSuccessMessage(null);
+    onClose();
+  };
+
+  useEffect(() => {
+    if (open) {
+      loadCollections();
+    }
+  }, [open]);
+
+  const loadCollections = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getCollections();
+      setCollections(data);
+      setSelectedCollections(new Set());
+    } catch (err) {
+      setError(getApiErrorMessage(err, { action: "load", resource: "collections" }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleCollection = (collectionId: number) => {
+    const newSelected = new Set(selectedCollections);
+    if (newSelected.has(collectionId)) {
+      newSelected.delete(collectionId);
+    } else {
+      newSelected.add(collectionId);
+    }
+    setSelectedCollections(newSelected);
+  };
+
+  const handleCreateAndAdd = async () => {
+    const collectionName = newCollectionName.trim();
+    if (!collectionName) {
+      setError(t("collection.bulkAddToCollectionModal.new.name.required"));
+      return;
+    }
+
+    setCreating(true);
+    setError(null);
+    try {
+      await assignFigurinesToCollections({
+        figurineIds,
+        collectionMode: "CREATE",
+        collection: {
+          subCollection: createFromSelected,
+          name: collectionName,
+          imageUrl: undefined,
+          description: undefined,
+        },
+      });
+
+      setSuccessMessage(`✨ ${t("collection.bulkAddToCollectionModal.createdAndAddedSuccessful", { name: collectionName, count: selectedCount })}`);
+      setNewCollectionName("");
+      setCreateFromSelected(false);
+
+      // Close after brief delay to show success
+      setTimeout(() => {
+        onSuccess?.();
+        handleModalClose();
+      }, 1500);
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setError(t("collection.bulkAddToCollectionModal.duplicateName", { name: collectionName }));
+      } else {
+        setError(getApiErrorMessage(err, { action: "create", resource: "collection" }));
+      }
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleAddToSelected = async () => {
+    if (selectedCollections.size === 0) {
+      setError(t("collection.bulkAddToCollectionModal.collectionRequired"));
+      return;
+    }
+
+    const selectedCollectionIds = Array.from(selectedCollections);
+    if (selectedCollectionIds.length === 0) {
+      setError(t("collection.bulkAddToCollectionModal.collectionRequired"));
+      return;
+    }
+
+    setCreating(true);
+    setError(null);
+    try {
+      await assignFigurinesToCollections({
+        figurineIds,
+        collectionMode: "EXISTING",
+        collectionIds: selectedCollectionIds,
+      });
+
+      const collectionCount = selectedCollections.size;
+      setSuccessMessage(`✨ ${t("collection.bulkAddToCollectionModal.addedSuccessful", { count: collectionCount, collection: collectionCount })}`);
+
+      setTimeout(() => {
+        onSuccess?.();
+        handleModalClose();
+      }, 1500);
+    } catch (err) {
+      setError(getApiErrorMessage(err, { action: "update", resource: "figurines to collection" }));
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <Dialog
       open={open}
+      onClose={handleModalClose}
       maxWidth="sm"
       fullWidth
       PaperProps={{
         sx: {
           borderRadius: 1,
-          background: "linear-gradient(135deg, rgba(6,8,24,0.95) 0%, rgba(20,15,40,0.95) 100%)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(212,175,55,0.1)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
         },
       }}
     >
@@ -47,104 +185,215 @@ export default function BulkAddToCollectionModal({
         sx={{
           fontSize: "1.5rem",
           fontWeight: 700,
-          color: "#d4af37",
+          color: "primary.main",
           textAlign: "center",
           pb: 1,
-          borderBottom: "1px solid rgba(212,175,55,0.1)",
+          borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
         }}
-        >
-        💫 {t("collection.bulkAddToCollectionModal.title", { count: 2 })}
+      >
+        💫 {t("collection.bulkAddToCollectionModal.title", { count: selectedCount })}
       </DialogTitle>
+
       <DialogContent sx={{ pt: 2 }}>
-        <Divider sx={{ "&::before, &::after": { borderColor: "rgba(255,255,255,0.08)" } }}>
-          <Typography variant="body2" color="text.secondary">
-            {t("collection.bulkAddToCollectionModal.or")}
-          </Typography>
-        </Divider>
-        {/* Create new collection section */}
-        <Box sx={{ mb: 2 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{ color: "#d4af37", fontWeight: 600, mb: 1, display: "flex", alignItems: "center", gap: 1 }}
-          >
-            <AddIcon sx={{ fontSize: "1.1rem" }} />
-            {t("collection.bulkAddToCollectionModal.new.title")}
-          </Typography>
+        {/* Error messages */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
-          <FormControlLabel
-            control={
-              <Checkbox
-                
+        {/* Success message */}
+        {successMessage && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {successMessage}
+          </Alert>
+        )}
+
+        {/* Loading state */}
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+            <CircularProgress color="primary" />
+          </Box>
+        ) : (
+          <>
+            {/* Existing collections */}
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ color: "primary.main", fontWeight: 600, mb: 1, mt: 1 }}
+              >
+                {t("collection.bulkAddToCollectionModal.existing.title")}
+              </Typography>
+
+              {collections.length === 0 ? (
+                <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                  {t("collection.bulkAddToCollectionModal.existing.noCollections")}
+                </Typography>
+              ) : (
+                <List
+                  sx={{
+                    bgcolor: alpha(theme.palette.primary.main, 0.03),
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                    borderRadius: 1,
+                    maxHeight: 300,
+                    overflow: "auto",
+                  }}
+                >
+                  {collections.map((collection, index) => {
+                    const isSelected = selectedCollections.has(collection.id);
+                    return (
+                      <div key={collection.id}>
+                        <ListItemButton
+                          onClick={() => toggleCollection(collection.id)}
+                          sx={{
+                            backgroundColor: isSelected
+                              ? alpha(theme.palette.primary.main, 0.1)
+                              : "transparent",
+                            "&:hover": {
+                              backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                            },
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          <ListItemIcon>
+                            <Checkbox
+                              edge="start"
+                              checked={isSelected}
+                              tabIndex={-1}
+                              disableRipple
+                              sx={{
+                                color: isSelected ? "primary.main" : alpha(theme.palette.primary.main, 0.35),
+                              }}
+                            />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: isSelected ? "primary.main" : "text.primary",
+                                  fontWeight: isSelected ? 600 : 500,
+                                }}
+                              >
+                                {collection.name}
+                              </Typography>
+                            }
+                            secondary={
+                              <Stack direction="row" gap={1} sx={{ mt: 0.5 }}>
+                                {collection.description && (
+                                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                                    {collection.description}
+                                  </Typography>
+                                )}
+                                <Chip
+                                  label={`${t("collection.bulkAddToCollectionModal.existing.figurinesPerCollection", 
+                                      { owned: collection.collectedFigurines, 
+                                        count: collection.totalFigurines 
+                                      })}`}
+                                  size="small"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: "0.65rem",
+                                    bgcolor: alpha(theme.palette.secondary.main, 0.12),
+                                    color: "secondary.main",
+                                  }}
+                                />
+                              </Stack>
+                            }
+                          />
+                          {isSelected && (
+                            <FavoriteIcon sx={{ color: "primary.main", ml: 1 }} />
+                          )}
+                        </ListItemButton>
+                        {index < collections.length - 1 && (
+                          <Divider sx={{ opacity: 0.1 }} />
+                        )}
+                      </div>
+                    );
+                  })}
+                </List>
+              )}
+            </Box>
+
+            <Divider sx={{ "&::before, &::after": { borderColor: "rgba(255,255,255,0.08)" } }}>
+              <Typography variant="body2" color="text.secondary">
+                {t("collection.bulkAddToCollectionModal.or")}
+              </Typography>
+            </Divider>
+            {/* Create new collection section */}
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ color: "primary.main", fontWeight: 600, mb: 1, display: "flex", alignItems: "center", gap: 1 }}
+              >
+                <AddIcon sx={{ fontSize: "1.1rem" }} />
+                {t("collection.bulkAddToCollectionModal.new.title")}
+              </Typography>
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    value={createFromSelected}
+                    onChange={(e) => setCreateFromSelected(e.target.checked)}
+                  />
+                }
+                label={<Typography variant="body2">{t("collection.bulkAddToCollectionModal.new.createFromSelected")}</Typography>}
               />
-            }
-            label={<Typography variant="body2">Create collection only from selected figurines</Typography>}
-          />
 
-          <TextField
+              <TextField
                 fullWidth
                 label={t("collection.bulkAddToCollectionModal.new.name.label")}
+                value={newCollectionName}
+                onChange={(e) => setNewCollectionName(e.target.value)}
                 size="small"
-                sx={{
-                  mb: 1,
-                  "& .MuiOutlinedInput-root": {
-                    color: "text.primary",
-                    "& fieldset": {
-                      borderColor: "rgba(212,175,55,0.2)",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(212,175,55,0.4)",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#d4af37",
-                    },
-                  },
-                  "& .MuiInputBase-input::placeholder": {
-                    color: "rgba(255,255,255,0.3)",
-                    opacity: 1,
-                  },
-                }}
-                />
-        </Box>
-
+                disabled={creating}
+                sx={{ mb: 1 }}
+              />
+            </Box>
+          </>
+        )}
       </DialogContent>
 
       <DialogActions
         sx={{
-          borderTop: "1px solid rgba(212,175,55,0.1)",
+          borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
           p: 2,
           gap: 1,
         }}
       >
         <Button
           startIcon={<CancelOutlinedIcon />}
-          
-          sx={{
-            color: "text.secondary",
-            "&:hover": { bgcolor: "rgba(255,255,255,0.05)" },
-          }}
+          onClick={handleModalClose}
+          disabled={creating}
         >
           {t("collection.bulkAddToCollectionModal.actions.cancel")}
         </Button>
 
         {figurineIds.length > 0 && (
           <Button
-            
-            sx={{
-              background: "linear-gradient(135deg, #d4af37 0%, #e6c547 100%)",
-              color: "#000",
-              fontWeight: 600,
-              "&:hover": {
-                background: "linear-gradient(135deg, #e6c547 0%, #d4af37 100%)",
-              },
-              "&:disabled": {
-                opacity: 0.7,
-              },
-            }}
+            onClick={handleCreateAndAdd}
+            disabled={creating || !newCollectionName.trim()}
+            variant="contained"
+            color="primary"
+            startIcon={creating ? <CircularProgress size={20} /> : <AddIcon />}
           >
-            {t("collection.bulkAddToCollectionModal.actions.create", { count: 2 })}
+            {creating ? t("collection.bulkAddToCollectionModal.actions.creating") :
+                createFromSelected ? t("collection.bulkAddToCollectionModal.actions.createCollection") :
+                    t("collection.bulkAddToCollectionModal.actions.create", { count: selectedCount })}
           </Button>
         )}
-        
+
+        {selectedCollections.size > 0 && (
+          <Button
+            onClick={handleAddToSelected}
+            disabled={creating}
+            variant="contained"
+            color="secondary"
+            startIcon={creating ? <CircularProgress size={20} /> : <FavoriteIcon />}
+          >
+            {creating ? t("collection.bulkAddToCollectionModal.actions.adding") : t("collection.bulkAddToCollectionModal.actions.add", { count: selectedCount })}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );
