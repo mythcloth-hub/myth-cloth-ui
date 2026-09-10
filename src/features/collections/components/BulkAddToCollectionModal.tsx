@@ -31,17 +31,21 @@ import type { Collection } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 interface BulkAddToCollectionModalProps {
+  sourceDetail: boolean;
   open: boolean;
   onClose: () => void;
   figurineIds: number[];
+  figurineName?: string;
   selectedCount: number;
   onSuccess?: () => void;
 }
 
 export default function BulkAddToCollectionModal({
+  sourceDetail,
   open,
   onClose,
   figurineIds,
+  figurineName,
   selectedCount,
   onSuccess,
 }: BulkAddToCollectionModalProps) {
@@ -191,20 +195,20 @@ export default function BulkAddToCollectionModal({
           borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
         }}
       >
-        💫 {t("collection.bulkAddToCollectionModal.title", { count: selectedCount })}
+        💫 {sourceDetail ? t("collection.bulkAddToCollectionModal.titleSingle") : t("collection.bulkAddToCollectionModal.title", { count: selectedCount })}
       </DialogTitle>
 
       <DialogContent sx={{ pt: 2 }}>
         {/* Error messages */}
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" sx={{ mb: 2, mt: 2 }}>
             {error}
           </Alert>
         )}
 
         {/* Success message */}
         {successMessage && (
-          <Alert severity="success" sx={{ mb: 2 }}>
+          <Alert severity="success" sx={{ mb: 2, mt: 2 }}>
             {successMessage}
           </Alert>
         )}
@@ -216,6 +220,26 @@ export default function BulkAddToCollectionModal({
           </Box>
         ) : (
           <>
+            {/* Figurine name info */}
+            {sourceDetail && figurineIds.length === 1 && (
+                <Box sx={{ mb: 2, mt: 2, p: 1.5, bgcolor: alpha(theme.palette.secondary.main, 0.08), borderRadius: 1 }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    {t("collection.bulkAddToCollectionModal.adding")}
+                  </Typography>
+                  <Typography
+                      variant="body2"
+                      sx={{
+                        color: "secondary.main",
+                        fontWeight: 600,
+                        mt: 0.5,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                  >
+                    {figurineName}
+                  </Typography>
+                </Box>
+            )}
             {/* Existing collections */}
             <Box sx={{ mb: 3 }}>
               <Typography
@@ -330,15 +354,17 @@ export default function BulkAddToCollectionModal({
                 {t("collection.bulkAddToCollectionModal.new.title")}
               </Typography>
 
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    value={createFromSelected}
-                    onChange={(e) => setCreateFromSelected(e.target.checked)}
+              {!(sourceDetail && figurineIds.length === 1) && (
+                  <FormControlLabel
+                      control={
+                        <Checkbox
+                            value={createFromSelected}
+                            onChange={(e) => setCreateFromSelected(e.target.checked)}
+                        />
+                      }
+                      label={<Typography variant="body2">{t("collection.bulkAddToCollectionModal.new.createFromSelected")}</Typography>}
                   />
-                }
-                label={<Typography variant="body2">{t("collection.bulkAddToCollectionModal.new.createFromSelected")}</Typography>}
-              />
+              )}
 
               <TextField
                 fullWidth

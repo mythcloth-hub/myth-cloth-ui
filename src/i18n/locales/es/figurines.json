@@ -97,9 +97,11 @@
       "or": "o",
       "title_one": "Añadir {{count}} figura a la colección",
       "title_other": "Añadir {{count}} figuras a la colección",
+      "titleSingle": "Añadir a la colección",
       "selected": "Figuras Seleccionadas:",
       "totalSelected_one": "{{count}} figura",
       "totalSelected_other": "{{count}} figuras",
+      "adding": "Añadiendo:",
       "existing": {
         "title": "Tus Colecciones",
         "noCollections": "Aún no tienes colecciones. ¡Crea una a continuación!",

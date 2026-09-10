@@ -56,6 +56,7 @@ import AnniversaryIcon from "./AnniversaryIcon";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
 import AddToCollectionModal from "../../collections/components/AddToCollectionModal";
+import BulkAddToCollectionModal from "../../collections/components/BulkAddToCollectionModal";
 import { getCollections } from "../../collections/api/collectionApi";
 import AppPageHeader from "../../../components/AppPageHeader";
 
@@ -2106,41 +2107,42 @@ export default function FigurineDetailPage() {
       </Snackbar>
 
       {figurine && (
-        <AddToCollectionModal
-          open={addToCollectionOpen}
-          onClose={() => setAddToCollectionOpen(false)}
-          figurineId={figurine.id}
-          figurineName={figurine.displayableName}
-          onSuccess={async () => {
-            setAddSuccess(true);
-            setAddToCollectionOpen(false);
-
-            if (!selectedCollectionContext) {
-              return;
-            }
-
-            try {
-              const collections = await getCollections();
-              const refreshedSelectedCollection = collections.find(
-                (collection) => collection.id === selectedCollectionContext.id
-              );
-
-              if (!refreshedSelectedCollection) {
+        <BulkAddToCollectionModal
+            sourceDetail={true}
+            open={addToCollectionOpen}
+            onClose={() => setAddToCollectionOpen(false)}
+            figurineIds={Array.from([figurine.id])}
+            figurineName={figurine.displayableName}
+            selectedCount={1}
+            onSuccess={async () => {
+              setAddSuccess(true);
+              setAddToCollectionOpen(false);
+              if (!selectedCollectionContext) {
                 return;
               }
 
-              const updatedContext: SelectedCollectionContext = {
-                id: refreshedSelectedCollection.id,
-                name: refreshedSelectedCollection.name,
-                figurineIds: refreshedSelectedCollection.figurineIds ?? [],
-              };
+              try {
+                const collections = await getCollections();
+                const refreshedSelectedCollection = collections.find(
+                    (collection) => collection.id === selectedCollectionContext.id
+                );
 
-              setSelectedCollectionContext(updatedContext);
-              sessionStorage.setItem("figurineSelectedCollectionContext", JSON.stringify(updatedContext));
-            } catch {
-              // Keep current UI state if a background refresh fails.
-            }
-          }}
+                if (!refreshedSelectedCollection) {
+                  return;
+                }
+
+                const updatedContext: SelectedCollectionContext = {
+                  id: refreshedSelectedCollection.id,
+                  name: refreshedSelectedCollection.name,
+                  figurineIds: refreshedSelectedCollection.figurineIds ?? [],
+                };
+
+                setSelectedCollectionContext(updatedContext);
+                sessionStorage.setItem("figurineSelectedCollectionContext", JSON.stringify(updatedContext));
+              } catch {
+                // Keep current UI state if a background refresh fails.
+              }
+            }}
         />
       )}
     </Box>

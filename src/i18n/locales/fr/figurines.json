@@ -97,9 +97,11 @@
       "or": "ou",
       "title_one": "Ajouter {{count}} figurine à la Collection",
       "title_other": "Ajouter {{count}} figurines à la Collection",
+      "titleSingle": "Ajouter à la Collection",
       "selected": "Figurines Sélectionnées :",
       "totalSelected_one": "{{count}} figurine",
       "totalSelected_other": "{{count}} figurines",
+      "adding": "Ajout :",
       "existing": {
         "title": "Vos Collections",
         "noCollections": "Aucune collection pour le moment. Créez-en une ci-dessous !",

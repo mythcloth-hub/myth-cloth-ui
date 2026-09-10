@@ -1555,6 +1555,7 @@ export default function FigurineCollectionPage() {
 
       {/* Bulk add to collection modal - adds all selected figurines */}
       <BulkAddToCollectionModal
+        sourceDetail={false}
         open={bulkAddModalOpen}
         onClose={() => setBulkAddModalOpen(false)}
         figurineIds={Array.from(bulkSelection.selectedIds)}
