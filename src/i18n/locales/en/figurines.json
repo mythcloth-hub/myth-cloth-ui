@@ -84,8 +84,6 @@
   },
   "collection": {
     "viewing": "Viewing {{collection}}",
-    "totalOwned_one": "{{count}} figurine owned in this collection",
-    "totalOwned_other": "{{count}} figurines owned in this collection",
     "totalSelected_one": "{{count}} figurine selected",
     "totalSelected_other": "{{count}} figurines selected",
     "selectThisPage": "This page ({{count}})",

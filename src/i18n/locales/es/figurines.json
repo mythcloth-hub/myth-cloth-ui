@@ -84,8 +84,6 @@
   },
   "collection": {
     "viewing": "Viendo {{collection}}",
-    "totalOwned_one": "{{count}} figura en esta colección",
-    "totalOwned_other": "{{count}} figuras en esta colección",
     "totalSelected_one": "{{count}} figura seleccionada",
     "totalSelected_other": "{{count}} figuras seleccionadas",
     "selectThisPage": "Esta página ({{count}})",
