@@ -3,13 +3,10 @@ export interface Collection {
   name: string;
   imageUrl?: string;
   description?: string;
-  figurineIds: number[];
+  isFavorite?: boolean;
   collectedFigurines: number;
   totalFigurines: number;
-  isPublic?: boolean;
-  isFavorite?: boolean;
-  createdAt: string;
-  updatedAt: string;
+  figurineIds: number[];
 }
 
 export interface CreateCollectionRequest {
@@ -20,7 +17,8 @@ export interface CreateCollectionRequest {
 }
 
 export interface UpdateCollectionRequest {
-  name?: string;
+  subCollection?: boolean;
+  name: string;
   description?: string;
   imageUrl?: string;
   figurineIds?: number[];

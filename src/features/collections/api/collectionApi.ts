@@ -110,18 +110,10 @@ function normalizeCollection(collection: Partial<Collection>): Collection {
     name: collection.name ?? "",
     imageUrl: typeof collection.imageUrl === "string" ? collection.imageUrl : undefined,
     description: collection.description,
-    figurineIds: Array.isArray(collection.figurineIds) ? collection.figurineIds : [],
-    collectedFigurines: collection.collectedFigurines ?? 0,
-    totalFigurines:
-      typeof collection.totalFigurines === "number"
-        ? collection.totalFigurines
-        : Array.isArray(collection.figurineIds)
-          ? collection.figurineIds.length
-          : 0,
-    isPublic: collection.isPublic,
     isFavorite: collection.isFavorite ?? false,
-    createdAt: collection.createdAt ?? "",
-    updatedAt: collection.updatedAt ?? "",
+    collectedFigurines: collection.collectedFigurines ?? 0,
+    totalFigurines: collection.totalFigurines ?? 0,
+    figurineIds: Array.isArray(collection.figurineIds) ? collection.figurineIds : [],
   };
 }
 
