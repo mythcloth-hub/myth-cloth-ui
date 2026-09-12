@@ -271,11 +271,12 @@ export default function CollectionDetailPage() {
       const data = initialCollection ?? {
         id: Number.isNaN(collectionId) ? -1 : collectionId,
         name: `Collection ${id}`,
+        imageUrl: undefined,
         description: undefined,
-        figurineIds: [],
+        isFavorite: undefined,
+        collectedFigurines: 0,
         totalFigurines: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        figurineIds: [],
       };
 
       setCollection(data);
