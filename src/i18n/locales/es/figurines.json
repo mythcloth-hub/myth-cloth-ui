@@ -132,38 +132,6 @@
       "collectionRequired": "Selecciona al menos una colección.",
       "addedSuccessful_one": "¡Se ha añadido {{count}} figura a la colección {{collection}}!",
       "addedSuccessful_other": "¡Se han añadido {{count}} figuras a la colección {{collection}}!"
-    },
-    "addToCollectionModal": {
-      "title": "Añadir a la colección",
-      "adding": "Añadiendo:",
-      "existing": {
-        "title": "Tus Colecciones",
-        "noCollections": "Aún no tienes colecciones. ¡Crea una a continuación!",
-        "figurinesPerCollection_one": "{{count}} figura",
-        "figurinesPerCollection_other": "{{count}} figuras"
-      },
-      "new": {
-        "title": "Crear Nueva Colección",
-        "name": {
-          "label": "Nombre de la colección",
-          "required": "El nombre de la colección es obligatorio.",
-          "duplicate": "La colección \"{{name}}\" ya existe. Elige otro nombre."
-        },
-        "imageUrlLabel": "URL de la imagen de tu colección (opcional)",
-        "descriptionLabel": "Descripción (opcional)"
-      },
-      "actions": {
-        "cancel": "Cancelar",
-        "creating": "Creando...",
-        "create": "Crear y Añadir",
-        "adding": "Añadiendo...",
-        "add_one": "Añadir a {{count}} colección",
-        "add_other": "Añadir a {{count}} colecciones"
-      },
-      "createdAndAddedSuccessful": "¡Se ha creado \"{{collection}}\" y se ha añadido \"{{figurine}}\"!",
-      "collectionRequired": "Selecciona al menos una colección.",
-      "addedSuccessful_one": "¡Se ha añadido \"{{name}}\" a {{count}} colección!",
-      "addedSuccessful_other": "¡Se ha añadido \"{{name}}\" a {{count}} colecciones!"
     }
   },
   "details": {
