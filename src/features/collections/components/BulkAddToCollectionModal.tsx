@@ -2,24 +2,25 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Box,
-  Typography,
-  CircularProgress,
   Alert,
+  Box,
+  Button,
+  Checkbox,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  FormControlLabel,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Checkbox,
-  Divider,
-  Chip,
   Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
@@ -30,17 +31,21 @@ import type { Collection } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 
 interface BulkAddToCollectionModalProps {
+  sourceDetail: boolean;
   open: boolean;
   onClose: () => void;
   figurineIds: number[];
+  figurineName?: string;
   selectedCount: number;
   onSuccess?: () => void;
 }
 
 export default function BulkAddToCollectionModal({
+  sourceDetail,
   open,
   onClose,
   figurineIds,
+  figurineName,
   selectedCount,
   onSuccess,
 }: BulkAddToCollectionModalProps) {
@@ -52,8 +57,7 @@ export default function BulkAddToCollectionModal({
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
-  const [newCollectionImageUrl, setNewCollectionImageUrl] = useState("");
-  const [newCollectionDesc, setNewCollectionDesc] = useState("");
+  const [createFromSelected, setCreateFromSelected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -107,16 +111,16 @@ export default function BulkAddToCollectionModal({
         figurineIds,
         collectionMode: "CREATE",
         collection: {
+          subCollection: createFromSelected,
           name: collectionName,
-          imageUrl: newCollectionImageUrl.trim() || undefined,
-          description: newCollectionDesc.trim() || undefined,
+          imageUrl: undefined,
+          description: undefined,
         },
       });
 
       setSuccessMessage(`✨ ${t("collection.bulkAddToCollectionModal.createdAndAddedSuccessful", { name: collectionName, count: selectedCount })}`);
       setNewCollectionName("");
-      setNewCollectionImageUrl("");
-      setNewCollectionDesc("");
+      setCreateFromSelected(false);
 
       // Close after brief delay to show success
       setTimeout(() => {
@@ -177,7 +181,7 @@ export default function BulkAddToCollectionModal({
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: 2,
+          borderRadius: 1,
         },
       }}
     >
@@ -191,37 +195,20 @@ export default function BulkAddToCollectionModal({
           borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
         }}
       >
-        💫 {t("collection.bulkAddToCollectionModal.title", { count: selectedCount })}
+        💫 {sourceDetail ? t("collection.bulkAddToCollectionModal.titleSingle") : t("collection.bulkAddToCollectionModal.title", { count: selectedCount })}
       </DialogTitle>
 
       <DialogContent sx={{ pt: 2 }}>
-        {/* Selected count info */}
-        <Box sx={{ mb: 2, p: 1.5, bgcolor: alpha(theme.palette.secondary.main, 0.08), borderRadius: 1 }}>
-          <Typography variant="caption" sx={{ color: "text.secondary" }}>
-            {t("collection.bulkAddToCollectionModal.selected")}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: "secondary.main",
-              fontWeight: 600,
-              mt: 0.5,
-            }}
-          >
-            {t("collection.bulkAddToCollectionModal.totalSelected", { count: selectedCount })}
-          </Typography>
-        </Box>
-
         {/* Error messages */}
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" sx={{ mb: 2, mt: 2 }}>
             {error}
           </Alert>
         )}
 
         {/* Success message */}
         {successMessage && (
-          <Alert severity="success" sx={{ mb: 2 }}>
+          <Alert severity="success" sx={{ mb: 2, mt: 2 }}>
             {successMessage}
           </Alert>
         )}
@@ -233,11 +220,31 @@ export default function BulkAddToCollectionModal({
           </Box>
         ) : (
           <>
+            {/* Figurine name info */}
+            {sourceDetail && figurineIds.length === 1 && (
+                <Box sx={{ mb: 2, mt: 2, p: 1.5, bgcolor: alpha(theme.palette.secondary.main, 0.08), borderRadius: 1 }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    {t("collection.bulkAddToCollectionModal.adding")}
+                  </Typography>
+                  <Typography
+                      variant="body2"
+                      sx={{
+                        color: "secondary.main",
+                        fontWeight: 600,
+                        mt: 0.5,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                  >
+                    {figurineName}
+                  </Typography>
+                </Box>
+            )}
             {/* Existing collections */}
             <Box sx={{ mb: 3 }}>
               <Typography
                 variant="subtitle2"
-                sx={{ color: "primary.main", fontWeight: 600, mb: 1 }}
+                sx={{ color: "primary.main", fontWeight: 600, mb: 1, mt: 1 }}
               >
                 {t("collection.bulkAddToCollectionModal.existing.title")}
               </Typography>
@@ -303,7 +310,10 @@ export default function BulkAddToCollectionModal({
                                   </Typography>
                                 )}
                                 <Chip
-                                  label={`${t("collection.bulkAddToCollectionModal.existing.figurinesPerCollection", { count: collection.totalFigurines })}`}
+                                  label={`${t("collection.bulkAddToCollectionModal.existing.figurinesPerCollection", 
+                                      { owned: collection.collectedFigurines, 
+                                        count: collection.totalFigurines 
+                                      })}`}
                                   size="small"
                                   sx={{
                                     height: 20,
@@ -329,9 +339,12 @@ export default function BulkAddToCollectionModal({
               )}
             </Box>
 
+            <Divider sx={{ "&::before, &::after": { borderColor: "rgba(255,255,255,0.08)" } }}>
+              <Typography variant="body2" color="text.secondary">
+                {t("collection.bulkAddToCollectionModal.or")}
+              </Typography>
+            </Divider>
             {/* Create new collection section */}
-            <Divider sx={{ my: 2, opacity: 0.1 }} />
-
             <Box sx={{ mb: 2 }}>
               <Typography
                 variant="subtitle2"
@@ -341,6 +354,18 @@ export default function BulkAddToCollectionModal({
                 {t("collection.bulkAddToCollectionModal.new.title")}
               </Typography>
 
+              {!(sourceDetail && figurineIds.length === 1) && (
+                  <FormControlLabel
+                      control={
+                        <Checkbox
+                            value={createFromSelected}
+                            onChange={(e) => setCreateFromSelected(e.target.checked)}
+                        />
+                      }
+                      label={<Typography variant="body2">{t("collection.bulkAddToCollectionModal.new.createFromSelected")}</Typography>}
+                  />
+              )}
+
               <TextField
                 fullWidth
                 label={t("collection.bulkAddToCollectionModal.new.name.label")}
@@ -349,27 +374,6 @@ export default function BulkAddToCollectionModal({
                 size="small"
                 disabled={creating}
                 sx={{ mb: 1 }}
-              />
-
-              <TextField
-                fullWidth
-                label={t("collection.bulkAddToCollectionModal.new.imageUrlLabel")}
-                value={newCollectionImageUrl}
-                onChange={(e) => setNewCollectionImageUrl(e.target.value)}
-                size="small"
-                disabled={creating}
-                sx={{ mb: 1 }}
-              />
-
-              <TextField
-                fullWidth
-                label={t("collection.bulkAddToCollectionModal.new.descriptionLabel")}
-                value={newCollectionDesc}
-                onChange={(e) => setNewCollectionDesc(e.target.value)}
-                size="small"
-                multiline
-                rows={2}
-                disabled={creating}
               />
             </Box>
           </>
@@ -399,7 +403,9 @@ export default function BulkAddToCollectionModal({
             color="primary"
             startIcon={creating ? <CircularProgress size={20} /> : <AddIcon />}
           >
-            {creating ? t("collection.bulkAddToCollectionModal.actions.creating") : t("collection.bulkAddToCollectionModal.actions.create", { count: selectedCount })}
+            {creating ? t("collection.bulkAddToCollectionModal.actions.creating") :
+                createFromSelected ? t("collection.bulkAddToCollectionModal.actions.createCollection") :
+                    t("collection.bulkAddToCollectionModal.actions.create", { count: selectedCount })}
           </Button>
         )}
 
@@ -411,7 +417,7 @@ export default function BulkAddToCollectionModal({
             color="secondary"
             startIcon={creating ? <CircularProgress size={20} /> : <FavoriteIcon />}
           >
-            {creating ? t("collection.bulkAddToCollectionModal.actions.adding") : t("collection.bulkAddToCollectionModal.actions.add", { count: selectedCollections.size })}
+            {creating ? t("collection.bulkAddToCollectionModal.actions.adding") : t("collection.bulkAddToCollectionModal.actions.add", { count: selectedCount })}
           </Button>
         )}
       </DialogActions>

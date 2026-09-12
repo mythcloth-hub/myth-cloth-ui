@@ -63,6 +63,10 @@ type FigurineHistoricalPricingRequestParams = {
   storeId?: number;
 };
 
+type FigurineDetailRequestParams = {
+  collectionId?: string;
+};
+
 const buildFigurineQueryParams = (
   page?: number,
   size?: number,
@@ -91,6 +95,7 @@ const buildFigurineQueryParams = (
   if (params?.articulable !== undefined) queryParams.articulable = params.articulable;
   if (params?.restocks !== undefined) queryParams.restocks = params.restocks;
   if (params?.collectionId) queryParams.collectionId = params.collectionId;
+  if (params?.owned !== undefined) queryParams.owned = params.owned;
 
   return queryParams;
 };
@@ -153,8 +158,10 @@ export const getSelectableFigurineIds = async (params?: FigurineFilters): Promis
   return [];
 };
 
-export const getFigurineById = async (id: number): Promise<Figurine> => {
-  const res = await httpClient.get(`${BASE}/${id}`);
+export const getFigurineById = async (id: number, params?: FigurineDetailRequestParams): Promise<Figurine> => {
+  const res = await httpClient.get(`${BASE}/${id}`, {
+    params: params?.collectionId ? { collectionId: params.collectionId } : undefined,
+  });
   return res.data;
 };
 

@@ -55,7 +55,7 @@ import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import AnniversaryIcon from "./AnniversaryIcon";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
-import AddToCollectionModal from "../../collections/components/AddToCollectionModal";
+import BulkAddToCollectionModal from "../../collections/components/BulkAddToCollectionModal";
 import { getCollections } from "../../collections/api/collectionApi";
 import AppPageHeader from "../../../components/AppPageHeader";
 
@@ -216,9 +216,9 @@ export default function FigurineDetailPage() {
   const prevId = currentIndex > 0 ? navList[currentIndex - 1] : null;
   const nextId = currentIndex !== -1 && currentIndex < navList.length - 1 ? navList[currentIndex + 1] : null;
   const collectionSearch = sessionStorage.getItem("figurineCollectionSearch");
-  const figurineId = Number(id);
+  const selectedCollectionId = selectedCollectionContext ? String(selectedCollectionContext.id) : undefined;
   const isInSelectedCollection = selectedCollectionContext
-    ? selectedCollectionContext.figurineIds.includes(figurineId)
+    ? figurine?.isCollected ?? null
     : null;
 
   useEffect(() => {
@@ -240,7 +240,7 @@ export default function FigurineDetailPage() {
     setAverageRealtimePriceLoading(true);
     setAverageRealtimePriceError(null);
 
-    getFigurineById(Number(id))
+    getFigurineById(Number(id), { collectionId: selectedCollectionId })
       .then((data) => {
         setFigurine(data);
         setSelectedImage(0);
@@ -269,7 +269,7 @@ export default function FigurineDetailPage() {
         setAverageRealtimePriceError("Live average price is not available right now.");
       })
       .finally(() => setAverageRealtimePriceLoading(false));
-  }, [canReadCurrentPrices, id, selectedCurrency]);
+  }, [canReadCurrentPrices, id, selectedCurrency, selectedCollectionId]);
 
   const hasRealtimeAveragePrice = averageRealtimePrice !== null && averageRealtimePrice > 0;
 
@@ -2106,41 +2106,42 @@ export default function FigurineDetailPage() {
       </Snackbar>
 
       {figurine && (
-        <AddToCollectionModal
-          open={addToCollectionOpen}
-          onClose={() => setAddToCollectionOpen(false)}
-          figurineId={figurine.id}
-          figurineName={figurine.displayableName}
-          onSuccess={async () => {
-            setAddSuccess(true);
-            setAddToCollectionOpen(false);
-
-            if (!selectedCollectionContext) {
-              return;
-            }
-
-            try {
-              const collections = await getCollections();
-              const refreshedSelectedCollection = collections.find(
-                (collection) => collection.id === selectedCollectionContext.id
-              );
-
-              if (!refreshedSelectedCollection) {
+        <BulkAddToCollectionModal
+            sourceDetail={true}
+            open={addToCollectionOpen}
+            onClose={() => setAddToCollectionOpen(false)}
+            figurineIds={Array.from([figurine.id])}
+            figurineName={figurine.displayableName}
+            selectedCount={1}
+            onSuccess={async () => {
+              setAddSuccess(true);
+              setAddToCollectionOpen(false);
+              if (!selectedCollectionContext) {
                 return;
               }
 
-              const updatedContext: SelectedCollectionContext = {
-                id: refreshedSelectedCollection.id,
-                name: refreshedSelectedCollection.name,
-                figurineIds: refreshedSelectedCollection.figurineIds ?? [],
-              };
+              try {
+                const collections = await getCollections();
+                const refreshedSelectedCollection = collections.find(
+                    (collection) => collection.id === selectedCollectionContext.id
+                );
 
-              setSelectedCollectionContext(updatedContext);
-              sessionStorage.setItem("figurineSelectedCollectionContext", JSON.stringify(updatedContext));
-            } catch {
-              // Keep current UI state if a background refresh fails.
-            }
-          }}
+                if (!refreshedSelectedCollection) {
+                  return;
+                }
+
+                const updatedContext: SelectedCollectionContext = {
+                  id: refreshedSelectedCollection.id,
+                  name: refreshedSelectedCollection.name,
+                  figurineIds: refreshedSelectedCollection.figurineIds ?? [],
+                };
+
+                setSelectedCollectionContext(updatedContext);
+                sessionStorage.setItem("figurineSelectedCollectionContext", JSON.stringify(updatedContext));
+              } catch {
+                // Keep current UI state if a background refresh fails.
+              }
+            }}
         />
       )}
     </Box>

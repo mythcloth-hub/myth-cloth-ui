@@ -19,14 +19,21 @@ const DEFAULT_API_ERROR_SEVERITY: ApiErrorSeverity = "error";
 
 // Configure how each backend errorCode should be displayed: message text and severity (error = red, warning = amber).
 const API_ERROR_CODE_CONFIG: Record<string, ApiErrorCodeConfig> = {
-  FIGURINE_IMPORT_ERROR: {
-    message: "There was an error while importing the figurines. Please check the data and try again.",
+  INVALID_TOKEN: {
+    message: "Your session has expired or the token is invalid. Please log in again."
   },
   COLLECTOR_NOT_FOUND: {
     message: "We couldn't find this collector. It may have been removed or is no longer available.",
   },
-  COLLECTOR_EMAIL_NOT_FOUND: {
-    message: "We couldn't find an account with that email address.",
+  COLLECTOR_COLLECTION_NOT_FOUND: {
+    message: "We couldn't find this collection. It may have been removed or is no longer available.",
+  },
+  COLLECTOR_COLLECTION_ALREADY_EXISTS: {
+    message: "This collection already exists.",
+    severity: "warning",
+  },
+  COLLECTOR_PURCHASE_NOT_FOUND: {
+    message: "We couldn't find this purchase. It may have been removed or is no longer available.",
   },
   COLLECTOR_EMAIL_ALREADY_EXISTS: {
     message: "That email address is already registered.",
@@ -35,19 +42,72 @@ const API_ERROR_CODE_CONFIG: Record<string, ApiErrorCodeConfig> = {
   COLLECTOR_INVALID_EMAIL_OR_PASSWORD: {
     message: "Invalid email or password. Please try again.",
   },
-  FIGURINE_NOT_FOUND: {
-    message: "We couldn't find this figurine. It may have been removed or is no longer available.",
-  },
-  CATALOG_NOT_FOUND: {
-    message: "We couldn't find this catalog item. It may have been removed or is no longer available.",
+  COLLECTOR_EMAIL_NOT_FOUND: {
+    message: "We couldn't find an account with that email address.",
   },
   COLLECTOR_COLLECTION_LIMIT_REACHED: {
     message: "You have reached the maximum number of collections allowed.",
     severity: "warning",
   },
+  FIGURINE_NOT_FOUND: {
+    message: "We couldn't find this figurine. It may have been removed or is no longer available.",
+  },
+  FIGURINE_EVENT_NOT_FOUND: {
+    message: "We couldn't find this figurine event. It may have been removed or is no longer available.",
+  },
+  FIGURINE_IMAGE_NOT_FOUND: {
+    message: "We couldn't find this figurine image. It may have been removed or is no longer available.",
+  },
+  FIGURINE_IMAGE_ALREADY_EXISTS: {
+    message: "This figurine image already exists.",
+    severity: "warning",
+  },
+  FIGURINE_ANNIVERSARY_NOT_FOUND: {
+    message: "We couldn't find this figurine anniversary. It may have been removed or is no longer available.",
+  },
+  FIGURINE_IMPORT_ERROR: {
+    message: "There was an error while importing the figurines. Please check the data and try again.",
+  },
+  CATALOG_NOT_FOUND: {
+    message: "We couldn't find this catalog item. It may have been removed or is no longer available.",
+  },
+  CATALOG_REPOSITORY_NOT_FOUND: {
+    message: "We couldn't find this catalog repository. It may have been removed or is no longer available.",
+  },
+  DISTRIBUTOR_NOT_FOUND: {
+    message: "We couldn't find this distributor. It may have been removed or is no longer available.",
+  },
+  DISTRIBUTOR_ALREADY_EXISTS: {
+    message: "This distributor already exists.",
+    severity: "warning",
+  },
+  PERMISSION_NOT_FOUND: {
+    message: "We couldn't find this permission. It may have been removed or is no longer available.",
+  },
+  PERMISSION_ALREADY_EXISTS: {
+    message: "This permission already exists.",
+    severity: "warning",
+  },
+  ROLE_NOT_FOUND: {
+    message: "We couldn't find this role. It may have been removed or is no longer available.",
+  },
+  ROLE_ALREADY_EXISTS: {
+    message: "This role already exists.",
+    severity: "warning",
+  },
+  ROLE_PERMISSION_ALREADY_EXISTS: {
+    message: "This role permission already exists.",
+    severity: "warning",
+  },
+  STORE_NOT_FOUND: {
+    message: "We couldn't find this store. It may have been removed or is no longer available.",
+  },
+  RESOURCE_NOT_FOUND: {
+    message: "The requested resource could not be found. It may have been removed or is no longer available.",
+  },
   UNEXPECTED_ERROR: {
     message: "An unexpected error occurred. Please try again later.",
-  },
+  }
 };
 
 const actionFallbackByType: Record<ApiAction, string> = {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -9,19 +10,18 @@ import {
   CardMedia,
   CircularProgress,
   Collapse,
-  Grid,
-  Typography,
-  Alert,
-  Snackbar,
-  IconButton,
-  Menu,
-  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Grid,
+  IconButton,
+  Menu,
+  MenuItem,
+  Snackbar,
   TextField,
   Tooltip,
+  Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
@@ -126,7 +126,7 @@ export default function CollectionsListPage() {
     try {
       const data = await getCollections();
       setCollections(data);
-      void loadCollectionSummaries(data);
+      await loadCollectionSummaries(data);
     } catch (err) {
       const { message, severity } = getApiErrorDetails(err, { action: "load", resource: "collections" });
       setError(message);
@@ -251,6 +251,7 @@ export default function CollectionsListPage() {
     setError(null);
     try {
       const updated = await updateCollection(selectedCollection.id, {
+        subCollection: false, // It's ok to hardcode this since the API will ignore it if the collection is a sub-collection
         name: nextName,
         imageUrl: editImageUrl.trim() || undefined,
         description: editDescription.trim() || undefined,

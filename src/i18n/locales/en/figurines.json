@@ -84,8 +84,6 @@
   },
   "collection": {
     "viewing": "Viewing {{collection}}",
-    "totalOwned_one": "{{count}} figurine owned in this collection",
-    "totalOwned_other": "{{count}} figurines owned in this collection",
     "totalSelected_one": "{{count}} figurine selected",
     "totalSelected_other": "{{count}} figurines selected",
     "selectThisPage": "This page ({{count}})",
@@ -94,19 +92,23 @@
     "clearSelection": "Clear",
     "addToCollection": "Add to Collection",
     "bulkAddToCollectionModal": {
+      "or": "or",
       "title_one": "Add {{count}} figurine to Collection",
       "title_other": "Add {{count}} figurines to Collection",
+      "titleSingle": "Add to Collection",
       "selected": "Selected Figurines:",
       "totalSelected_one": "{{count}} figurine",
       "totalSelected_other": "{{count}} figurines",
+      "adding": "Adding:",
       "existing": {
         "title": "Your Collections",
         "noCollections": "No collections yet. Create one below!",
-        "figurinesPerCollection_one": "{{count}} figurine",
-        "figurinesPerCollection_other": "{{count}} figurines"
+        "figurinesPerCollection_one": "{{owned}} out of {{count}} figurine",
+        "figurinesPerCollection_other": "{{owned}} out of {{count}} figurines"
       },
       "new": {
         "title": "Create New Collection",
+        "createFromSelected": "Create collection only from selected figurines",
         "name": {
           "label": "Collection name",
           "required": "Collection name is required."
@@ -116,6 +118,7 @@
       },
       "actions": {
         "cancel": "Cancel",
+        "createCollection": "Create Collection",
         "creating": "Creating...",
         "create_one": "Create and Add {{count}} figurine",
         "create_other": "Create and Add {{count}} figurines",
@@ -129,38 +132,6 @@
       "collectionRequired": "Please select at least one collection",
       "addedSuccessful_one": "Added {{count}} figurine to {{collection}} collection!",
       "addedSuccessful_other": "Added {{count}} figurine to {{collection}} collections!"
-    },
-    "addToCollectionModal": {
-      "title": "Add to Collection",
-      "adding": "Adding:",
-      "existing": {
-        "title": "Your Collections",
-        "noCollections": "No collections yet. Create one below!",
-        "figurinesPerCollection_one": "{{count}} figurine",
-        "figurinesPerCollection_other": "{{count}} figurines"
-      },
-      "new": {
-        "title": "Create New Collection",
-        "name": {
-          "label": "Collection name",
-          "required": "Collection name is required.",
-          "duplicate": "Collection \"{{name}}\" already exists. Please choose a different name."
-        },
-        "imageUrlLabel": "Your collection image URL (optional)",
-        "descriptionLabel": "Description (optional)"
-      },
-      "actions": {
-        "cancel": "Cancel",
-        "creating": "Creating...",
-        "create": "Create and Add",
-        "adding": "Adding...",
-        "add_one": "Add to {{count}} collection",
-        "add_other": "Add to {{count}} collections"
-      },
-      "createdAndAddedSuccessful": "Created \"{{collection}}\" and added \"{{figurine}}\"!",
-      "collectionRequired": "Please select at least one collection",
-      "addedSuccessful_one": "Added \"{{name}}\" to {{count}} collection!",
-      "addedSuccessful_other": "Added \"{{name}}\" to {{count}} collections!"
     }
   },
   "details": {

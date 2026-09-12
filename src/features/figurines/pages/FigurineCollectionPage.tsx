@@ -641,8 +641,9 @@ export default function FigurineCollectionPage() {
     if (multiPack) params.set = multiPack;
     if (articulable) params.articulable = articulable;
     if (restocks) params.restocks = restocks;
-    if (showOwnedOnly && selectedCollectionId && isAuthenticated) {
+    if (selectedCollectionId && isAuthenticated) {
       params.collectionId = selectedCollectionId;
+      params.owned = showOwnedOnly ? "true" : "false";
     }
 
     return params;
@@ -783,11 +784,6 @@ export default function FigurineCollectionPage() {
   const selectedCollection = useMemo(
     () => collections.find((collection) => String(collection.id) === selectedCollectionId) ?? null,
     [collections, selectedCollectionId]
-  );
-
-  const selectedCollectionFigurineIds = useMemo(
-    () => new Set(selectedCollection?.figurineIds ?? []),
-    [selectedCollection]
   );
 
   useEffect(() => {
@@ -1237,11 +1233,6 @@ export default function FigurineCollectionPage() {
               label={t("collection.viewing", { collection: selectedCollection.name })}
               onDelete={() => setSelectedCollectionId("")}
             />
-            <Chip
-              size="small"
-              variant="outlined"
-              label={t("collection.totalOwned", { count: selectedCollection.totalFigurines })}
-            />
           </Box>
         )}
 
@@ -1373,7 +1364,7 @@ export default function FigurineCollectionPage() {
                     >
                       <FigurineCard
                         figurine={fig}
-                        dimmed={Boolean(selectedCollection) && !selectedCollectionFigurineIds.has(fig.id)}
+                        dimmed={Boolean(selectedCollection) && fig.isCollected === false}
                         selectionEnabled={canUseBulkSelection}
                         isSelected={bulkSelection.isSelected(fig.id)}
                         onToggleSelect={bulkSelection.toggleSelect}
@@ -1555,6 +1546,7 @@ export default function FigurineCollectionPage() {
 
       {/* Bulk add to collection modal - adds all selected figurines */}
       <BulkAddToCollectionModal
+        sourceDetail={false}
         open={bulkAddModalOpen}
         onClose={() => setBulkAddModalOpen(false)}
         figurineIds={Array.from(bulkSelection.selectedIds)}

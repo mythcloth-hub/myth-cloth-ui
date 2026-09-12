@@ -3,12 +3,10 @@ export interface Collection {
   name: string;
   imageUrl?: string;
   description?: string;
-  figurineIds: number[];
-  totalFigurines: number;
-  isPublic?: boolean;
   isFavorite?: boolean;
-  createdAt: string;
-  updatedAt: string;
+  collectedFigurines: number;
+  totalFigurines: number;
+  figurineIds: number[];
 }
 
 export interface CreateCollectionRequest {
@@ -19,7 +17,8 @@ export interface CreateCollectionRequest {
 }
 
 export interface UpdateCollectionRequest {
-  name?: string;
+  subCollection?: boolean;
+  name: string;
   description?: string;
   imageUrl?: string;
   figurineIds?: number[];
@@ -34,6 +33,7 @@ export interface AssignFigurinesRequest {
   collectionMode: "AUTO" | "CREATE" | "EXISTING";
   collectionIds?: number[];
   collection?: {
+    subCollection: boolean;
     name: string;
     description?: string;
     imageUrl?: string;

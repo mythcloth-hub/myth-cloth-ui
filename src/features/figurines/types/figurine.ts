@@ -68,6 +68,7 @@ export type Figurine = {
   id: number;
   name: string;
   displayableName: string;
+  isCollected?: boolean;
   tamashiiUrl?: string;
   releaseStatus: ReleaseStatus;
   anniversary?: {
@@ -127,6 +128,7 @@ export type FigurineFilters = {
   articulable?: boolean | string;
   restocks?: boolean | string;
   collectionId?: string;
+  owned?: boolean | string;
 };
 
 export type SelectableFigurineIdsResponse =

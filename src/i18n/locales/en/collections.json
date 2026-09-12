@@ -62,7 +62,6 @@
   "myCollection": {
     "favorite": "Favorite",
     "setAsFavorite": "Set as favorite",
-    "setAsFavorite": "Set as favorite",
     "totalFigurines_one": "{{count}} figurine in this collection",
     "totalFigurines_other": "{{count}} figurines in this collection",
     "progress": {
