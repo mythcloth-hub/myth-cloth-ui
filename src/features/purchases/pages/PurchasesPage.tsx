@@ -102,13 +102,13 @@ export default function PurchasesPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const toFigurineNameById = (figurines: CollectionFigurine[]): Record<number, string> =>
-    Object.fromEntries(figurines.map((figurine) => [figurine.id, figurine.displayableName]));
+    Object.fromEntries(figurines.map((figurine) => [figurine.figurineId, figurine.displayableName]));
 
   const loadBackendPurchasesForCollection = async (
     figurines: CollectionFigurine[]
   ): Promise<PurchaseRecord[]> => {
     const responses = await getPurchaseSummaryLineItems();
-    const figurineIdsInCollection = new Set(figurines.map((figurine) => figurine.id));
+    const figurineIdsInCollection = new Set(figurines.map((figurine) => figurine.figurineId));
     const figurineNameById = toFigurineNameById(figurines);
 
     return responses
@@ -204,7 +204,7 @@ export default function PurchasesPage() {
   const figurineThumbnailById = useMemo(
     () =>
       Object.fromEntries(
-        collectionFigurines.map((figurine) => [figurine.id, figurine.officialImageUrls?.[0]?.trim() || ""])
+        collectionFigurines.map((figurine) => [figurine.figurineId, figurine.officialImageUrls?.[0]?.trim() || ""])
       ),
     [collectionFigurines]
   );
