@@ -95,7 +95,7 @@
   "detail": {
     "header": {
       "eyebrow": "Collections",
-      "subtitle": "Parcourez cette collection pour suivre votre progression, consulter les figurines et gérer vos achats.",
+      "subtitle": "Parcourez cette collection pour suivre votre progression et consulter les figurines.",
       "backToCollections": "Retour aux collections"
     },
     "messages": {
@@ -103,10 +103,6 @@
       "figurineRemoved": "Figurine supprimée de la collection.",
       "figurineAdded": "Figurine ajoutée à la collection.",
       "figurineQuantityIncreased": "Quantité de figurines augmentée.",
-      "noPurchaseId": "Impossible d'identifier l'identifiant d'achat pour la mise à jour.",
-      "purchaseUpdated": "Achat mis à jour avec succès.",
-      "purchaseRecorded": "Achat enregistré avec succès.",
-      "noPurchaseRecordFound": "Aucun enregistrement d'achat trouvé pour cette figurine pour le moment.",
       "noCollectionFound": "Collection introuvable."
     },
     "progress": {
@@ -149,26 +145,6 @@
         "excluded": "Réapprovisionnements exclus — cliquez pour inclure"
       }
     },
-    "purchases": {
-      "titleEdit": "Modifier l'achat",
-      "titleNew": "Enregistrer l'achat",
-      "labelEdit": "Mettre à jour l'achat",
-      "labelNew": "Enregistrer l'achat",
-      "title": "Achats récents",
-      "description": "Les achats de figurines sont suivis séparément des quantités actuelles de la collection.",
-      "hideSummary": "Masquer le résumé",
-      "showSummary": "Afficher le résumé",
-      "open": "Ouvrir les achats",
-      "record": "Enregistrer l'achat",
-      "noRecords": "Aucun enregistrement d'achat pour le moment.",
-      "total": "Total des achats",
-      "latestOrderDate": "Date de la dernière commande",
-      "recent": "Achats récents",
-      "storeNotSpecified": "Magasin non spécifié",
-      "date": "Date :",
-      "noOrderDate": "Pas de date de commande",
-      "caption": "Accédez aux achats pour consulter et gérer l'historique complet de vos achats."
-    },
     "figurines": {
       "browse": "Parcourir les figurines",
       "dialogDelete": {
@@ -197,10 +173,7 @@
       "link": "Lien",
       "viewDetails": "Voir les détails de la figurine",
       "view": "Voir",
-      "editPurchase": "Modifier l'achat avec cette figurine",
-      "noPurchaseRecord": "Aucun enregistrement d'achat pour le moment.",
       "edit": "Modifier",
-      "createPurchase": "Créer un achat pour cette figurine",
       "new": "Nouveau",
       "removeFromCollection": "Supprimer de la collection",
       "remove": "Supprimer"

@@ -95,7 +95,7 @@
   "detail": {
     "header": {
       "eyebrow": "Colecciones",
-      "subtitle": "Explora esta colección para dar seguimiento a tu progreso, consultar tus figuras y administrar tus compras.",
+      "subtitle": "Explora esta colección para dar seguimiento a tu progreso y consultar tus figuras.",
       "backToCollections": "Volver a Colecciones"
     },
     "messages": {
@@ -103,10 +103,6 @@
       "figurineRemoved": "Figura eliminada de la colección.",
       "figurineAdded": "Figura agregada a la colección.",
       "figurineQuantityIncreased": "Cantidad de figuras aumentada.",
-      "noPurchaseId": "No se pudo identificar el ID de la compra para actualizarla.",
-      "purchaseUpdated": "Compra actualizada correctamente.",
-      "purchaseRecorded": "Compra registrada correctamente.",
-      "noPurchaseRecordFound": "Todavía no hay un registro de compra para esta figura.",
       "noCollectionFound": "No se encontró la colección."
     },
     "progress": {
@@ -149,26 +145,6 @@
         "excluded": "Relanzamientos excluidos — haz clic para incluirlos"
       }
     },
-    "purchases": {
-      "titleEdit": "Editar compra",
-      "titleNew": "Registrar compra",
-      "labelEdit": "Actualizar compra",
-      "labelNew": "Guardar compra",
-      "title": "Compras más recientes",
-      "description": "Las compras de figuras se registran por separado de las cantidades actuales de la colección.",
-      "hideSummary": "Ocultar resumen",
-      "showSummary": "Mostrar resumen",
-      "open": "Abrir compras",
-      "record": "Registrar compra",
-      "noRecords": "Todavía no hay registros de compras.",
-      "total": "Total de compras",
-      "latestOrderDate": "Fecha del último pedido",
-      "recent": "Compras recientes",
-      "storeNotSpecified": "Tienda no especificada",
-      "date": "Fecha:",
-      "noOrderDate": "Sin fecha de pedido",
-      "caption": "Accede a Compras para consultar y administrar tu historial completo de compras."
-    },
     "figurines": {
       "browse": "Explorar figuras",
       "dialogDelete": {
@@ -197,10 +173,7 @@
       "link": "Enlace",
       "viewDetails": "Ver detalles de la figura",
       "view": "Ver",
-      "editPurchase": "Editar la compra de esta figura",
-      "noPurchaseRecord": "Todavía no hay un registro de compra.",
       "edit": "Editar",
-      "createPurchase": "Crear una compra para esta figura",
       "new": "Nueva",
       "removeFromCollection": "Eliminar de la colección",
       "remove": "Eliminar"

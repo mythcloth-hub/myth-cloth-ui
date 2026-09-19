@@ -17,7 +17,6 @@ import FigurineDetailPage from "../features/figurines/pages/FigurineDetailPage";
 import FigurineFormPage from "../features/figurines/pages/FigurineFormPage";
 import CollectionsListPage from "../features/collections/pages/CollectionsListPage";
 import CollectionDetailPage from "../features/collections/pages/CollectionDetailPage";
-import PurchasesPage from "../features/purchases/pages/PurchasesPage";
 import StoreListPage from "../features/stores/pages/StoreListPage";
 import StoreFormPage from "../features/stores/pages/StoreFormPage";
 import RoleListPage from "../features/security/pages/RoleListPage";
@@ -45,7 +44,6 @@ export default function AppRoutes() {
           <Route path="/figurines/:id/edit" element={<FigurineFormPage />} />
           <Route path="/collections" element={<CollectionsListPage />} />
           <Route path="/collections/:id" element={<CollectionDetailPage />} />
-          <Route path="/purchases" element={<PurchasesPage />} />
           <Route path="/releases" element={<ReleasesPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/charts" element={<ChartsPage />} />
