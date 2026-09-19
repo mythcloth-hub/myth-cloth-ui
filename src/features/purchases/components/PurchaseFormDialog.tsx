@@ -40,7 +40,7 @@ import { countryCodeToFlag } from "../../../utils/countryFlag";
 import { type SupportedCurrency } from "../../../currency/currency";
 
 type FigurineOption = {
-  id: number;
+  figurineId: number;
   displayableName: string;
   isCollected?: boolean;
   officialImageUrls?: string[];
@@ -145,7 +145,7 @@ export default function PurchaseFormDialog({
   };
 
   const getFigurineDisplayLabel = (figurine: FigurineOption): string =>
-    `${figurine.displayableName} · #${figurine.id}`;
+    `${figurine.displayableName} · #${figurine.figurineId}`;
 
   const parseBackendValidationErrors = (
     error: unknown
@@ -349,7 +349,7 @@ export default function PurchaseFormDialog({
     );
 
     const figurineNameById = Object.fromEntries(
-      figurines.map((figurine) => [figurine.id, figurine.displayableName])
+      figurines.map((figurine) => [figurine.figurineId, figurine.displayableName])
     );
 
     setIsSubmitting(true);
@@ -581,7 +581,7 @@ export default function PurchaseFormDialog({
                   label="Figurine"
                   onChange={(event) => handleLineChange(index, "figurineId", String(event.target.value))}
                   renderValue={(selected) => {
-                    const selectedFigurine = figurines.find((figurine) => String(figurine.id) === String(selected));
+                    const selectedFigurine = figurines.find((figurine) => String(figurine.figurineId) === String(selected));
                     const thumbnailUrl = getFigurineThumbnailUrl(selectedFigurine);
 
                     if (!selectedFigurine) {
@@ -637,9 +637,9 @@ export default function PurchaseFormDialog({
 
                       return (
                         <MenuItem
-                          key={figurine.id}
-                          value={String(figurine.id)}
-                          disabled={selectedFigurineIds.has(String(figurine.id))}
+                          key={figurine.figurineId}
+                          value={String(figurine.figurineId)}
+                          disabled={selectedFigurineIds.has(String(figurine.figurineId))}
                         >
                           <Tooltip
                             arrow

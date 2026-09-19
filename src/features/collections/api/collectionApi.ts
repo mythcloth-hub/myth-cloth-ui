@@ -135,7 +135,8 @@ function normalizeCollectionFigurine(figurine: CollectionFigurineApiResponse): C
   }
 
   return {
-    id: figurine.id ?? 0,
+    collectionFigurineId: figurine.collectionFigurineId ?? 0,
+    figurineId: figurine.figurineId ?? 0,
     name: figurine.name ?? "",
     displayableName: figurine.displayableName ?? figurine.name ?? "",
     releaseStatus: figurine.releaseStatus ?? "ANNOUNCED",

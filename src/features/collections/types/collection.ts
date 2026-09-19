@@ -41,7 +41,8 @@ export interface AssignFigurinesRequest {
 }
 
 export interface CollectionFigurine {
-  id: number;
+  collectionFigurineId: number;
+  figurineId: number;
   name: string;
   displayableName: string;
   releaseStatus: "ANNOUNCED" | "RELEASED" | "RUMORED" | "PROTOTYPE" | "UNRELEASED";

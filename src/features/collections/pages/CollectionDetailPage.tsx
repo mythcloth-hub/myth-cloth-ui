@@ -173,7 +173,7 @@ export default function CollectionDetailPage() {
   const pendingRestoreUsesContainerRef = useRef(false);
 
   const toFigurineNameById = (items: AlbumFigurine[]): Record<number, string> =>
-    Object.fromEntries(items.map((item) => [item.id, item.displayableName]));
+    Object.fromEntries(items.map((item) => [item.figurineId, item.displayableName]));
 
   const loadBackendPurchasesForCollection = async (
     items: AlbumFigurine[]
@@ -181,7 +181,7 @@ export default function CollectionDetailPage() {
     if (!hasPermission("purchases:read")) return [];
 
     const responses = await getPurchaseSummaryLineItems();
-    const figurineIdsInCollection = new Set(items.map((item) => item.id));
+    const figurineIdsInCollection = new Set(items.map((item) => item.figurineId));
     const figurineNameById = toFigurineNameById(items);
 
     return responses
@@ -555,7 +555,7 @@ export default function CollectionDetailPage() {
 
   const albumSlots: AlbumSlot[] = useMemo(() => {
     return visibleFigurines.map((figurine) => ({
-      key: `owned-${figurine.id}`,
+      key: `owned-${figurine.figurineId}`,
       owned: figurine.isCollected,
       figurine,
     }));
@@ -564,13 +564,13 @@ export default function CollectionDetailPage() {
   const handleToggleFlip = (slot: AlbumSlot) => {
     if (!slot.owned || !slot.figurine) return;
 
-    setFlippedFigurineId((current) => (current === slot.figurine!.id ? null : slot.figurine!.id));
+    setFlippedFigurineId((current) => (current === slot.figurine!.figurineId ? null : slot.figurine!.figurineId));
   };
 
   useEffect(() => {
     if (!collection || flippedFigurineId == null) return;
 
-    const figurine = figurines.find((item) => item.id === flippedFigurineId);
+    const figurine = figurines.find((item) => item.figurineId === flippedFigurineId);
     if (!figurine) return;
     if (figurineBackDetails[flippedFigurineId]) return;
 
@@ -694,7 +694,7 @@ export default function CollectionDetailPage() {
     draft.lines = [
       {
         ...emptyPurchaseLine(),
-        figurineId: String(figurine.id),
+        figurineId: String(figurine.figurineId),
       },
     ];
 
@@ -705,7 +705,7 @@ export default function CollectionDetailPage() {
 
   const handleOpenEditPurchaseForFigurine = (figurine: AlbumFigurine) => {
     const relatedPurchase = purchases.find((purchase) =>
-      purchase.lines.some((line) => line.figurineId === figurine.id)
+      purchase.lines.some((line) => line.figurineId === figurine.figurineId)
     );
 
     if (!relatedPurchase) {
@@ -1356,24 +1356,24 @@ export default function CollectionDetailPage() {
           {albumSlots.map((slot, index) => {
             const pattern = ALBUM_PATTERNS[index % ALBUM_PATTERNS.length];
             const rowSpan = slot.figurine ? Math.max(pattern.rowSpan, 2) : pattern.rowSpan;
-            const isFlipped = Boolean(slot.figurine && flippedFigurineId === slot.figurine.id);
-            const backDetail = slot.figurine ? figurineBackDetails[slot.figurine.id] : undefined;
+            const isFlipped = Boolean(slot.figurine && flippedFigurineId === slot.figurine.figurineId);
+            const backDetail = slot.figurine ? figurineBackDetails[slot.figurine.figurineId] : undefined;
             const backDisplayName = backDetail?.displayableName;
-            const isBackDisplayNameLoading = slot.figurine?.id === figurineBackNameLoadingId;
+            const isBackDisplayNameLoading = slot.figurine?.figurineId === figurineBackNameLoadingId;
             const imageUrl = slot.figurine?.officialImageUrls?.[0] ?? null;
             const noteText = slot.figurine?.notes?.trim() ?? "";
             const duplicateCount = slot.owned && slot.figurine ? Math.max(1, slot.figurine.ownedQuantity) : 0;
             const stackLayers = Math.min(Math.max(duplicateCount - 1, 0), 4);
             const isAnnounced = slot.figurine?.releaseStatus === "ANNOUNCED";
             const hasPurchaseForFigurine = slot.figurine
-              ? purchases.some((purchase) => purchase.lines.some((line) => line.figurineId === slot.figurine!.id))
+              ? purchases.some((purchase) => purchase.lines.some((line) => line.figurineId === slot.figurine!.figurineId))
               : false;
             const showBackActionLabels = rowSpan >= 2 && pattern.colSpan >= 2 && albumZoom >= 1;
             const isRecentlyAdded = Boolean(
-              slot.figurine && slot.owned && slot.figurine.id === recentlyAddedFigurineId
+              slot.figurine && slot.owned && slot.figurine.figurineId === recentlyAddedFigurineId
             );
             const isQuantityUpdating = Boolean(
-              slot.figurine && slot.owned && slot.figurine.id === addingFigurineId
+              slot.figurine && slot.owned && slot.figurine.figurineId === addingFigurineId
             );
             const isDarkTheme = theme.palette.mode === "dark";
             const backGradientStart = isAnnounced
@@ -1407,7 +1407,7 @@ export default function CollectionDetailPage() {
                     hasPermission("collections:figurines:add") && slot.owned && slot.figurine
                       ? (event) => {
                           event.stopPropagation();
-                          void handleIncreaseFigurineQuantity(slot.figurine!.id);
+                          void handleIncreaseFigurineQuantity(slot.figurine!.figurineId);
                         }
                       : undefined
                   }
@@ -1652,10 +1652,10 @@ export default function CollectionDetailPage() {
                         <span>
                           <IconButton
                             size="small"
-                            disabled={addingFigurineId === slot.figurine.id}
+                            disabled={addingFigurineId === slot.figurine.figurineId}
                             onClick={(event) => {
                               event.stopPropagation();
-                              void handleAddFigurine(slot.figurine!.id);
+                              void handleAddFigurine(slot.figurine!.figurineId);
                             }}
                             sx={{
                               position: "absolute",
@@ -1671,7 +1671,7 @@ export default function CollectionDetailPage() {
                               },
                             }}
                           >
-                            {addingFigurineId === slot.figurine.id ? (
+                            {addingFigurineId === slot.figurine.figurineId ? (
                               <CircularProgress size={14} sx={{ color: theme.palette.success.light }} />
                             ) : (
                               <FavoriteBorderOutlinedIcon sx={{ fontSize: 16 }} />
@@ -1840,7 +1840,7 @@ export default function CollectionDetailPage() {
                                 variant="caption"
                                 sx={{ color: backTextSecondary, fontWeight: 900, fontSize: "0.62rem", lineHeight: 1 }}
                               >
-                                {slot.figurine.id}
+                                {slot.figurine.figurineId}
                               </Typography>
                             </Box>
                           </Stack>
@@ -1995,7 +1995,7 @@ export default function CollectionDetailPage() {
                               size="small"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/figurines/${slot.figurine!.id}`);
+                                navigate(`/figurines/${slot.figurine!.figurineId}`);
                               }}
                               sx={{ color: backActionIconColor }}
                             >
@@ -2060,7 +2060,7 @@ export default function CollectionDetailPage() {
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleOpenDeleteFigurineDialog(slot.figurine!.id);
+                                  handleOpenDeleteFigurineDialog(slot.figurine!.figurineId);
                                 }}
                                 sx={{ color: backDangerActionColor }}
                               >
