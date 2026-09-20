@@ -103,6 +103,7 @@
       "figurineRemoved": "Figurine removed from collection.",
       "figurineAdded": "Figurine added to collection.",
       "figurineQuantityIncreased": "Figurine quantity increased.",
+      "purchaseCreated": "Purchase created successfully.",
       "noCollectionFound": "Collection not found."
     },
     "progress": {

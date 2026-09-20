@@ -7,6 +7,7 @@ import {
   Button,
   Card,
   Chip,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -45,6 +46,11 @@ import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
 
 type AlbumFigurine = CollectionFigurine;
+
+type CollectionDetailLocationState = {
+  collection?: Collection;
+  purchaseCreated?: boolean;
+};
 
 const MIN_ALBUM_ZOOM = 0.8;
 const MAX_ALBUM_ZOOM = 2;
@@ -113,7 +119,8 @@ export default function CollectionDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialCollection = (location.state as { collection?: Collection } | null)?.collection ?? null;
+  const locationState = (location.state as CollectionDetailLocationState | null) ?? null;
+  const initialCollection = locationState?.collection ?? null;
   const parsedPage = Number(searchParams.get("page") ?? "1");
   const page = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.floor(parsedPage) : 1;
   const pageIndex = Math.max(page - 1, 0);
@@ -136,6 +143,7 @@ export default function CollectionDetailPage() {
   const [includeRestocks, setIncludeRestocks] = useState(false);
   const [figurineBackDetails, setFigurineBackDetails] = useState<Record<number, FigurineBackDetail>>({});
   const [figurineBackNameLoadingId, setFigurineBackNameLoadingId] = useState<number | null>(null);
+  const [selectedCollectionFigurineIds, setSelectedCollectionFigurineIds] = useState<number[]>([]);
   const [pendingDeleteFigurineId, setPendingDeleteFigurineId] = useState<number | null>(null);
   const [isDeletingFigurine, setIsDeletingFigurine] = useState(false);
   const [addingFigurineId, setAddingFigurineId] = useState<number | null>(null);
@@ -144,6 +152,12 @@ export default function CollectionDetailPage() {
   const albumGridSectionRef = useRef<HTMLDivElement | null>(null);
   const pendingRestoreScrollTopRef = useRef<number | null>(null);
   const pendingRestoreUsesContainerRef = useRef(false);
+
+  useEffect(() => {
+    if (locationState?.purchaseCreated) {
+      setSuccessMessage(t("detail.messages.purchaseCreated"));
+    }
+  }, [locationState?.purchaseCreated, t]);
 
   useEffect(() => {
     if (!searchParams.has("page") || !Number.isFinite(Number(searchParams.get("page"))) || Number(searchParams.get("page")) < 1) {
@@ -503,6 +517,26 @@ export default function CollectionDetailPage() {
     if (!slot.owned || !slot.figurine) return;
 
     setFlippedFigurineId((current) => (current === slot.figurine!.figurineId ? null : slot.figurine!.figurineId));
+  };
+
+  const handleTogglePurchaseSelection = (figurine: AlbumFigurine) => {
+    setSelectedCollectionFigurineIds((current) =>
+      current.includes(figurine.collectionFigurineId)
+        ? current.filter((idValue) => idValue !== figurine.collectionFigurineId)
+        : [...current, figurine.collectionFigurineId],
+    );
+  };
+
+  const handleStartPurchase = () => {
+    if (!collection || selectedCollectionFigurineIds.length === 0) return;
+
+    navigate(`/collections/${collection.id}/purchases/new`, {
+      state: {
+        collection,
+        selectedCollectionFigurineIds,
+        includeRestocks,
+      },
+    });
   };
 
   useEffect(() => {
@@ -1010,6 +1044,29 @@ export default function CollectionDetailPage() {
           },
         }}
       >
+        {hasPermission("purchases:create") && (
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            justifyContent="space-between"
+            alignItems={{ sm: "center" }}
+            spacing={1}
+            sx={{ mb: 1.5 }}
+          >
+            <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 700 }}>
+              {selectedCollectionFigurineIds.length > 0
+                ? `${selectedCollectionFigurineIds.length} owned figurine${selectedCollectionFigurineIds.length === 1 ? "" : "s"} selected`
+                : "Select owned figurines to create a purchase"}
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              disabled={selectedCollectionFigurineIds.length === 0}
+              onClick={handleStartPurchase}
+            >
+              Create purchase
+            </Button>
+          </Stack>
+        )}
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: { md: 2.2 } }}>
         <Box
           sx={{
@@ -1039,6 +1096,9 @@ export default function CollectionDetailPage() {
             const pattern = ALBUM_PATTERNS[index % ALBUM_PATTERNS.length];
             const rowSpan = slot.figurine ? Math.max(pattern.rowSpan, 2) : pattern.rowSpan;
             const isFlipped = Boolean(slot.figurine && flippedFigurineId === slot.figurine.figurineId);
+            const isPurchaseSelected = Boolean(
+              slot.figurine && selectedCollectionFigurineIds.includes(slot.figurine.collectionFigurineId),
+            );
             const backDetail = slot.figurine ? figurineBackDetails[slot.figurine.figurineId] : undefined;
             const backDisplayName = backDetail?.displayableName;
             const isBackDisplayNameLoading = slot.figurine?.figurineId === figurineBackNameLoadingId;
@@ -1181,8 +1241,45 @@ export default function CollectionDetailPage() {
                             boxShadow: `0 12px 30px ${alpha(theme.palette.info.main, 0.26)}`,
                           }
                         : undefined,
+                      "&:hover .purchase-selection-checkbox, &:focus-within .purchase-selection-checkbox": {
+                        opacity: slot.owned ? 1 : 0,
+                        transform: slot.owned ? "translateY(0) scale(1)" : "translateY(-4px) scale(0.96)",
+                      },
                     }}
                   >
+                    {hasPermission("purchases:create") && slot.owned && slot.figurine && (
+                      <Box
+                        className="purchase-selection-checkbox"
+                        sx={{
+                          position: "absolute",
+                          top: 6,
+                          left: 6,
+                          zIndex: 4,
+                          opacity: isPurchaseSelected ? 1 : 0,
+                          transform: isPurchaseSelected ? "translateY(0) scale(1)" : "translateY(-4px) scale(0.96)",
+                          transition: "opacity 0.2s ease, transform 0.2s ease",
+                          pointerEvents: "auto",
+                          borderRadius: 0.8,
+                          bgcolor: alpha(theme.palette.background.default, 0.62),
+                          boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.28)}`,
+                        }}
+                      >
+                        <Checkbox
+                          checked={isPurchaseSelected}
+                          onChange={(event) => {
+                            event.stopPropagation();
+                            handleTogglePurchaseSelection(slot.figurine!);
+                          }}
+                          onClick={(event) => event.stopPropagation()}
+                          inputProps={{ "aria-label": `Select ${slot.figurine.displayableName} for purchase` }}
+                          sx={{
+                            p: 0.25,
+                            color: alpha(theme.palette.common.white, 0.82),
+                            "&.Mui-checked": { color: theme.palette.secondary.light },
+                          }}
+                        />
+                      </Box>
+                    )}
                     {imageUrl ? (
                       <Box
                         component="img"

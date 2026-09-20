@@ -103,6 +103,7 @@
       "figurineRemoved": "Figurine supprimée de la collection.",
       "figurineAdded": "Figurine ajoutée à la collection.",
       "figurineQuantityIncreased": "Quantité de figurines augmentée.",
+      "purchaseCreated": "Achat créé avec succès.",
       "noCollectionFound": "Collection introuvable."
     },
     "progress": {

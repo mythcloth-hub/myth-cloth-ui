@@ -39,6 +39,7 @@ import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
 import SellOutlinedIcon from "@mui/icons-material/SellOutlined";
 import CompareOutlinedIcon from "@mui/icons-material/CompareOutlined";
 import StoreOutlinedIcon from "@mui/icons-material/StoreOutlined";
+import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import KeyOutlinedIcon from "@mui/icons-material/KeyOutlined";
@@ -102,6 +103,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { labelKey: "mythCloth",     path: "/figurines",   icon: <WorkspacePremiumOutlinedIcon /> },
       { labelKey: "myCollections", path: "/collections", icon: <Inventory2OutlinedIcon />,     permission: "collections:read" },
+      { labelKey: "purchases",     path: "/purchases",   icon: <ShoppingBagOutlinedIcon />,       permission: "purchases:read" },
     ],
   },
   {

@@ -224,9 +224,17 @@ export async function getCollectionById(id: number): Promise<Collection> {
   return normalizeCollection(response.data);
 }
 
-export async function getCollectionFigurines(collectionId: number): Promise<CollectionFigurine[]> {
+export async function getCollectionFigurines(
+  collectionId: number,
+  params?: { includeRestocks?: boolean },
+): Promise<CollectionFigurine[]> {
   const response = await httpClient.get<CollectionFigurineApiResponse[] | PaginatedCollectionFigurinesApiResponse>(
-    `${API_BASE}/${collectionId}/figurines`
+    `${API_BASE}/${collectionId}/figurines`,
+    {
+      params: {
+        includeRestocks: params?.includeRestocks ?? false,
+      },
+    },
   );
   const normalized = normalizePaginatedCollectionFigurinesResponse(response.data);
   return normalized.content;

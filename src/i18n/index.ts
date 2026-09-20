@@ -16,6 +16,7 @@ import enExplore from "./locales/en/explore.json";
 import enSecurity from "./locales/en/security.json";
 import enPersonal from "./locales/en/personal.json";
 import enInfo from "./locales/en/info.json";
+import enPurchases from "./locales/en/purchases.json";
 
 import mxCommon from "./locales/mx/common.json";
 import mxNavigation from "./locales/mx/navigation.json";
@@ -68,6 +69,7 @@ export const resources = {
     security: enSecurity,
     personal: enPersonal,
     info: enInfo,
+    purchases: enPurchases,
   },
   mx: {
     common: mxCommon,
@@ -113,7 +115,7 @@ void i18n
   .init({
     resources,
     defaultNS,
-    ns: ["common", "navigation", "auth", "home", "figurines", "collections", "explore", "security", "personal", "info"],
+    ns: ["common", "navigation", "auth", "home", "figurines", "collections", "purchases", "explore", "security", "personal", "info"],
     fallbackLng: DEFAULT_LANGUAGE,
     supportedLngs: [...SUPPORTED_LANGUAGES],
     load: "languageOnly",
