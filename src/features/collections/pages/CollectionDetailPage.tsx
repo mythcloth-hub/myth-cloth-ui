@@ -7,7 +7,7 @@ import {
   Button,
   Card,
   Chip,
-  Collapse,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -24,12 +24,10 @@ import {
 import { alpha, useTheme } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import EditIcon from "@mui/icons-material/EditOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
@@ -44,28 +42,14 @@ import {
 } from "../api/collectionApi";
 import type { Collection, CollectionFigurine, CollectionSummaryResponse } from "../types/collection";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
-import PurchaseFormDialog from "../../purchases/components/PurchaseFormDialog";
-import {
-  createPurchaseSummaryLineItems,
-  getPurchaseSummaryLineItems,
-  getPurchaseSummaryLineItemsById,
-  toPurchaseRecordFromSummaryResponse,
-  updatePurchaseSummaryLineItems,
-} from "../../purchases/api/purchaseApi";
-import {
-  emptyPurchaseDraft,
-  emptyPurchaseLine,
-  type PurchaseDraft,
-  type PurchaseRecord,
-  type PurchaseRecordInput,
-} from "../../purchases/types/purchase";
 import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
 
-type AlbumFigurine = CollectionFigurine & {
-  purchasePrice?: number;
-  purchaseCurrency?: string;
-  trackingCode?: string;
+type AlbumFigurine = CollectionFigurine;
+
+type CollectionDetailLocationState = {
+  collection?: Collection;
+  purchaseCreated?: boolean;
 };
 
 const MIN_ALBUM_ZOOM = 0.8;
@@ -135,7 +119,8 @@ export default function CollectionDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialCollection = (location.state as { collection?: Collection } | null)?.collection ?? null;
+  const locationState = (location.state as CollectionDetailLocationState | null) ?? null;
+  const initialCollection = locationState?.collection ?? null;
   const parsedPage = Number(searchParams.get("page") ?? "1");
   const page = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.floor(parsedPage) : 1;
   const pageIndex = Math.max(page - 1, 0);
@@ -158,11 +143,7 @@ export default function CollectionDetailPage() {
   const [includeRestocks, setIncludeRestocks] = useState(false);
   const [figurineBackDetails, setFigurineBackDetails] = useState<Record<number, FigurineBackDetail>>({});
   const [figurineBackNameLoadingId, setFigurineBackNameLoadingId] = useState<number | null>(null);
-  const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
-  const [showRecentPurchasesSummary, setShowRecentPurchasesSummary] = useState(false);
-  const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
-  const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
-  const [purchaseInitialDraft, setPurchaseInitialDraft] = useState<PurchaseDraft | null>(null);
+  const [selectedCollectionFigurineIds, setSelectedCollectionFigurineIds] = useState<number[]>([]);
   const [pendingDeleteFigurineId, setPendingDeleteFigurineId] = useState<number | null>(null);
   const [isDeletingFigurine, setIsDeletingFigurine] = useState(false);
   const [addingFigurineId, setAddingFigurineId] = useState<number | null>(null);
@@ -172,24 +153,11 @@ export default function CollectionDetailPage() {
   const pendingRestoreScrollTopRef = useRef<number | null>(null);
   const pendingRestoreUsesContainerRef = useRef(false);
 
-  const toFigurineNameById = (items: AlbumFigurine[]): Record<number, string> =>
-    Object.fromEntries(items.map((item) => [item.id, item.displayableName]));
-
-  const loadBackendPurchasesForCollection = async (
-    items: AlbumFigurine[]
-  ): Promise<PurchaseRecord[]> => {
-    if (!hasPermission("purchases:read")) return [];
-
-    const responses = await getPurchaseSummaryLineItems();
-    const figurineIdsInCollection = new Set(items.map((item) => item.id));
-    const figurineNameById = toFigurineNameById(items);
-
-    return responses
-      .filter((purchase) =>
-        purchase.lineItems.some((lineItem) => figurineIdsInCollection.has(lineItem.figurineId))
-      )
-      .map((purchase) => toPurchaseRecordFromSummaryResponse(purchase, figurineNameById));
-  };
+  useEffect(() => {
+    if (locationState?.purchaseCreated) {
+      setSuccessMessage(t("detail.messages.purchaseCreated"));
+    }
+  }, [locationState?.purchaseCreated, t]);
 
   useEffect(() => {
     if (!searchParams.has("page") || !Number.isFinite(Number(searchParams.get("page"))) || Number(searchParams.get("page")) < 1) {
@@ -309,12 +277,7 @@ export default function CollectionDetailPage() {
 
       const normalizedFigurines =
         figurinesResult.status === "fulfilled"
-          ? figurinesResult.value.content.map((figurine) => ({
-              ...figurine,
-              purchasePrice: undefined,
-              purchaseCurrency: undefined,
-              trackingCode: undefined,
-            }))
+          ? figurinesResult.value.content
           : [];
 
       if (figurinesResult.status === "fulfilled") {
@@ -332,17 +295,6 @@ export default function CollectionDetailPage() {
 
       if (summaryResult.status === "rejected" && figurinesResult.status === "rejected") {
         throw summaryResult.reason ?? figurinesResult.reason;
-      }
-
-      if (normalizedFigurines.length > 0) {
-        try {
-          const backendPurchases = await loadBackendPurchasesForCollection(normalizedFigurines);
-          setPurchases(backendPurchases);
-        } catch {
-          setPurchases([]);
-        }
-      } else {
-        setPurchases([]);
       }
 
       if (summaryResult.status === "rejected" && figurinesResult.status === "fulfilled") {
@@ -555,7 +507,7 @@ export default function CollectionDetailPage() {
 
   const albumSlots: AlbumSlot[] = useMemo(() => {
     return visibleFigurines.map((figurine) => ({
-      key: `owned-${figurine.id}`,
+      key: `owned-${figurine.figurineId}`,
       owned: figurine.isCollected,
       figurine,
     }));
@@ -564,13 +516,33 @@ export default function CollectionDetailPage() {
   const handleToggleFlip = (slot: AlbumSlot) => {
     if (!slot.owned || !slot.figurine) return;
 
-    setFlippedFigurineId((current) => (current === slot.figurine!.id ? null : slot.figurine!.id));
+    setFlippedFigurineId((current) => (current === slot.figurine!.figurineId ? null : slot.figurine!.figurineId));
+  };
+
+  const handleTogglePurchaseSelection = (figurine: AlbumFigurine) => {
+    setSelectedCollectionFigurineIds((current) =>
+      current.includes(figurine.collectionFigurineId)
+        ? current.filter((idValue) => idValue !== figurine.collectionFigurineId)
+        : [...current, figurine.collectionFigurineId],
+    );
+  };
+
+  const handleStartPurchase = () => {
+    if (!collection || selectedCollectionFigurineIds.length === 0) return;
+
+    navigate(`/collections/${collection.id}/purchases/new`, {
+      state: {
+        collection,
+        selectedCollectionFigurineIds,
+        includeRestocks,
+      },
+    });
   };
 
   useEffect(() => {
     if (!collection || flippedFigurineId == null) return;
 
-    const figurine = figurines.find((item) => item.id === flippedFigurineId);
+    const figurine = figurines.find((item) => item.figurineId === flippedFigurineId);
     if (!figurine) return;
     if (figurineBackDetails[flippedFigurineId]) return;
 
@@ -623,107 +595,6 @@ export default function CollectionDetailPage() {
       isActive = false;
     };
   }, [collection, flippedFigurineId, figurines, figurineBackDetails]);
-
-  const handleSavePurchase = async (input: PurchaseRecordInput) => {
-    if (!collection) return;
-
-    const currentEditingPurchase = editingPurchase;
-
-    if (!editingPurchaseId) {
-      await createPurchaseSummaryLineItems(input);
-    } else {
-      const existingBackendPurchaseId = currentEditingPurchase?.purchaseId ?? Number(editingPurchaseId);
-
-      if (!Number.isFinite(existingBackendPurchaseId) || existingBackendPurchaseId <= 0) {
-        throw new Error(t("detail.messages.noPurchaseId"));
-      }
-
-      await updatePurchaseSummaryLineItems(existingBackendPurchaseId, input);
-    }
-
-    try {
-      const refreshedPurchases = await loadBackendPurchasesForCollection(figurines);
-      setPurchases(refreshedPurchases);
-    } catch (err) {
-      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "purchases" }));
-      return;
-    }
-
-    setErrorMessage(null);
-    setSuccessMessage(editingPurchaseId ? t("detail.messages.purchaseUpdated") : t("detail.messages.purchaseRecorded"));
-    setEditingPurchaseId(null);
-    setPurchaseInitialDraft(null);
-    setPurchaseDialogOpen(false);
-  };
-
-  const handleOpenCreatePurchaseDialog = () => {
-    setEditingPurchaseId(null);
-    setPurchaseInitialDraft(null);
-    setPurchaseDialogOpen(true);
-  };
-
-  const handleOpenEditPurchaseDialog = async (purchase: PurchaseRecord) => {
-    const backendPurchaseId = purchase.purchaseId ?? Number(purchase.id);
-
-    if (!Number.isFinite(backendPurchaseId) || backendPurchaseId <= 0) {
-      setEditingPurchaseId(purchase.id);
-      setPurchaseInitialDraft(null);
-      setPurchaseDialogOpen(true);
-      return;
-    }
-
-    try {
-      const response = await getPurchaseSummaryLineItemsById(backendPurchaseId);
-      const figurineNameById = toFigurineNameById(figurines);
-      const refreshedPurchase = toPurchaseRecordFromSummaryResponse(response, figurineNameById);
-
-      setPurchases((current) =>
-        current.map((item) => (item.id === purchase.id ? refreshedPurchase : item))
-      );
-      setEditingPurchaseId(refreshedPurchase.id);
-      setPurchaseInitialDraft(null);
-      setPurchaseDialogOpen(true);
-      setErrorMessage(null);
-    } catch (err) {
-      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "purchase" }));
-    }
-  };
-
-  const handleOpenCreatePurchaseForFigurine = (figurine: AlbumFigurine) => {
-    const draft = emptyPurchaseDraft();
-    draft.lines = [
-      {
-        ...emptyPurchaseLine(),
-        figurineId: String(figurine.id),
-      },
-    ];
-
-    setEditingPurchaseId(null);
-    setPurchaseInitialDraft(draft);
-    setPurchaseDialogOpen(true);
-  };
-
-  const handleOpenEditPurchaseForFigurine = (figurine: AlbumFigurine) => {
-    const relatedPurchase = purchases.find((purchase) =>
-      purchase.lines.some((line) => line.figurineId === figurine.id)
-    );
-
-    if (!relatedPurchase) {
-      setSuccessMessage(t("detail.messages.noPurchaseRecordFound"));
-      return;
-    }
-
-    setPurchaseInitialDraft(null);
-    void handleOpenEditPurchaseDialog(relatedPurchase);
-  };
-
-  const handleClosePurchaseDialog = () => {
-    setPurchaseDialogOpen(false);
-    setEditingPurchaseId(null);
-    setPurchaseInitialDraft(null);
-  };
-
-  const editingPurchase = purchases.find((purchase) => purchase.id === editingPurchaseId) ?? null;
 
   if (loading) {
     return (
@@ -1141,17 +1012,6 @@ export default function CollectionDetailPage() {
         </DialogActions>
       </Dialog>
 
-      <PurchaseFormDialog
-        open={purchaseDialogOpen}
-        title={editingPurchase ? t("detail.purchases.titleEdit") : t("detail.purchases.titleNew")}
-        submitLabel={editingPurchase ? t("detail.purchases.labelEdit") : t("detail.purchases.labelNew")}
-        initialPurchase={editingPurchase}
-        initialDraft={purchaseInitialDraft}
-        onClose={handleClosePurchaseDialog}
-        onSubmit={handleSavePurchase}
-        figurines={figurines}
-      />
-
       {figurines.length === 0 && (
         <Box sx={{ mb: 2, display: "flex", justifyContent: "center" }}>
           <Button
@@ -1166,150 +1026,6 @@ export default function CollectionDetailPage() {
           >
             {t("detail.figurines.browse")}
           </Button>
-        </Box>
-      )}
-
-      {hasPermission("purchases:read") && (
-        <Box sx={{ display: { xs: "none", md: "block" }, mb: 2.2 }}>
-          <Card
-            sx={{
-              p: 1.6,
-              borderRadius: 2,
-              border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-              bgcolor: alpha(theme.palette.background.paper, 0.64),
-            }}
-          >
-            <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={1.2}>
-              <Box>
-                <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.4 }}>
-                  <ReceiptLongOutlinedIcon fontSize="small" sx={{ color: "primary.main" }} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                    {t("detail.purchases.title")}
-                  </Typography>
-                </Stack>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  {t("detail.purchases.description")}
-                </Typography>
-              </Box>
-              <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
-                <Stack
-                  direction="row"
-                  spacing={0.8}
-                  useFlexGap
-                  flexWrap="wrap"
-                  sx={{ "& .MuiButton-root": { whiteSpace: "nowrap" } }}
-                >
-                  <Button
-                    variant="text"
-                    startIcon={<VisibilityOutlinedIcon />}
-                    onClick={() => setShowRecentPurchasesSummary((current) => !current)}
-                  >
-                    {showRecentPurchasesSummary ? t("detail.purchases.hideSummary") : t("detail.purchases.showSummary")}
-                  </Button>
-                  <Button
-                    variant="text"
-                    startIcon={<ReceiptLongOutlinedIcon />}
-                    onClick={() => navigate(`/purchases?collectionId=${collection.id}`)}
-                  >
-                    {t("detail.purchases.open")}
-                  </Button>
-                  {hasPermission("purchases:create") && (
-                    <Button
-                      variant="contained"
-                      startIcon={<AddIcon />}
-                      onClick={handleOpenCreatePurchaseDialog}
-                      sx={{ flexShrink: 0 }}
-                    >
-                      {t("detail.purchases.record")}
-                    </Button>
-                  )}
-                </Stack>
-              </Box>
-            </Stack>
-
-            <Collapse in={showRecentPurchasesSummary}>
-              <Stack spacing={1} sx={{ mt: 1.3 }}>
-                {purchases.length === 0 ? (
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    {t("detail.purchases.noRecords")}
-                  </Typography>
-                ) : (
-                  <>
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                      <Box
-                        sx={{
-                          px: 1.1,
-                          py: 0.9,
-                          borderRadius: 1.2,
-                          bgcolor: alpha(theme.palette.background.default, 0.34),
-                          minWidth: 140,
-                        }}
-                      >
-                        <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                          {t("detail.purchases.total")}
-                        </Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                          {purchases.length}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          px: 1.1,
-                          py: 0.9,
-                          borderRadius: 1.2,
-                          bgcolor: alpha(theme.palette.background.default, 0.34),
-                          minWidth: 180,
-                        }}
-                      >
-                        <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                          {t("detail.purchases.latestOrderDate")}
-                        </Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                          {purchases[0]?.orderDate ?? "N/A"}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          px: 1.1,
-                          py: 0.9,
-                          borderRadius: 1.2,
-                          bgcolor: alpha(theme.palette.background.default, 0.34),
-                          flex: 1,
-                        }}
-                      >
-                        <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-                          {t("detail.purchases.recent")}
-                        </Typography>
-                        <Stack spacing={0.55} sx={{ mt: 0.45 }}>
-                          {purchases.slice(0, 3).map((purchase) => (
-                            <Box
-                              key={purchase.id}
-                              sx={{
-                                px: 0.8,
-                                py: 0.55,
-                                borderRadius: 1,
-                                bgcolor: alpha(theme.palette.background.default, 0.46),
-                              }}
-                            >
-                              <Typography variant="caption" sx={{ display: "block", color: "text.primary", fontWeight: 700 }}>
-                                {purchase.store?.trim() ? purchase.store : t("detail.purchases.storeNotSpecified")}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                                {t("detail.purchases.date")} {purchase.orderDate?.trim() ? purchase.orderDate : t("detail.purchases.noOrderDate")} · {purchase.totalAmount} {purchase.currency}
-                              </Typography>
-                            </Box>
-                          ))}
-                        </Stack>
-                      </Box>
-                    </Stack>
-                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                      {t("detail.purchases.caption")}
-                    </Typography>
-                  </>
-                )}
-              </Stack>
-            </Collapse>
-          </Card>
         </Box>
       )}
 
@@ -1328,6 +1044,29 @@ export default function CollectionDetailPage() {
           },
         }}
       >
+        {hasPermission("purchases:create") && (
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            justifyContent="space-between"
+            alignItems={{ sm: "center" }}
+            spacing={1}
+            sx={{ mb: 1.5 }}
+          >
+            <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 700 }}>
+              {selectedCollectionFigurineIds.length > 0
+                ? `${selectedCollectionFigurineIds.length} owned figurine${selectedCollectionFigurineIds.length === 1 ? "" : "s"} selected`
+                : "Select owned figurines to create a purchase"}
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              disabled={selectedCollectionFigurineIds.length === 0}
+              onClick={handleStartPurchase}
+            >
+              Create purchase
+            </Button>
+          </Stack>
+        )}
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: { md: 2.2 } }}>
         <Box
           sx={{
@@ -1356,24 +1095,24 @@ export default function CollectionDetailPage() {
           {albumSlots.map((slot, index) => {
             const pattern = ALBUM_PATTERNS[index % ALBUM_PATTERNS.length];
             const rowSpan = slot.figurine ? Math.max(pattern.rowSpan, 2) : pattern.rowSpan;
-            const isFlipped = Boolean(slot.figurine && flippedFigurineId === slot.figurine.id);
-            const backDetail = slot.figurine ? figurineBackDetails[slot.figurine.id] : undefined;
+            const isFlipped = Boolean(slot.figurine && flippedFigurineId === slot.figurine.figurineId);
+            const isPurchaseSelected = Boolean(
+              slot.figurine && selectedCollectionFigurineIds.includes(slot.figurine.collectionFigurineId),
+            );
+            const backDetail = slot.figurine ? figurineBackDetails[slot.figurine.figurineId] : undefined;
             const backDisplayName = backDetail?.displayableName;
-            const isBackDisplayNameLoading = slot.figurine?.id === figurineBackNameLoadingId;
+            const isBackDisplayNameLoading = slot.figurine?.figurineId === figurineBackNameLoadingId;
             const imageUrl = slot.figurine?.officialImageUrls?.[0] ?? null;
             const noteText = slot.figurine?.notes?.trim() ?? "";
             const duplicateCount = slot.owned && slot.figurine ? Math.max(1, slot.figurine.ownedQuantity) : 0;
             const stackLayers = Math.min(Math.max(duplicateCount - 1, 0), 4);
             const isAnnounced = slot.figurine?.releaseStatus === "ANNOUNCED";
-            const hasPurchaseForFigurine = slot.figurine
-              ? purchases.some((purchase) => purchase.lines.some((line) => line.figurineId === slot.figurine!.id))
-              : false;
             const showBackActionLabels = rowSpan >= 2 && pattern.colSpan >= 2 && albumZoom >= 1;
             const isRecentlyAdded = Boolean(
-              slot.figurine && slot.owned && slot.figurine.id === recentlyAddedFigurineId
+              slot.figurine && slot.owned && slot.figurine.figurineId === recentlyAddedFigurineId
             );
             const isQuantityUpdating = Boolean(
-              slot.figurine && slot.owned && slot.figurine.id === addingFigurineId
+              slot.figurine && slot.owned && slot.figurine.figurineId === addingFigurineId
             );
             const isDarkTheme = theme.palette.mode === "dark";
             const backGradientStart = isAnnounced
@@ -1407,7 +1146,7 @@ export default function CollectionDetailPage() {
                     hasPermission("collections:figurines:add") && slot.owned && slot.figurine
                       ? (event) => {
                           event.stopPropagation();
-                          void handleIncreaseFigurineQuantity(slot.figurine!.id);
+                          void handleIncreaseFigurineQuantity(slot.figurine!.figurineId);
                         }
                       : undefined
                   }
@@ -1502,8 +1241,45 @@ export default function CollectionDetailPage() {
                             boxShadow: `0 12px 30px ${alpha(theme.palette.info.main, 0.26)}`,
                           }
                         : undefined,
+                      "&:hover .purchase-selection-checkbox, &:focus-within .purchase-selection-checkbox": {
+                        opacity: slot.owned ? 1 : 0,
+                        transform: slot.owned ? "translateY(0) scale(1)" : "translateY(-4px) scale(0.96)",
+                      },
                     }}
                   >
+                    {hasPermission("purchases:create") && slot.owned && slot.figurine && (
+                      <Box
+                        className="purchase-selection-checkbox"
+                        sx={{
+                          position: "absolute",
+                          top: 6,
+                          left: 6,
+                          zIndex: 4,
+                          opacity: isPurchaseSelected ? 1 : 0,
+                          transform: isPurchaseSelected ? "translateY(0) scale(1)" : "translateY(-4px) scale(0.96)",
+                          transition: "opacity 0.2s ease, transform 0.2s ease",
+                          pointerEvents: "auto",
+                          borderRadius: 0.8,
+                          bgcolor: alpha(theme.palette.background.default, 0.62),
+                          boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.28)}`,
+                        }}
+                      >
+                        <Checkbox
+                          checked={isPurchaseSelected}
+                          onChange={(event) => {
+                            event.stopPropagation();
+                            handleTogglePurchaseSelection(slot.figurine!);
+                          }}
+                          onClick={(event) => event.stopPropagation()}
+                          inputProps={{ "aria-label": `Select ${slot.figurine.displayableName} for purchase` }}
+                          sx={{
+                            p: 0.25,
+                            color: alpha(theme.palette.common.white, 0.82),
+                            "&.Mui-checked": { color: theme.palette.secondary.light },
+                          }}
+                        />
+                      </Box>
+                    )}
                     {imageUrl ? (
                       <Box
                         component="img"
@@ -1652,10 +1428,10 @@ export default function CollectionDetailPage() {
                         <span>
                           <IconButton
                             size="small"
-                            disabled={addingFigurineId === slot.figurine.id}
+                            disabled={addingFigurineId === slot.figurine.figurineId}
                             onClick={(event) => {
                               event.stopPropagation();
-                              void handleAddFigurine(slot.figurine!.id);
+                              void handleAddFigurine(slot.figurine!.figurineId);
                             }}
                             sx={{
                               position: "absolute",
@@ -1671,7 +1447,7 @@ export default function CollectionDetailPage() {
                               },
                             }}
                           >
-                            {addingFigurineId === slot.figurine.id ? (
+                            {addingFigurineId === slot.figurine.figurineId ? (
                               <CircularProgress size={14} sx={{ color: theme.palette.success.light }} />
                             ) : (
                               <FavoriteBorderOutlinedIcon sx={{ fontSize: 16 }} />
@@ -1840,7 +1616,7 @@ export default function CollectionDetailPage() {
                                 variant="caption"
                                 sx={{ color: backTextSecondary, fontWeight: 900, fontSize: "0.62rem", lineHeight: 1 }}
                               >
-                                {slot.figurine.id}
+                                {slot.figurine.figurineId}
                               </Typography>
                             </Box>
                           </Stack>
@@ -1995,7 +1771,7 @@ export default function CollectionDetailPage() {
                               size="small"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/figurines/${slot.figurine!.id}`);
+                                navigate(`/figurines/${slot.figurine!.figurineId}`);
                               }}
                               sx={{ color: backActionIconColor }}
                             >
@@ -2008,51 +1784,6 @@ export default function CollectionDetailPage() {
                             </Typography>
                           )}
                         </Stack>
-                        {hasPermission("purchases:update") && (
-                          <Stack alignItems="center" sx={{ minWidth: 40 }}>
-                            <Tooltip title={hasPurchaseForFigurine ? t("detail.figurines.editPurchase") : t("detail.figurines.noPurchaseRecord")}>
-                              <span>
-                                <IconButton
-                                  size="small"
-                                  disabled={!hasPurchaseForFigurine}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenEditPurchaseForFigurine(slot.figurine!);
-                                  }}
-                                  sx={{ color: backActionIconColor }}
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-                            {showBackActionLabels && (
-                              <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
-                                {t("detail.figurines.edit")}
-                              </Typography>
-                            )}
-                          </Stack>
-                        )}
-                        {hasPermission("purchases:create") && (
-                          <Stack alignItems="center" sx={{ minWidth: 40 }}>
-                            <Tooltip title={t("detail.figurines.createPurchase")}>
-                              <IconButton
-                                size="small"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenCreatePurchaseForFigurine(slot.figurine!);
-                                }}
-                                sx={{ color: backActionIconColor }}
-                              >
-                                <AddIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            {showBackActionLabels && (
-                              <Typography variant="caption" sx={{ color: backTextSecondary, fontSize: "0.6rem", lineHeight: 1 }}>
-                                {t("detail.figurines.new")}
-                              </Typography>
-                            )}
-                          </Stack>
-                        )}
                         {hasPermission("collections:figurines:delete") && (
                           <Stack alignItems="center" sx={{ minWidth: 40 }}>
                             <Tooltip title={t("detail.figurines.removeFromCollection")}>
@@ -2060,7 +1791,7 @@ export default function CollectionDetailPage() {
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleOpenDeleteFigurineDialog(slot.figurine!.id);
+                                  handleOpenDeleteFigurineDialog(slot.figurine!.figurineId);
                                 }}
                                 sx={{ color: backDangerActionColor }}
                               >

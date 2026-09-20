@@ -9,7 +9,6 @@ Built with React + TypeScript + Vite.
 - Figurines
 - Collections
 - Catalogs
-- Purchases
 - Distributors
 - Anniversaries
 - Charts and stats pages

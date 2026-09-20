@@ -95,7 +95,7 @@
   "detail": {
     "header": {
       "eyebrow": "Collections",
-      "subtitle": "Browse this collection to track progress, review figurines, and manage purchases.",
+      "subtitle": "Browse this collection to track progress and review figurines.",
       "backToCollections": "Back to Collections"
     },
     "messages": {
@@ -103,10 +103,7 @@
       "figurineRemoved": "Figurine removed from collection.",
       "figurineAdded": "Figurine added to collection.",
       "figurineQuantityIncreased": "Figurine quantity increased.",
-      "noPurchaseId": "Unable to identify purchase id for update.",
-      "purchaseUpdated": "Purchase updated successfully.",
-      "purchaseRecorded": "Purchase recorded successfully.",
-      "noPurchaseRecordFound": "No purchase record found for this figurine yet.",
+      "purchaseCreated": "Purchase created successfully.",
       "noCollectionFound": "Collection not found."
     },
     "progress": {
@@ -149,26 +146,6 @@
         "excluded": "Restocks excluded — click to include"
       }
     },
-    "purchases": {
-      "titleEdit": "Edit Purchase",
-      "titleNew": "Record Purchase",
-      "labelEdit": "Update Purchase",
-      "labelNew": "Save Purchase",
-      "title": "Most Recent Purchases",
-      "description": "Figurine purchases are tracked separately from the current collection quantities.",
-      "hideSummary": "Hide Summary",
-      "showSummary": "Show Summary",
-      "open": "Open Purchases",
-      "record": "Record Purchase",
-      "noRecords": "No purchase records yet.",
-      "total": "Total purchases",
-      "latestOrderDate": "Latest order date",
-      "recent": "Recent purchases",
-      "storeNotSpecified": "Store not specified",
-      "date": "Date:",
-      "noOrderDate": "No order date",
-      "caption": "Access Purchases to review and manage your complete purchase history."
-    },
     "figurines": {
       "browse": "Browse Figurines",
       "dialogDelete": {
@@ -197,10 +174,7 @@
       "link": "Link",
       "viewDetails": "View figurine details",
       "view": "View",
-      "editPurchase": "Edit purchase with this figurine",
-      "noPurchaseRecord": "No purchase record yet.",
       "edit": "Edit",
-      "createPurchase": "Create purchase for this figurine",
       "new": "New",
       "removeFromCollection": "Remove from collection",
       "remove": "Remove"

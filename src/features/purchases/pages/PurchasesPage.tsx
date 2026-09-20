@@ -1,575 +1,287 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
-  Button,
   Card,
+  Chip,
   CircularProgress,
-  Divider,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
-  FormControl,
+  Button,
   IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
+  Snackbar,
   Stack,
+  Step,
+  StepLabel,
+  Stepper,
   Tooltip,
   Typography,
-  Snackbar,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import EditIcon from "@mui/icons-material/EditOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import SyncAltOutlinedIcon from "@mui/icons-material/SyncAltOutlined";
-import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
-import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
-import type { SvgIconComponent } from "@mui/icons-material";
-import { alpha, useTheme } from "@mui/material/styles";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import AppPageHeader from "../../../components/AppPageHeader";
+import { useAuth } from "../../../auth/AuthContext";
+import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
+import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import { getCollections, getCollectionFigurines } from "../../collections/api/collectionApi";
 import type { Collection, CollectionFigurine } from "../../collections/types/collection";
-import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
-import PurchaseFormDialog from "../components/PurchaseFormDialog";
-import {
-  deletePurchaseSummaryLineItems,
-  createPurchaseSummaryLineItems,
-  getPurchaseSummaryLineItems,
-  getPurchaseSummaryLineItemsById,
-  syncPurchaseTotal,
-  toPurchaseRecordFromSummaryResponse,
-  updatePurchaseSummaryLineItems,
-} from "../api/purchaseApi";
-import type { PurchaseRecord, PurchaseRecordInput, ShippingStatus } from "../types/purchase";
-import AppPageHeader from "../../../components/AppPageHeader";
-import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
-import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
-import { useAuth } from "../../../auth/AuthContext";
+import { deletePurchase, getPurchases } from "../api/purchaseApi";
+import type { PurchaseRecord, ShippingStatus } from "../types/purchase";
 
-const SHIPPING_STATUS_STEPS: { value: ShippingStatus; label: string; Icon: SvgIconComponent }[] = [
-  { value: "ORDERED", label: "Ordered", Icon: ShoppingCartOutlinedIcon },
-  { value: "SHIPPED", label: "Shipped", Icon: LocalShippingOutlinedIcon },
-  { value: "READY_TO_PICKUP", label: "Ready to Pickup", Icon: StorefrontOutlinedIcon },
-  { value: "DELIVERED", label: "Delivered", Icon: TaskAltOutlinedIcon },
-];
-
-const SHIPPING_STATUS_INDEX: Record<ShippingStatus, number> = {
-  ORDERED: 0,
-  SHIPPED: 1,
-  READY_TO_PICKUP: 2,
-  DELIVERED: 3,
+const SHIPPING_STATUS_COLOR: Record<ShippingStatus, "default" | "info" | "success"> = {
+  NOT_SHIPPED: "default",
+  SHIPPED: "info",
+  DELIVERED: "success",
 };
 
-const formatPurchaseAmount = (amount: number, currency: string): string => {
-  return formatCurrencyAmount(amount, currency, {
-    style: "currency",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    fallbackCurrency: "USD",
-  });
-};
+const SHIPPING_STEPS: ShippingStatus[] = ["NOT_SHIPPED", "SHIPPED", "DELIVERED"];
 
-const formatCount = (value: number): string => new Intl.NumberFormat().format(value);
+type FigurineDisplay = Pick<CollectionFigurine, "displayableName" | "officialImageUrls">;
 
 export default function PurchasesPage() {
-  const theme = useTheme();
+  const { t } = useTranslation("purchases");
   const { hasPermission } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [collectionFigurines, setCollectionFigurines] = useState<CollectionFigurine[]>([]);
-  const [selectedCollectionId, setSelectedCollectionId] = useState<string>(
-    searchParams.get("collectionId") ?? ""
-  );
-
+  const location = useLocation();
+  const navigate = useNavigate();
   const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
-  const [deletePurchaseTarget, setDeletePurchaseTarget] = useState<PurchaseRecord | null>(null);
-  const [syncPurchaseTarget, setSyncPurchaseTarget] = useState<PurchaseRecord | null>(null);
-  const [isDeletingPurchase, setIsDeletingPurchase] = useState(false);
-  const [isSyncingPurchase, setIsSyncingPurchase] = useState(false);
-
-  const [loadingCollections, setLoadingCollections] = useState(true);
-  const [loadingFigurines, setLoadingFigurines] = useState(false);
+  const [figurinesByCollectionId, setFigurinesByCollectionId] = useState<Record<number, FigurineDisplay>>({});
+  const [collectionIdByPurchaseId, setCollectionIdByPurchaseId] = useState<Record<number, number>>({});
+  const [collectionsById, setCollectionsById] = useState<Record<number, Collection>>({});
+  const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [pendingDeletePurchase, setPendingDeletePurchase] = useState<PurchaseRecord | null>(null);
+  const [deletingPurchase, setDeletingPurchase] = useState(false);
 
-  const toFigurineNameById = (figurines: CollectionFigurine[]): Record<number, string> =>
-    Object.fromEntries(figurines.map((figurine) => [figurine.id, figurine.displayableName]));
+  const handleConfirmDelete = async () => {
+    if (!pendingDeletePurchase) return;
 
-  const loadBackendPurchasesForCollection = async (
-    figurines: CollectionFigurine[]
-  ): Promise<PurchaseRecord[]> => {
-    const responses = await getPurchaseSummaryLineItems();
-    const figurineIdsInCollection = new Set(figurines.map((figurine) => figurine.id));
-    const figurineNameById = toFigurineNameById(figurines);
-
-    return responses
-      .filter((purchase) =>
-        purchase.lineItems.some((lineItem) => figurineIdsInCollection.has(lineItem.figurineId))
-      )
-      .map((purchase) => toPurchaseRecordFromSummaryResponse(purchase, figurineNameById));
+    setDeletingPurchase(true);
+    try {
+      await deletePurchase(pendingDeletePurchase.purchaseId);
+      const refreshedPurchases = await getPurchases();
+      setPurchases(refreshedPurchases);
+      setSuccessMessage(t("query.deleteSuccess"));
+      setErrorMessage(null);
+      setPendingDeletePurchase(null);
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, { action: "delete", resource: "purchase" }));
+    } finally {
+      setDeletingPurchase(false);
+    }
   };
 
   useEffect(() => {
-    const loadCollections = async () => {
-      setLoadingCollections(true);
-      setErrorMessage(null);
-      try {
-        const data = await getCollections();
-        setCollections(data);
-        setErrorMessage(null);
+    let active = true;
 
-        if (!selectedCollectionId && data.length > 0) {
-          const firstCollectionId = String(data[0].id);
-          setSelectedCollectionId(firstCollectionId);
-          setSearchParams((current) => {
-            const next = new URLSearchParams(current);
-            next.set("collectionId", firstCollectionId);
-            return next;
-          });
+    Promise.all([getPurchases(), getCollections()])
+      .then(async ([purchaseData, collections]) => {
+        const figurinePages = await Promise.all(
+          collections.map((collection) => getCollectionFigurines(collection.id, { includeRestocks: true })),
+        );
+        const figurineMap: Record<number, FigurineDisplay> = {};
+        const collectionIdByFigurineId: Record<number, number> = {};
+
+        figurinePages.forEach((page, index) => page.forEach((figurine) => {
+          figurineMap[figurine.collectionFigurineId] = {
+            displayableName: figurine.displayableName,
+            officialImageUrls: figurine.officialImageUrls,
+          };
+          collectionIdByFigurineId[figurine.collectionFigurineId] = collections[index].id;
+        }));
+
+        const purchaseCollectionMap = Object.fromEntries(
+          purchaseData.flatMap((purchase) => {
+            const collectionId = purchase.figurines
+              .map((line) => collectionIdByFigurineId[line.collectionFigurineId])
+              .find((value): value is number => typeof value === "number");
+            return collectionId ? [[purchase.purchaseId, collectionId]] : [];
+          }),
+        );
+
+        if (active) {
+          setPurchases(purchaseData);
+          setFigurinesByCollectionId(figurineMap);
+          setCollectionIdByPurchaseId(purchaseCollectionMap);
+          setCollectionsById(Object.fromEntries(collections.map((collection) => [collection.id, collection])));
         }
-      } catch (err) {
-        setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "collections" }));
-      } finally {
-        setLoadingCollections(false);
-      }
-    };
+      })
+      .catch((error) => {
+        if (active) {
+          setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "purchases" }));
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-    void loadCollections();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
-    const collectionIdNumber = Number(selectedCollectionId);
-    if (!Number.isFinite(collectionIdNumber) || collectionIdNumber <= 0) {
-      setCollectionFigurines([]);
-      setPurchases([]);
-      return;
+    const state = location.state as { purchaseUpdated?: boolean } | null;
+    if (state?.purchaseUpdated) {
+      setSuccessMessage(t("query.updateSuccess"));
+      navigate(location.pathname, { replace: true, state: null });
     }
+  }, [location.pathname, location.state, navigate, t]);
 
-    const loadCollectionData = async () => {
-      setLoadingFigurines(true);
-      setErrorMessage(null);
-      try {
-        const figurines = await getCollectionFigurines(collectionIdNumber);
-        setCollectionFigurines(figurines);
-        const backendPurchases = await loadBackendPurchasesForCollection(figurines);
-        setPurchases(backendPurchases);
-      } catch (err) {
-        setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "collection purchases" }));
-      } finally {
-        setLoadingFigurines(false);
-      }
-    };
-
-    void loadCollectionData();
-  }, [selectedCollectionId]);
-
-  useEffect(() => {
-    const shouldOpenNew = searchParams.get("new") === "1";
-    if (shouldOpenNew && selectedCollectionId && !dialogOpen) {
-      setEditingPurchaseId(null);
-      setDialogOpen(true);
-
-      setSearchParams((current) => {
-        const next = new URLSearchParams(current);
-        next.delete("new");
-        return next;
-      });
-    }
-  }, [searchParams, selectedCollectionId, dialogOpen]);
-
-  const selectedCollection = useMemo(
-    () => collections.find((collection) => String(collection.id) === selectedCollectionId) ?? null,
-    [collections, selectedCollectionId]
-  );
-
-  const editingPurchase = useMemo(
-    () => purchases.find((purchase) => purchase.id === editingPurchaseId) ?? null,
-    [editingPurchaseId, purchases]
-  );
-
-  const figurineNameById = useMemo(
-    () => toFigurineNameById(collectionFigurines),
-    [collectionFigurines]
-  );
-
-  const figurineThumbnailById = useMemo(
+  const totalByCurrency = useMemo(
     () =>
-      Object.fromEntries(
-        collectionFigurines.map((figurine) => [figurine.id, figurine.officialImageUrls?.[0]?.trim() || ""])
+      Object.entries(
+        purchases.reduce<Record<string, number>>((totals, purchase) => ({
+          ...totals,
+          [purchase.currency]: (totals[purchase.currency] ?? 0) + purchase.totalAmount,
+        }), {}),
       ),
-    [collectionFigurines]
+    [purchases],
   );
 
-  const totalsByCurrency = useMemo(() => {
-    const grouped = purchases.reduce<Record<string, number>>((accumulator, purchase) => {
-      const currentTotal = accumulator[purchase.currency] ?? 0;
-      return {
-        ...accumulator,
-        [purchase.currency]: currentTotal + purchase.totalAmount,
-      };
-    }, {});
-
-    return Object.entries(grouped)
-      .map(([currency, totalAmount]) => ({ currency, totalAmount }))
-      .sort((a, b) => a.currency.localeCompare(b.currency));
-  }, [purchases]);
-
-  const grandTotalFigurines = useMemo(
-    () => purchases.reduce((total, purchase) => total + purchase.totalFigurines, 0),
-    [purchases]
-  );
-
-  const handleCollectionChange = (value: string) => {
-    setSelectedCollectionId(value);
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current);
-      next.set("collectionId", value);
-      next.delete("new");
-      return next;
-    });
-  };
-
-  const reloadCurrentCollectionPurchases = async (): Promise<void> => {
-    const collectionIdNumber = Number(selectedCollectionId);
-    if (!Number.isFinite(collectionIdNumber) || collectionIdNumber <= 0) {
-      setCollectionFigurines([]);
-      setPurchases([]);
-      return;
-    }
-
-    const figurines = await getCollectionFigurines(collectionIdNumber);
-    setCollectionFigurines(figurines);
-    const backendPurchases = await loadBackendPurchasesForCollection(figurines);
-    setPurchases(backendPurchases);
-  };
-
-  const handleSavePurchase = async (input: PurchaseRecordInput) => {
-    if (!selectedCollectionId) {
-      return;
-    }
-
-    const currentEditingPurchase = editingPurchase;
-
-    if (!editingPurchaseId) {
-      await createPurchaseSummaryLineItems(input);
-    } else {
-      const existingBackendPurchaseId = currentEditingPurchase?.purchaseId ?? Number(editingPurchaseId);
-
-      if (!Number.isFinite(existingBackendPurchaseId) || existingBackendPurchaseId <= 0) {
-        throw new Error("Unable to identify purchase id for update.");
-      }
-
-      await updatePurchaseSummaryLineItems(existingBackendPurchaseId, input);
-    }
-
-    try {
-      await reloadCurrentCollectionPurchases();
-    } catch (err) {
-      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "purchases" }));
-      return;
-    }
-
-    setErrorMessage(null);
-    setSuccessMessage(editingPurchaseId ? "Purchase updated successfully." : "Purchase recorded successfully.");
-    setEditingPurchaseId(null);
-    setDialogOpen(false);
-  };
-
-  const handleOpenCreateDialog = () => {
-    setEditingPurchaseId(null);
-    setDialogOpen(true);
-  };
-
-  const handleOpenEditDialog = async (purchase: PurchaseRecord) => {
-    const backendPurchaseId = purchase.purchaseId ?? Number(purchase.id);
-
-    if (!Number.isFinite(backendPurchaseId) || backendPurchaseId <= 0) {
-      setEditingPurchaseId(purchase.id);
-      setDialogOpen(true);
-      return;
-    }
-
-    try {
-      const response = await getPurchaseSummaryLineItemsById(backendPurchaseId);
-      const refreshedPurchase = toPurchaseRecordFromSummaryResponse(response, figurineNameById);
-      setPurchases((current) =>
-        current.map((item) => (item.id === purchase.id ? refreshedPurchase : item))
-      );
-      setEditingPurchaseId(refreshedPurchase.id);
-      setDialogOpen(true);
-      setErrorMessage(null);
-    } catch (err) {
-      setErrorMessage(getApiErrorMessage(err, { action: "load", resource: "purchase" }));
-    }
-  };
-
-  const handleDeletePurchase = async (purchase: PurchaseRecord) => {
-    const backendPurchaseId = purchase.purchaseId ?? Number(purchase.id);
-
-    if (!Number.isFinite(backendPurchaseId) || backendPurchaseId <= 0) {
-      setErrorMessage("Unable to identify purchase id for delete.");
-      setDeletePurchaseTarget(null);
-      return;
-    }
-
-    setIsDeletingPurchase(true);
-    try {
-      await deletePurchaseSummaryLineItems(backendPurchaseId);
-      await reloadCurrentCollectionPurchases();
-      setSuccessMessage("Purchase deleted successfully.");
-      setErrorMessage(null);
-      if (editingPurchaseId === purchase.id) {
-        setEditingPurchaseId(null);
-        setDialogOpen(false);
-      }
-    } catch (err) {
-      setErrorMessage(getApiErrorMessage(err, { action: "delete", resource: "purchase" }));
-    } finally {
-      setIsDeletingPurchase(false);
-      setDeletePurchaseTarget(null);
-    }
-  };
-
-  const handleSyncPurchase = async (purchase: PurchaseRecord) => {
-    const backendPurchaseId = purchase.purchaseId ?? Number(purchase.id);
-    const collectionIdNumber = Number(selectedCollectionId);
-
-    if (!Number.isFinite(backendPurchaseId) || backendPurchaseId <= 0) {
-      setErrorMessage("Unable to identify purchase id for sync.");
-      setSyncPurchaseTarget(null);
-      return;
-    }
-
-    if (!Number.isFinite(collectionIdNumber) || collectionIdNumber <= 0) {
-      setErrorMessage("Unable to identify collection id for sync.");
-      setSyncPurchaseTarget(null);
-      return;
-    }
-
-    setIsSyncingPurchase(true);
-    try {
-      await syncPurchaseTotal(backendPurchaseId, collectionIdNumber);
-      await reloadCurrentCollectionPurchases();
-      setSuccessMessage("Purchase totals synced successfully.");
-      setErrorMessage(null);
-      setSyncPurchaseTarget(null);
-    } catch (err) {
-      setErrorMessage(getApiErrorMessage(err, { action: "update", resource: "purchases" }));
-    } finally {
-      setIsSyncingPurchase(false);
-    }
-  };
-
-  const handleOpenDeleteDialog = (purchase: PurchaseRecord) => {
-    setDeletePurchaseTarget(purchase);
-  };
-
-  const handleOpenSyncDialog = (purchase: PurchaseRecord) => {
-    setSyncPurchaseTarget(purchase);
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-    setEditingPurchaseId(null);
-  };
-
-  const renderShippingStatusTimeline = (status: ShippingStatus) => {
-    const activeIndex = SHIPPING_STATUS_INDEX[status];
-    const isDelivered = status === "DELIVERED";
-    const activeAccent = isDelivered ? theme.palette.success.main : theme.palette.primary.dark;
-
-    return (
-      <Stack spacing={0.5}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-          {SHIPPING_STATUS_STEPS.map((step, index) => {
-            const isReached = index <= activeIndex;
-            const isCurrent = index === activeIndex;
-            const isPast = index < activeIndex;
-
-            return (
-              <Box
-                key={step.value}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  flex: index === SHIPPING_STATUS_STEPS.length - 1 ? "0 0 auto" : "1 1 auto",
-                  minWidth: 0,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: isCurrent ? 11 : 9,
-                    height: isCurrent ? 11 : 9,
-                    borderRadius: "50%",
-                    border: `1px solid ${isReached ? activeAccent : alpha(theme.palette.text.disabled, 0.45)}`,
-                    bgcolor: isCurrent
-                      ? activeAccent
-                      : isPast
-                        ? theme.palette.background.paper
-                        : alpha(theme.palette.text.disabled, 0.2),
-                    boxShadow: isCurrent ? `0 0 0 3px ${alpha(activeAccent, 0.22)}` : "none",
-                    transition: "all 120ms ease-out",
-                  }}
-                />
-                {index < SHIPPING_STATUS_STEPS.length - 1 && (
-                  <Box
-                    sx={{
-                      flex: 1,
-                      height: 2,
-                      mx: 0.5,
-                      borderRadius: 999,
-                      bgcolor: index < activeIndex
-                        ? activeAccent
-                        : alpha(theme.palette.text.disabled, 0.3),
-                    }}
-                  />
-                )}
-              </Box>
-            );
-          })}
-        </Box>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${SHIPPING_STATUS_STEPS.length}, minmax(0, 1fr))`,
-            columnGap: 0.5,
-          }}
-        >
-          {SHIPPING_STATUS_STEPS.map((step, index) => {
-            const isReached = index <= activeIndex;
-            const isCurrent = index === activeIndex;
-
-            return (
-              <Stack
-                key={`${step.value}-label`}
-                direction="row"
-                spacing={0.35}
-                alignItems="center"
-                justifyContent={index === SHIPPING_STATUS_STEPS.length - 1 ? "flex-end" : "flex-start"}
-                sx={{
-                  color: isReached
-                    ? (isDelivered ? theme.palette.success.dark : (isCurrent ? activeAccent : "text.primary"))
-                    : "text.secondary",
-                  minWidth: 0,
-                }}
-              >
-                <step.Icon
-                  sx={{
-                    fontSize: isCurrent ? 16 : 13,
-                    opacity: isReached ? 1 : 0.72,
-                  }}
-                />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontWeight: isCurrent ? 700 : 500,
-                    lineHeight: 1.15,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {step.label}
-                </Typography>
-              </Stack>
-            );
-          })}
-        </Box>
-      </Stack>
-    );
-  };
+  if (loading) {
+    return <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}><CircularProgress /></Box>;
+  }
 
   return (
-    <Box
-      sx={{
-        p: { xs: 1.5, sm: 2, md: 3 },
-        minHeight: "calc(100vh - 96px)",
-      }}
-    >
-      <Box
-        sx={{
-          position: "sticky",
-          top: 0,
-          zIndex: 9,
-          bgcolor: "background.default",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          mx: { xs: -1.5, sm: -2, md: -3 },
-          px: { xs: 1.5, sm: 2, md: 3 },
-          pt: 0.25,
-          pb: 1,
-          mb: 2,
-        }}
-      >
-        <Box sx={{ mb: 2.5 }}>
-          <AppPageHeader
-            eyebrow="Collections"
-            title="Purchases"
-            subtitle="Track purchase records, totals, and shipping progress by collection."
-          />
-        </Box>
+    <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, minHeight: "calc(100vh - 96px)" }}>
+      <AppPageHeader
+        eyebrow={t("query.eyebrow")}
+        title={t("query.title")}
+        subtitle={t("query.subtitle")}
+        compact
+      />
 
-        <Box
-          sx={{
-            p: 1.6,
-            borderRadius: 2,
-            mb: selectedCollection ? 1 : 0,
-          }}
-        >
-          <Stack direction={{ xs: "column", md: "row" }} spacing={1.2} alignItems={{ md: "center" }}>
-            {collections.length > 0 && (
-              <FormControl size="small" sx={{ minWidth: 260 }} disabled={loadingCollections}>
-                <InputLabel>Collection View</InputLabel>
-                <Select
-                  value={selectedCollectionId}
-                  label="Collection View"
-                  onChange={(event) => handleCollectionChange(event.target.value)}
-                >
-                  {collections.map((collection) => (
-                    <MenuItem key={collection.id} value={String(collection.id)}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <span aria-hidden="true">📦</span>
-                        <span>{collection.name}</span>
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-            {hasPermission("purchases:create") && (
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleOpenCreateDialog}
-                sx={{ flexShrink: 0 }}
-                disabled={!selectedCollectionId || loadingFigurines}
-              >
-                Record Purchase
-              </Button>
-            )}
+      {errorMessage && <Alert severity="error" sx={{ mt: 2 }}>{errorMessage}</Alert>}
+
+      {!errorMessage && purchases.length === 0 && (
+        <Card sx={{ mt: 2, p: 2.5 }}>
+          <Typography color="text.secondary">{t("query.empty")}</Typography>
+        </Card>
+      )}
+
+      {purchases.length > 0 && (
+        <>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mt: 2, mb: 1.5 }}>
+            {totalByCurrency.map(([currency, total]) => (
+              <Chip key={currency} icon={<ReceiptLongOutlinedIcon />} label={formatCurrencyAmount(total, currency)} />
+            ))}
           </Stack>
-        </Box>
 
-        {selectedCollection && (
-          <Typography variant="subtitle2" sx={{ mb: 1, color: "text.secondary" }}>
-            {selectedCollection.name} · {purchases.length} purchase record{purchases.length === 1 ? "" : "s"}
-          </Typography>
-        )}
-      </Box>
+          <Stack spacing={1.5}>
+            {purchases.map((purchase) => (
+              <Card key={purchase.purchaseId} sx={{ p: { xs: 1.5, md: 2 } }}>
+                <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" spacing={1.5}>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 800 }}>{purchase.seller}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {t("query.purchaseDate")}: {purchase.purchaseDate}
+                      {purchase.orderNumber ? ` · ${t("query.orderNumber")}: ${purchase.orderNumber}` : ""}
+                    </Typography>
+                    <Stack direction="row" spacing={0.6} sx={{ mt: 0.8 }} useFlexGap flexWrap="wrap">
+                      <Chip size="small" label={purchase.purchaseChannel === "ONLINE" ? t("query.online") : t("query.physicalStore")} />
+                      {purchase.shippingStatus && (
+                        <Chip size="small" color={SHIPPING_STATUS_COLOR[purchase.shippingStatus]} label={t(`query.shipping.${purchase.shippingStatus}`)} />
+                      )}
+                    </Stack>
+                  </Box>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Box sx={{ textAlign: { xs: "left", md: "right" } }}>
+                      <Typography variant="caption" color="text.secondary">{t("query.total")}</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 900 }}>
+                        {formatCurrencyAmount(purchase.totalAmount, purchase.currency)}
+                      </Typography>
+                    </Box>
+                    {hasPermission("purchases:update") && (
+                      <Tooltip title={t("query.edit")}>
+                        <IconButton
+                          aria-label={t("query.edit")}
+                          onClick={() => navigate(`/purchases/${purchase.purchaseId}/edit`, {
+                            state: {
+                              purchase,
+                              collectionId: collectionIdByPurchaseId[purchase.purchaseId],
+                              collection: collectionsById[collectionIdByPurchaseId[purchase.purchaseId]],
+                            },
+                          })}
+                        >
+                          <EditOutlinedIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {hasPermission("purchases:delete") && (
+                      <Tooltip title={t("query.delete")}>
+                        <IconButton
+                          color="error"
+                          aria-label={t("query.delete")}
+                          onClick={() => setPendingDeletePurchase(purchase)}
+                        >
+                          <DeleteOutlineOutlinedIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Stack>
+                </Stack>
+
+                <Stepper
+                  activeStep={Math.max(0, SHIPPING_STEPS.indexOf(purchase.shippingStatus ?? "NOT_SHIPPED"))}
+                  alternativeLabel
+                  sx={{
+                    mt: 2,
+                    px: { xs: 0, sm: 2 },
+                    "& .MuiStepLabel-label": {
+                      fontSize: { xs: "0.66rem", sm: "0.75rem" },
+                    },
+                    "& .MuiStepIcon-root.Mui-active": {
+                      color: "info.main",
+                    },
+                    "& .MuiStepIcon-root.Mui-completed": {
+                      color: "success.main",
+                    },
+                  }}
+                >
+                  {SHIPPING_STEPS.map((status) => (
+                    <Step key={status}>
+                      <StepLabel>{t(`query.shipping.${status}`)}</StepLabel>
+                    </Step>
+                  ))}
+                </Stepper>
+
+                <Stack spacing={0.8} sx={{ mt: 1.5 }}>
+                  {purchase.figurines.map((line) => {
+                    const figurine = figurinesByCollectionId[line.collectionFigurineId];
+                    return (
+                      <Box key={line.id} sx={{ display: "flex", alignItems: "center", gap: 1, p: 0.9, borderRadius: 1, bgcolor: "action.hover" }}>
+                        {figurine?.officialImageUrls[0] ? <Box component="img" src={figurine.officialImageUrls[0]} alt="" sx={{ width: 40, height: 40, objectFit: "cover", borderRadius: 0.75 }} /> : <Box sx={{ width: 40, height: 40, borderRadius: 0.75, bgcolor: "divider" }} />}
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography variant="body2" noWrap>{figurine?.displayableName ?? t("query.unknownFigurine", { id: line.collectionFigurineId })}</Typography>
+                          <Typography variant="caption" color="text.secondary">{line.purchaseType} · {t("query.quantity")}: {line.quantity}</Typography>
+                        </Box>
+                        <Typography variant="body2" sx={{ fontWeight: 800 }}>{formatCurrencyAmount(line.pricePaid * line.quantity, purchase.currency)}</Typography>
+                      </Box>
+                    );
+                  })}
+                </Stack>
+
+                {(purchase.trackingNumber || purchase.carrier || purchase.shippedDate || purchase.deliveredDate) && (
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                    {[purchase.carrier, purchase.trackingNumber, purchase.shippedDate && `${t("query.shipped")}: ${purchase.shippedDate}`, purchase.deliveredDate && `${t("query.delivered")}: ${purchase.deliveredDate}`].filter(Boolean).join(" · ")}
+                  </Typography>
+                )}
+              </Card>
+            ))}
+          </Stack>
+        </>
+      )}
 
       <Snackbar
         open={Boolean(successMessage)}
-        autoHideDuration={3000}
+        autoHideDuration={3200}
         onClose={() => setSuccessMessage(null)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
@@ -578,351 +290,42 @@ export default function PurchasesPage() {
         </Alert>
       </Snackbar>
 
-      {errorMessage && <Alert severity="error" sx={{ mb: 2 }}>{errorMessage}</Alert>}
-
-      {purchases.length > 0 && (
-        <Card
-          sx={{
-            p: 1.4,
-            borderRadius: 2,
-            mb: 1.2,
-            bgcolor: alpha(theme.palette.background.paper, 0.92),
-            border: `1px solid ${alpha(theme.palette.divider, 0.35)}`,
-          }}
-        >
-          <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} justifyContent="space-between">
-            <Box>
-              <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                Grand total by currency
-              </Typography>
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 0.35, sm: 1.2 }} sx={{ mt: 0.3 }}>
-                {totalsByCurrency.map((item) => (
-                  <Typography key={item.currency} variant="subtitle2" sx={{ fontWeight: 800 }}>
-                    {formatPurchaseAmount(item.totalAmount, item.currency)}
-                  </Typography>
-                ))}
-              </Stack>
-            </Box>
-            <Box>
-              <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                Total figurines purchased
-              </Typography>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                {formatCount(grandTotalFigurines)}
-              </Typography>
-            </Box>
-          </Stack>
-        </Card>
-      )}
-
-      <Stack spacing={1}>
-        {purchases.length === 0 ? (
-          <Card sx={{ p: 1.6, borderRadius: 2 }}>
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              No purchases recorded for this collection yet.
-            </Typography>
-          </Card>
-        ) : (
-          purchases.map((purchase) => (
-            <Card
-              key={purchase.id}
-              sx={{
-                p: 1.5,
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.background.paper, 0.92),
-                boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
-              }}
-            >
-              <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" spacing={1}>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                    {purchase.store?.trim() ? purchase.store : "Store not specified"}
-                  </Typography>
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Order date: {purchase.orderDate?.trim() ? formatIsoDateLabel(purchase.orderDate, { includeDay: true }) : "No order date"}
-                  </Typography>
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Order number: {purchase.orderNumber?.trim() ? purchase.orderNumber : "Not specified"}
-                  </Typography>
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Purchase ID: {purchase.purchaseId ?? "pending"}
-                  </Typography>
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Tracking: {purchase.trackingNumber?.trim() ? purchase.trackingNumber : "Not available"}
-                    {purchase.carrier?.trim() ? ` · Carrier: ${purchase.carrier}` : ""}
-                  </Typography>
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Shipped date: {purchase.shippedDate?.trim() ? formatIsoDateLabel(purchase.shippedDate, { includeDay: true }) : "Not shipped yet"}
-                  </Typography>
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Delivered date: {purchase.deliveredDate?.trim() ? formatIsoDateLabel(purchase.deliveredDate, { includeDay: true }) : "Not delivered yet"}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ minWidth: { md: 200 } }}>
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-                    Total amount
-                  </Typography>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                    {formatPurchaseAmount(purchase.totalAmount, purchase.currency)}
-                  </Typography>
-                  <br/>
-                  <Box sx={{ mt: 1.5 }}>
-                    {renderShippingStatusTimeline(purchase.shippingStatus)}
-                  </Box>
-                  <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 2.5 }}>
-                    Total figurines: {formatCount(purchase.totalFigurines)}
-                  </Typography>
-                </Box>
-                <Stack direction="row" spacing={0.1} alignItems="center" sx={{ minWidth: 84, justifyContent: "flex-end" }}>
-                  {hasPermission("purchases:sync") && (
-                    <Tooltip title="Sync totals">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleOpenSyncDialog(purchase)}
-                        sx={{ color: "secondary.main", "&:hover": { color: "secondary.light" } }}
-                        disabled={!selectedCollectionId || loadingFigurines}
-                      >
-                        <SyncAltOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {hasPermission("purchases:update") && (
-                    <Tooltip title="Edit">
-                      <IconButton
-                        size="small"
-                        onClick={() => void handleOpenEditDialog(purchase)}
-                        sx={{ color: "primary.main", "&:hover": { color: "primary.light" } }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {hasPermission("purchases:delete") && (
-                    <Tooltip title="Delete">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleOpenDeleteDialog(purchase)}
-                        sx={{ color: "error.main", "&:hover": { color: "error.light" } }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </Stack>
-              </Stack>
-              <Divider sx={{ my: 1, opacity: 0.55 }} />
-              <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mb: 0.4, fontWeight: 700 }}>
-                Line items
-              </Typography>
-              <Stack spacing={0.6}>
-                {purchase.lines.map((line, index) => (
-                  <Box
-                    key={`${purchase.id}-line-${index}`}
-                    sx={{
-                      px: 0.9,
-                      py: 0.65,
-                      borderRadius: 1,
-                      bgcolor: alpha(theme.palette.background.default, 0.42),
-                    }}
-                  >
-                    <Stack direction="row" spacing={0.8} alignItems="center" sx={{ minWidth: 0 }}>
-                      <Tooltip
-                        arrow
-                        placement="right"
-                        enterDelay={180}
-                        title={(
-                          <Stack spacing={0.7} sx={{ p: 0.2, minWidth: 190 }}>
-                            {figurineThumbnailById[line.figurineId] ? (
-                              <Box
-                                component="img"
-                                src={figurineThumbnailById[line.figurineId]}
-                                alt={line.figurineName}
-                                sx={{
-                                  width: 190,
-                                  height: 190,
-                                  objectFit: "cover",
-                                  borderRadius: 1,
-                                  bgcolor: "common.black",
-                                }}
-                              />
-                            ) : (
-                              <Box
-                                sx={{
-                                  width: 190,
-                                  height: 190,
-                                  borderRadius: 1,
-                                  bgcolor: "action.hover",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  color: "text.secondary",
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                }}
-                              >
-                                No image available
-                              </Box>
-                            )}
-                            <Typography variant="caption" sx={{ color: "common.white" }}>
-                              {line.figurineName} · #{line.figurineId}
-                            </Typography>
-                          </Stack>
-                        )}
-                      >
-                        {figurineThumbnailById[line.figurineId] ? (
-                          <Box
-                            component="img"
-                            src={figurineThumbnailById[line.figurineId]}
-                            alt={line.figurineName}
-                            sx={{
-                              width: 24,
-                              height: 24,
-                              objectFit: "cover",
-                              borderRadius: 0.75,
-                              flexShrink: 0,
-                            }}
-                          />
-                        ) : (
-                          <Box
-                            sx={{
-                              width: 24,
-                              height: 24,
-                              borderRadius: 0.75,
-                              bgcolor: "action.hover",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: "text.secondary",
-                              fontSize: 10,
-                              fontWeight: 700,
-                              flexShrink: 0,
-                            }}
-                          >
-                            {line.figurineName.slice(0, 1).toUpperCase()}
-                          </Box>
-                        )}
-                      </Tooltip>
-                      <Typography variant="caption" sx={{ display: "block", color: "text.primary", fontWeight: 700 }} noWrap>
-                        {line.figurineName}
-                      </Typography>
-                    </Stack>
-                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                      Qty: {formatCount(line.quantity)} · Price: {formatPurchaseAmount(line.pricePaid, purchase.currency)} · Type: {line.purchaseType}
-                    </Typography>
-                  </Box>
-                ))}
-              </Stack>
-            </Card>
-          ))
-        )}
-      </Stack>
-
-      <PurchaseFormDialog
-        open={dialogOpen}
-        title={editingPurchase ? "Edit Purchase" : "Record Purchase"}
-        submitLabel={editingPurchase ? "Update Purchase" : "Save Purchase"}
-        initialPurchase={editingPurchase}
-        onClose={handleCloseDialog}
-        onSubmit={handleSavePurchase}
-        figurines={collectionFigurines}
-      />
-
       <Dialog
-        open={Boolean(syncPurchaseTarget)}
-        onClose={() => {
-          if (!isSyncingPurchase) {
-            setSyncPurchaseTarget(null);
-          }
+        open={Boolean(pendingDeletePurchase)}
+        onClose={(_, reason) => {
+          if (deletingPurchase && (reason === "backdropClick" || reason === "escapeKeyDown")) return;
+          if (!deletingPurchase) setPendingDeletePurchase(null);
         }}
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Sync purchase total?</DialogTitle>
+        <DialogTitle>{t("query.deleteTitle")}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            This action will sync this purchase total back into the current collection. It can change the figurine count in the collection.
-          </DialogContentText>
-          {syncPurchaseTarget && selectedCollection && (
-            <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 1 }}>
-              Collection: {selectedCollection.name} · Purchase: {syncPurchaseTarget.orderNumber?.trim() ? syncPurchaseTarget.orderNumber : syncPurchaseTarget.purchaseId ?? syncPurchaseTarget.id}
+          <Typography variant="body2" color="text.secondary">
+            {t("query.deleteDescription")}
+          </Typography>
+          {pendingDeletePurchase && (
+            <Typography variant="caption" sx={{ display: "block", mt: 1, fontWeight: 700 }}>
+              {pendingDeletePurchase.seller} · {pendingDeletePurchase.purchaseDate}
             </Typography>
           )}
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setSyncPurchaseTarget(null)}
-            disabled={isSyncingPurchase}
+            onClick={() => setPendingDeletePurchase(null)}
+            disabled={deletingPurchase}
             startIcon={<CancelOutlinedIcon />}
           >
-            Cancel
+            {t("query.cancel")}
           </Button>
           <Button
-            variant="contained"
-            startIcon={isSyncingPurchase ? <CircularProgress size={18} color="inherit" /> : <SyncAltOutlinedIcon />}
-            onClick={() => {
-              if (syncPurchaseTarget) {
-                void handleSyncPurchase(syncPurchaseTarget);
-              }
-            }}
-            disabled={isSyncingPurchase}
-          >
-            {isSyncingPurchase ? "Syncing..." : "Sync"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={Boolean(deletePurchaseTarget)}
-        onClose={() => {
-          if (!isDeletingPurchase) {
-            setDeletePurchaseTarget(null);
-          }
-        }}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>Delete purchase?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {deletePurchaseTarget
-              ? `Delete purchase ${deletePurchaseTarget.orderNumber?.trim() ? deletePurchaseTarget.orderNumber : deletePurchaseTarget.purchaseId ?? deletePurchaseTarget.id}? This cannot be undone.`
-              : "Delete this purchase? This cannot be undone."}
-          </DialogContentText>
-          {deletePurchaseTarget && selectedCollection && (
-            <Stack spacing={0.3} sx={{ mt: 1.2 }}>
-              <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                Collection: {selectedCollection.name}
-              </Typography>
-              <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                Total amount: {formatPurchaseAmount(deletePurchaseTarget.totalAmount, deletePurchaseTarget.currency)}
-              </Typography>
-              <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                Figurines: {formatCount(deletePurchaseTarget.totalFigurines)}
-              </Typography>
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setDeletePurchaseTarget(null)}
-            disabled={isDeletingPurchase}
-            startIcon={<CancelOutlinedIcon />}
-          >
-            Cancel
-          </Button>
-          <Button
+            onClick={() => void handleConfirmDelete()}
             color="error"
             variant="contained"
-            onClick={() => {
-              if (deletePurchaseTarget) {
-                void handleDeletePurchase(deletePurchaseTarget);
-              }
-            }}
-            disabled={isDeletingPurchase}
-            startIcon={<DeleteIcon />}
+            disabled={deletingPurchase}
+            startIcon={deletingPurchase ? <CircularProgress size={18} color="inherit" /> : <DeleteOutlineOutlinedIcon />}
           >
-            {isDeletingPurchase ? "Deleting..." : "Delete"}
+            {t("query.deleteConfirm")}
           </Button>
         </DialogActions>
       </Dialog>
