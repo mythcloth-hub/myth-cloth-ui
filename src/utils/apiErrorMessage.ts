@@ -32,6 +32,9 @@ const API_ERROR_CODE_CONFIG: Record<string, ApiErrorCodeConfig> = {
     message: "This collection already exists.",
     severity: "warning",
   },
+  COLLECTOR_PURCHASE_NOT_FOUND: {
+    message: "We couldn't find this purchase. It may have been removed or is no longer available.",
+  },
   COLLECTOR_EMAIL_ALREADY_EXISTS: {
     message: "That email address is already registered.",
     severity: "warning",
