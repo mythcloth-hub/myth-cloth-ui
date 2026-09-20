@@ -905,7 +905,7 @@ export default function FigurineCollectionPage() {
           mx: { xs: -1.5, sm: -2, md: -3 },
           px: { xs: 1.5, sm: 2, md: 3 },
           pt: 0.25,
-          pb: 1,
+          pb: { xs: 0.25, sm: 1 },
           mb: 2,
           borderBottom: "1px solid rgba(212,175,55,0.08)",
           animation: "figurineHeaderReveal 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both",

@@ -1,11 +1,12 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import type { ReactNode } from "react";
 
 type AppPageHeaderProps = {
   eyebrow: string;
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   actions?: ReactNode;
   compact?: boolean;
 };
@@ -91,19 +92,38 @@ export default function AppPageHeader({
           >
             {eyebrow}
           </Typography>
-          <Typography
-            variant="h4"
-            sx={{
-              fontSize: {
-                xs: "1.4rem",
-                md: compact ? "1.9rem" : "2.2rem",
-              },
-              fontWeight: 800,
-              lineHeight: 1.08,
-            }}
-          >
-            {title}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.35, minWidth: 0 }}>
+            <Typography
+              variant="h4"
+              sx={{
+                minWidth: 0,
+                fontSize: {
+                  xs: "1.4rem",
+                  md: compact ? "1.9rem" : "2.2rem",
+                },
+                fontWeight: 800,
+                lineHeight: 1.08,
+              }}
+            >
+              {title}
+            </Typography>
+            {subtitle && (
+              <Tooltip title={subtitle} arrow>
+                <IconButton
+                  size="small"
+                  aria-label="Show page description"
+                  sx={{
+                    display: { xs: "inline-flex", md: "none" },
+                    p: 0.25,
+                    flexShrink: 0,
+                    color: "text.secondary",
+                  }}
+                >
+                  <InfoOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
           {subtitle && (
             <Typography
               variant="body2"
@@ -114,7 +134,9 @@ export default function AppPageHeader({
                 lineHeight: 1.6,
               }}
             >
-              {subtitle}
+              <Box component="span" sx={{ display: { xs: "none", md: "inline" } }}>
+                {subtitle}
+              </Box>
             </Typography>
           )}
         </Box>
