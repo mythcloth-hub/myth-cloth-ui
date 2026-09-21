@@ -1,5 +1,5 @@
 import httpClient from "../../../api/httpClient";
-import type { CreatePurchaseRequest, CreatePurchaseResponse, PurchaseRecord } from "../types/purchase";
+import type { CreatePurchaseRequest, CreatePurchaseResponse, PurchaseRecord, ShippingStatus } from "../types/purchase";
 
 const API_BASE = "/collectors/purchases/collections";
 
@@ -37,4 +37,13 @@ export async function updatePurchase(
 
 export async function deletePurchase(purchaseId: number): Promise<void> {
   await httpClient.delete(`/collectors/purchases/${purchaseId}`);
+}
+
+export async function updatePurchaseShippingStatus(
+  purchaseId: number,
+  shippingStatus: ShippingStatus,
+): Promise<void> {
+  await httpClient.patch(`/collectors/purchases/${purchaseId}/shipping-status`, {
+    shippingStatus,
+  });
 }

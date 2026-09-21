@@ -70,6 +70,8 @@
     "editComingSoon": "Editing purchases will be available soon.",
     "edit": "Edit purchase",
     "updateSuccess": "Purchase updated successfully.",
+    "shippingUpdateSuccess": "Shipping status updated successfully.",
+    "changeShippingStatus": "Change shipping status to {{status}}",
     "delete": "Delete purchase",
     "deleteTitle": "Delete purchase?",
     "deleteDescription": "This permanently deletes the purchase and removes all figurines associated with it. This action cannot be undone.",
