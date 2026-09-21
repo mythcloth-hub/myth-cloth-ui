@@ -16,6 +16,7 @@ import {
   Snackbar,
   Stack,
   Step,
+  StepButton,
   StepLabel,
   Stepper,
   Tooltip,
@@ -31,7 +32,7 @@ import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import { getCollections, getCollectionFigurines } from "../../collections/api/collectionApi";
 import type { Collection, CollectionFigurine } from "../../collections/types/collection";
-import { deletePurchase, getPurchases } from "../api/purchaseApi";
+import { deletePurchase, getPurchases, updatePurchaseShippingStatus } from "../api/purchaseApi";
 import type { PurchaseRecord, ShippingStatus } from "../types/purchase";
 
 const SHIPPING_STATUS_COLOR: Record<ShippingStatus, "default" | "info" | "success"> = {
@@ -58,6 +59,38 @@ export default function PurchasesPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [pendingDeletePurchase, setPendingDeletePurchase] = useState<PurchaseRecord | null>(null);
   const [deletingPurchase, setDeletingPurchase] = useState(false);
+  const [updatingShippingPurchaseId, setUpdatingShippingPurchaseId] = useState<number | null>(null);
+
+  const handleShippingStatusChange = async (purchase: PurchaseRecord, shippingStatus: ShippingStatus) => {
+    if (
+      !hasPermission("purchases:update")
+      || updatingShippingPurchaseId !== null
+      || pendingDeletePurchase !== null
+      || shippingStatus === (purchase.shippingStatus ?? "NOT_SHIPPED")
+    ) return;
+
+    setUpdatingShippingPurchaseId(purchase.purchaseId);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      await updatePurchaseShippingStatus(purchase.purchaseId, shippingStatus);
+      setPurchases((current) => current.map((record) => (
+        record.purchaseId === purchase.purchaseId ? { ...record, shippingStatus } : record
+      )));
+      setSuccessMessage(t("query.shippingUpdateSuccess"));
+
+      // Reload backend-managed dates without assuming a PATCH response body.
+      try {
+        setPurchases(await getPurchases());
+      } catch (error) {
+        setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "purchases" }));
+      }
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, { action: "update", resource: "shipping status" }));
+    } finally {
+      setUpdatingShippingPurchaseId(null);
+    }
+  };
 
   const handleConfirmDelete = async () => {
     if (!pendingDeletePurchase) return;
@@ -202,6 +235,7 @@ export default function PurchasesPage() {
                       <Tooltip title={t("query.edit")}>
                         <IconButton
                           aria-label={t("query.edit")}
+                          disabled={updatingShippingPurchaseId !== null}
                           onClick={() => navigate(`/purchases/${purchase.purchaseId}/edit`, {
                             state: {
                               purchase,
@@ -219,6 +253,7 @@ export default function PurchasesPage() {
                         <IconButton
                           color="error"
                           aria-label={t("query.delete")}
+                          disabled={updatingShippingPurchaseId !== null}
                           onClick={() => setPendingDeletePurchase(purchase)}
                         >
                           <DeleteOutlineOutlinedIcon />
@@ -231,6 +266,8 @@ export default function PurchasesPage() {
                 <Stepper
                   activeStep={Math.max(0, SHIPPING_STEPS.indexOf(purchase.shippingStatus ?? "NOT_SHIPPED"))}
                   alternativeLabel
+                  nonLinear
+                  aria-busy={updatingShippingPurchaseId === purchase.purchaseId}
                   sx={{
                     mt: 2,
                     px: { xs: 0, sm: 2 },
@@ -243,14 +280,44 @@ export default function PurchasesPage() {
                     "& .MuiStepIcon-root.Mui-completed": {
                       color: "success.main",
                     },
+                    "& .MuiStepButton-root": {
+                      borderRadius: 1,
+                      "&:hover, &.Mui-focusVisible": {
+                        bgcolor: "action.hover",
+                      },
+                    },
                   }}
                 >
-                  {SHIPPING_STEPS.map((status) => (
-                    <Step key={status}>
-                      <StepLabel>{t(`query.shipping.${status}`)}</StepLabel>
+                  {SHIPPING_STEPS.map((status, index) => (
+                    <Step
+                      key={status}
+                      completed={index < SHIPPING_STEPS.indexOf(purchase.shippingStatus ?? "NOT_SHIPPED")}
+                    >
+                      {hasPermission("purchases:update") ? (
+                        <StepButton
+                          disabled={
+                            status === (purchase.shippingStatus ?? "NOT_SHIPPED")
+                            || updatingShippingPurchaseId !== null
+                            || pendingDeletePurchase !== null
+                          }
+                          aria-label={t("query.changeShippingStatus", { status: t(`query.shipping.${status}`) })}
+                          onClick={() => void handleShippingStatusChange(purchase, status)}
+                        >
+                          {t(`query.shipping.${status}`)}
+                        </StepButton>
+                      ) : (
+                        <StepLabel>{t(`query.shipping.${status}`)}</StepLabel>
+                      )}
                     </Step>
                   ))}
                 </Stepper>
+
+                {updatingShippingPurchaseId === purchase.purchaseId && (
+                  <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ mt: 1 }} role="status">
+                    <CircularProgress size={16} aria-label={t("update.submitting")} />
+                    <Typography variant="caption" color="text.secondary">{t("update.submitting")}</Typography>
+                  </Stack>
+                )}
 
                 <Stack spacing={0.8} sx={{ mt: 1.5 }}>
                   {purchase.figurines.map((line) => {
