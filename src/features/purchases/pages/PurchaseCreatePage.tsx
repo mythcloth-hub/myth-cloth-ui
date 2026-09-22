@@ -23,6 +23,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
+import dayjs from "dayjs";
 import AppPageHeader from "../../../components/AppPageHeader";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
@@ -39,7 +40,7 @@ import {
 } from "../types/purchase";
 
 const emptyForm = {
-  purchaseDate: new Date().toISOString().slice(0, 10),
+  purchaseDate: "",
   seller: "",
   orderNumber: "",
   currency: "JPY",
@@ -78,7 +79,10 @@ export default function PurchaseCreatePage() {
   const [figurines, setFigurines] = useState<CollectionFigurine[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>(locationState?.selectedCollectionFigurineIds ?? []);
   const [lineState, setLineState] = useState<Record<number, PurchaseLineState>>({});
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const [form, setForm] = useState<FormState>(() => ({
+    ...emptyForm,
+    purchaseDate: dayjs().format("YYYY-MM-DD"),
+  }));
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -202,7 +206,7 @@ export default function PurchaseCreatePage() {
 
   const validate = (): boolean => {
     const nextErrors: FormErrors = {};
-    const today = new Date().toISOString().slice(0, 10);
+    const today = dayjs().format("YYYY-MM-DD");
 
     if (!form.purchaseDate) nextErrors.purchaseDate = t("create.dateRequired");
     else if (form.purchaseDate > today) nextErrors.purchaseDate = t("create.dateFuture");
@@ -375,7 +379,7 @@ export default function PurchaseCreatePage() {
           </Box>
           <Stack spacing={1.5}>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
-              <TextField label="Purchase date" type="date" value={form.purchaseDate} onChange={(event) => updateForm("purchaseDate", event.target.value)} error={Boolean(errors.purchaseDate)} helperText={errors.purchaseDate} InputLabelProps={{ shrink: true }} required fullWidth />
+              <TextField label="Purchase date" type="date" value={form.purchaseDate} onChange={(event) => updateForm("purchaseDate", event.target.value)} error={Boolean(errors.purchaseDate)} helperText={errors.purchaseDate} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: dayjs().format("YYYY-MM-DD") } }} required fullWidth />
               <TextField label="Seller" value={form.seller} onChange={(event) => updateForm("seller", event.target.value)} error={Boolean(errors.seller)} helperText={errors.seller} inputProps={{ maxLength: 150 }} required fullWidth />
               <FormControl fullWidth required>
                 <InputLabel>Currency</InputLabel>
