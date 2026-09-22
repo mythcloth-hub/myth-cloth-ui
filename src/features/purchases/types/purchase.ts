@@ -54,4 +54,14 @@ export type PurchaseRecord = {
   figurines: Array<PurchaseFigurineInput & { id: number }>;
 };
 
+export type PurchaseSummary = {
+  currency: string;
+  totalAmount: number;
+};
+
+export type PurchasesResponse = {
+  summary: PurchaseSummary;
+  purchases: PurchaseRecord[];
+};
+
 export const PURCHASE_CURRENCIES = ["JPY", "USD", "EUR", "MXN", "CAD", "CNY"] as const;

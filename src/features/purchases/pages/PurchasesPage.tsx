@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -35,7 +35,7 @@ import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import { getCollections, getCollectionFigurines } from "../../collections/api/collectionApi";
 import type { Collection, CollectionFigurine } from "../../collections/types/collection";
 import { deletePurchase, getPurchases, updatePurchaseShippingStatus } from "../api/purchaseApi";
-import type { PurchaseRecord, ShippingStatus } from "../types/purchase";
+import type { PurchaseRecord, PurchaseSummary, ShippingStatus } from "../types/purchase";
 
 const SHIPPING_STATUS_COLOR: Record<ShippingStatus, "default" | "info" | "success"> = {
   NOT_SHIPPED: "default",
@@ -63,6 +63,7 @@ export default function PurchasesPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
+  const [summary, setSummary] = useState<PurchaseSummary | null>(null);
   const [figurinesByCollectionId, setFigurinesByCollectionId] = useState<Record<number, FigurineDisplay>>({});
   const [collectionIdByPurchaseId, setCollectionIdByPurchaseId] = useState<Record<number, number>>({});
   const [collectionsById, setCollectionsById] = useState<Record<number, Collection>>({});
@@ -93,7 +94,9 @@ export default function PurchasesPage() {
 
       // Reload backend-managed dates without assuming a PATCH response body.
       try {
-        setPurchases(await getPurchases());
+        const refreshedData = await getPurchases();
+        setPurchases(refreshedData.purchases);
+        setSummary(refreshedData.summary);
       } catch (error) {
         setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "purchases" }));
       }
@@ -110,8 +113,9 @@ export default function PurchasesPage() {
     setDeletingPurchase(true);
     try {
       await deletePurchase(pendingDeletePurchase.purchaseId);
-      const refreshedPurchases = await getPurchases();
-      setPurchases(refreshedPurchases);
+      const refreshedData = await getPurchases();
+      setPurchases(refreshedData.purchases);
+      setSummary(refreshedData.summary);
       setSuccessMessage(t("query.deleteSuccess"));
       setErrorMessage(null);
       setPendingDeletePurchase(null);
@@ -142,7 +146,7 @@ export default function PurchasesPage() {
         }));
 
         const purchaseCollectionMap = Object.fromEntries(
-          purchaseData.flatMap((purchase) => {
+          purchaseData.purchases.flatMap((purchase) => {
             const collectionId = purchase.figurines
               .map((line) => collectionIdByFigurineId[line.collectionFigurineId])
               .find((value): value is number => typeof value === "number");
@@ -151,7 +155,8 @@ export default function PurchasesPage() {
         );
 
         if (active) {
-          setPurchases(purchaseData);
+          setPurchases(purchaseData.purchases);
+          setSummary(purchaseData.summary);
           setFigurinesByCollectionId(figurineMap);
           setCollectionIdByPurchaseId(purchaseCollectionMap);
           setCollectionsById(Object.fromEntries(collections.map((collection) => [collection.id, collection])));
@@ -179,17 +184,6 @@ export default function PurchasesPage() {
     }
   }, [location.pathname, location.state, navigate, t]);
 
-  const totalByCurrency = useMemo(
-    () =>
-      Object.entries(
-        purchases.reduce<Record<string, number>>((totals, purchase) => ({
-          ...totals,
-          [purchase.currency]: (totals[purchase.currency] ?? 0) + purchase.totalAmount,
-        }), {}),
-      ),
-    [purchases],
-  );
-
   if (loading) {
     return <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}><CircularProgress /></Box>;
   }
@@ -205,6 +199,15 @@ export default function PurchasesPage() {
 
       {errorMessage && <Alert severity="error" sx={{ mt: 2 }}>{errorMessage}</Alert>}
 
+      {summary && (
+        <Box sx={{ mt: 2, mb: 1.5 }}>
+          <Chip
+            icon={<ReceiptLongOutlinedIcon />}
+            label={`${t("query.total")}: ${formatCurrencyAmount(summary.totalAmount, summary.currency, { style: "symbolCode" })}`}
+          />
+        </Box>
+      )}
+
       {!errorMessage && purchases.length === 0 && (
         <Card sx={{ mt: 2, p: 2.5 }}>
           <Typography color="text.secondary">{t("query.empty")}</Typography>
@@ -213,12 +216,6 @@ export default function PurchasesPage() {
 
       {purchases.length > 0 && (
         <>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mt: 2, mb: 1.5 }}>
-            {totalByCurrency.map(([currency, total]) => (
-              <Chip key={currency} icon={<ReceiptLongOutlinedIcon />} label={formatCurrencyAmount(total, currency)} />
-            ))}
-          </Stack>
-
           <Stack spacing={1.5}>
             {purchases.map((purchase) => (
               <Card key={purchase.purchaseId} sx={{ p: { xs: 1.5, md: 2 } }}>
