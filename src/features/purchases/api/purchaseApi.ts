@@ -1,5 +1,5 @@
 import httpClient from "../../../api/httpClient";
-import type { CreatePurchaseRequest, CreatePurchaseResponse, PurchaseRecord, ShippingStatus } from "../types/purchase";
+import type { CreatePurchaseRequest, CreatePurchaseResponse, PurchaseRecord, PurchasesResponse, ShippingStatus } from "../types/purchase";
 
 const API_BASE = "/collectors/purchases/collections";
 
@@ -19,8 +19,8 @@ export async function createPurchase(
   return response.data;
 }
 
-export async function getPurchases(): Promise<PurchaseRecord[]> {
-  const response = await httpClient.get<PurchaseRecord[]>("/collectors/purchases");
+export async function getPurchases(): Promise<PurchasesResponse> {
+  const response = await httpClient.get<PurchasesResponse>("/collectors/purchases");
   return response.data;
 }
 
