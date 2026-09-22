@@ -80,6 +80,7 @@
     "deleteSuccess": "Purchase deleted successfully.",
     "unknownFigurine": "Collection figurine #{{id}}",
     "quantity": "Quantity",
+    "trackShipment": "Track shipment",
     "shipped": "Shipped",
     "delivered": "Delivered"
   }

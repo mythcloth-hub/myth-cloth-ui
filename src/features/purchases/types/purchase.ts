@@ -31,6 +31,7 @@ export type CreatePurchaseResponse = {
   purchaseChannel: PurchaseChannel;
   shippingStatus?: ShippingStatus;
   trackingNumber?: string;
+  trackingUrl?: string | null;
   carrier?: string;
   shippedDate?: string;
   figurines: Array<PurchaseFigurineInput & { id: number }>;
@@ -46,6 +47,7 @@ export type PurchaseRecord = {
   purchaseChannel: PurchaseChannel;
   shippingStatus?: ShippingStatus;
   trackingNumber?: string;
+  trackingUrl?: string | null;
   carrier?: string;
   shippedDate?: string;
   deliveredDate?: string;

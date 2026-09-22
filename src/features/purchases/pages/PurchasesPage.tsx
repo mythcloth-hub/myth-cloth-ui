@@ -13,6 +13,7 @@ import {
   DialogTitle,
   Button,
   IconButton,
+  Link,
   Snackbar,
   Stack,
   Step,
@@ -26,6 +27,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
@@ -44,6 +46,16 @@ const SHIPPING_STATUS_COLOR: Record<ShippingStatus, "default" | "info" | "succes
 const SHIPPING_STEPS: ShippingStatus[] = ["NOT_SHIPPED", "SHIPPED", "DELIVERED"];
 
 type FigurineDisplay = Pick<CollectionFigurine, "displayableName" | "officialImageUrls">;
+
+function isTrackingUrl(value: string | null | undefined): value is string {
+  if (!value?.trim()) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
 
 export default function PurchasesPage() {
   const { t } = useTranslation("purchases");
@@ -339,6 +351,18 @@ export default function PurchasesPage() {
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
                     {[purchase.carrier, purchase.trackingNumber, purchase.shippedDate && `${t("query.shipped")}: ${purchase.shippedDate}`, purchase.deliveredDate && `${t("query.delivered")}: ${purchase.deliveredDate}`].filter(Boolean).join(" · ")}
                   </Typography>
+                )}
+                {isTrackingUrl(purchase.trackingUrl) && (
+                  <Link
+                    href={purchase.trackingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="body2"
+                    sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, mt: 1 }}
+                  >
+                    {t("query.trackShipment")}
+                    <OpenInNewOutlinedIcon fontSize="inherit" />
+                  </Link>
                 )}
               </Card>
             ))}
