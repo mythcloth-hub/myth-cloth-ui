@@ -95,7 +95,7 @@ export default function PurchasesPage() {
       // Reload backend-managed dates without assuming a PATCH response body.
       try {
         const refreshedData = await getPurchases();
-        setPurchases(refreshedData.purchases);
+        setPurchases(refreshedData.purchases ?? []);
         setSummary(refreshedData.summary);
       } catch (error) {
         setErrorMessage(getApiErrorMessage(error, { action: "load", resource: "purchases" }));
@@ -114,7 +114,7 @@ export default function PurchasesPage() {
     try {
       await deletePurchase(pendingDeletePurchase.purchaseId);
       const refreshedData = await getPurchases();
-      setPurchases(refreshedData.purchases);
+      setPurchases(refreshedData.purchases ?? []);
       setSummary(refreshedData.summary);
       setSuccessMessage(t("query.deleteSuccess"));
       setErrorMessage(null);
@@ -145,8 +145,9 @@ export default function PurchasesPage() {
           collectionIdByFigurineId[figurine.collectionFigurineId] = collections[index].id;
         }));
 
+        const purchaseRecords = purchaseData.purchases ?? [];
         const purchaseCollectionMap = Object.fromEntries(
-          purchaseData.purchases.flatMap((purchase) => {
+          purchaseRecords.flatMap((purchase) => {
             const collectionId = purchase.figurines
               .map((line) => collectionIdByFigurineId[line.collectionFigurineId])
               .find((value): value is number => typeof value === "number");
@@ -155,7 +156,7 @@ export default function PurchasesPage() {
         );
 
         if (active) {
-          setPurchases(purchaseData.purchases);
+          setPurchases(purchaseRecords);
           setSummary(purchaseData.summary);
           setFigurinesByCollectionId(figurineMap);
           setCollectionIdByPurchaseId(purchaseCollectionMap);

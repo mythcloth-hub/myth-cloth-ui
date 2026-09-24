@@ -61,7 +61,8 @@ export type PurchaseSummary = {
 
 export type PurchasesResponse = {
   summary: PurchaseSummary;
-  purchases: PurchaseRecord[];
+  // Backend omits this field entirely when there are no purchases.
+  purchases?: PurchaseRecord[];
 };
 
 export const PURCHASE_CURRENCIES = ["JPY", "USD", "EUR", "MXN", "CAD", "CNY"] as const;
