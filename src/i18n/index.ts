@@ -28,6 +28,7 @@ import mxExplore from "./locales/mx/explore.json";
 import mxSecurity from "./locales/mx/security.json";
 import mxPersonal from "./locales/mx/personal.json";
 import mxInfo from "./locales/mx/info.json";
+import mxPurchases from "./locales/mx/purchases.json";
 
 import esCommon from "./locales/es/common.json";
 import esNavigation from "./locales/es/navigation.json";
@@ -39,6 +40,7 @@ import esExplore from "./locales/es/explore.json";
 import esSecurity from "./locales/es/security.json";
 import esPersonal from "./locales/es/personal.json";
 import esInfo from "./locales/es/info.json";
+import esPurchases from "./locales/es/purchases.json";
 
 import frCommon from "./locales/fr/common.json";
 import frNavigation from "./locales/fr/navigation.json";
@@ -50,6 +52,7 @@ import frExplore from "./locales/fr/explore.json";
 import frSecurity from "./locales/fr/security.json";
 import frPersonal from "./locales/fr/personal.json";
 import frInfo from "./locales/fr/info.json";
+import frPurchases from "./locales/fr/purchases.json";
 
 import { DEFAULT_LANGUAGE, normalizeLanguage, SUPPORTED_LANGUAGES } from "./languages";
 
@@ -82,6 +85,7 @@ export const resources = {
     security: mxSecurity,
     personal: mxPersonal,
     info: mxInfo,
+    purchases: mxPurchases,
   },
   es: {
     common: esCommon,
@@ -94,6 +98,7 @@ export const resources = {
     security: esSecurity,
     personal: esPersonal,
     info: esInfo,
+    purchases: esPurchases,
   },
   fr: {
     common: frCommon,
@@ -106,6 +111,7 @@ export const resources = {
     security: frSecurity,
     personal: frPersonal,
     info: frInfo,
+    purchases: frPurchases,
   }
 } as const;
 

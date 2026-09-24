@@ -336,14 +336,14 @@ export default function PurchaseCreatePage() {
             <Paper key={`line-${figurine.collectionFigurineId}`} sx={{ p: { xs: 1.5, sm: 2.5 } }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1 }}>{figurine.displayableName}</Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
-                <TextField label="Quantity" type="number" value={line?.quantity ?? "1"} onChange={(event) => updateLine(figurine.collectionFigurineId, "quantity", event.target.value)} inputProps={{ min: 1, step: 1 }} required fullWidth />
-                <TextField label="Price paid" type="number" value={line?.pricePaid ?? ""} onChange={(event) => updateLine(figurine.collectionFigurineId, "pricePaid", event.target.value)} inputProps={{ min: 0.01, step: "0.01" }} required fullWidth />
+                <TextField label={t("create.quantity")} type="number" value={line?.quantity ?? "1"} onChange={(event) => updateLine(figurine.collectionFigurineId, "quantity", event.target.value)} inputProps={{ min: 1, step: 1 }} required fullWidth />
+                <TextField label={t("create.pricePaid")} type="number" value={line?.pricePaid ?? ""} onChange={(event) => updateLine(figurine.collectionFigurineId, "pricePaid", event.target.value)} inputProps={{ min: 0.01, step: "0.01" }} required fullWidth />
                 <FormControl fullWidth required>
-                  <InputLabel>Purchase type</InputLabel>
-                  <Select value={line?.purchaseType ?? "RETAIL"} label="Purchase type" onChange={(event) => updateLine(figurine.collectionFigurineId, "purchaseType", event.target.value)}>
-                    <MenuItem value="RETAIL">Retail</MenuItem>
-                    <MenuItem value="PREORDER">Preorder</MenuItem>
-                    <MenuItem value="SECOND_HAND">Second-hand</MenuItem>
+                  <InputLabel>{t("create.purchaseType")}</InputLabel>
+                  <Select value={line?.purchaseType ?? "RETAIL"} label={t("create.purchaseType")} onChange={(event) => updateLine(figurine.collectionFigurineId, "purchaseType", event.target.value)}>
+                    <MenuItem value="RETAIL">{t("create.retail")}</MenuItem>
+                    <MenuItem value="PREORDER">{t("create.preorder")}</MenuItem>
+                    <MenuItem value="SECOND_HAND">{t("create.secondHand")}</MenuItem>
                   </Select>
                 </FormControl>
               </Stack>
@@ -381,13 +381,13 @@ export default function PurchaseCreatePage() {
           </Box>
           <Stack spacing={1.5}>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
-              <TextField label="Purchase date" type="date" value={form.purchaseDate} onChange={(event) => updateForm("purchaseDate", event.target.value)} error={Boolean(errors.purchaseDate)} helperText={errors.purchaseDate} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: dayjs().format("YYYY-MM-DD") } }} required fullWidth />
-              <TextField label="Seller" value={form.seller} onChange={(event) => updateForm("seller", event.target.value)} error={Boolean(errors.seller)} helperText={errors.seller} inputProps={{ maxLength: 150 }} required fullWidth />
+              <TextField label={t("create.purchaseDate")} type="date" value={form.purchaseDate} onChange={(event) => updateForm("purchaseDate", event.target.value)} error={Boolean(errors.purchaseDate)} helperText={errors.purchaseDate} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: dayjs().format("YYYY-MM-DD") } }} required fullWidth />
+              <TextField label={t("create.seller")} value={form.seller} onChange={(event) => updateForm("seller", event.target.value)} error={Boolean(errors.seller)} helperText={errors.seller} inputProps={{ maxLength: 150 }} required fullWidth />
               <FormControl fullWidth required>
-                <InputLabel>Currency</InputLabel>
+                <InputLabel>{t("create.currency")}</InputLabel>
                 <Select
                   value={form.currency}
-                  label="Currency"
+                  label={t("create.currency")}
                   onChange={(event) => updateForm("currency", event.target.value)}
                   renderValue={(value) => (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
@@ -412,19 +412,19 @@ export default function PurchaseCreatePage() {
               </FormControl>
             </Stack>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
-              <TextField label="Order number" value={form.orderNumber} onChange={(event) => updateForm("orderNumber", event.target.value)} error={Boolean(errors.orderNumber)} helperText={errors.orderNumber} inputProps={{ maxLength: 50 }} fullWidth />
-              <FormControl fullWidth required><InputLabel>Purchase channel</InputLabel><Select value={form.purchaseChannel} label="Purchase channel" onChange={(event) => updateForm("purchaseChannel", event.target.value as PurchaseChannel)}><MenuItem value="ONLINE">Online</MenuItem><MenuItem value="PHYSICAL_STORE">Physical store</MenuItem></Select></FormControl>
-              <FormControl fullWidth><InputLabel>Shipping status</InputLabel><Select value={form.shippingStatus} label="Shipping status" onChange={(event) => updateForm("shippingStatus", event.target.value as ShippingStatus)}><MenuItem value="NOT_SHIPPED">Not shipped</MenuItem><MenuItem value="SHIPPED">Shipped</MenuItem><MenuItem value="DELIVERED">Delivered</MenuItem></Select></FormControl>
+              <TextField label={t("create.orderNumber")} value={form.orderNumber} onChange={(event) => updateForm("orderNumber", event.target.value)} error={Boolean(errors.orderNumber)} helperText={errors.orderNumber} inputProps={{ maxLength: 50 }} fullWidth />
+              <FormControl fullWidth required><InputLabel>{t("create.purchaseChannel")}</InputLabel><Select value={form.purchaseChannel} label={t("create.purchaseChannel")} onChange={(event) => updateForm("purchaseChannel", event.target.value as PurchaseChannel)}><MenuItem value="ONLINE">{t("create.online")}</MenuItem><MenuItem value="PHYSICAL_STORE">{t("create.physicalStore")}</MenuItem></Select></FormControl>
+              <FormControl fullWidth><InputLabel>{t("create.shippingStatus")}</InputLabel><Select value={form.shippingStatus} label={t("create.shippingStatus")} onChange={(event) => updateForm("shippingStatus", event.target.value as ShippingStatus)}><MenuItem value="NOT_SHIPPED">{t("create.notShipped")}</MenuItem><MenuItem value="SHIPPED">{t("create.shipped")}</MenuItem><MenuItem value="DELIVERED">{t("create.delivered")}</MenuItem></Select></FormControl>
             </Stack>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
-              <TextField label="Tracking number" value={form.trackingNumber} onChange={(event) => updateForm("trackingNumber", event.target.value)} error={Boolean(errors.trackingNumber)} helperText={errors.trackingNumber} inputProps={{ maxLength: 100 }} fullWidth />
-              <TextField label="Carrier" value={form.carrier} onChange={(event) => updateForm("carrier", event.target.value)} error={Boolean(errors.carrier)} helperText={errors.carrier} inputProps={{ maxLength: 100 }} fullWidth />
+              <TextField label={t("create.trackingNumber")} value={form.trackingNumber} onChange={(event) => updateForm("trackingNumber", event.target.value)} error={Boolean(errors.trackingNumber)} helperText={errors.trackingNumber} inputProps={{ maxLength: 100 }} fullWidth />
+              <TextField label={t("create.carrier")} value={form.carrier} onChange={(event) => updateForm("carrier", event.target.value)} error={Boolean(errors.carrier)} helperText={errors.carrier} inputProps={{ maxLength: 100 }} fullWidth />
             </Stack>
           </Stack>
         </Paper>
 
         <Stack direction="row" justifyContent="flex-end" spacing={1}>
-          <Button variant="outlined" onClick={() => navigate(`/collections/${collectionId}`, { state: { collection } })}>Cancel</Button>
+          <Button variant="outlined" onClick={() => navigate(`/collections/${collectionId}`, { state: { collection } })}>{t("create.cancel")}</Button>
           <Button type="submit" variant="contained" disabled={submitting} startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SaveOutlinedIcon />}>
             {submitting ? t(editing ? "update.submitting" : "create.submitting") : t(editing ? "update.submit" : "create.submit")}
           </Button>
