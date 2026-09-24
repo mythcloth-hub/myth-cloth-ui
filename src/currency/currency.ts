@@ -41,6 +41,16 @@ const REGION_TO_CURRENCY: Record<string, SupportedCurrency> = {
   SK: "EUR",
 };
 
+// Representative country code per currency, used to render a flag next to currency dropdown options.
+export const CURRENCY_COUNTRY_CODE: Record<SupportedCurrency, string> = {
+  JPY: "JP",
+  MXN: "MX",
+  EUR: "EU",
+  USD: "US",
+  CNY: "CN",
+  CAD: "CA",
+};
+
 function getRegionFromLocale(locale: string): string | null {
   try {
     const localeApi = (Intl as typeof Intl & { Locale?: new (tag: string) => { region?: string } }).Locale;

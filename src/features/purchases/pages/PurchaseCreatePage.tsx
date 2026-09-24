@@ -27,6 +27,8 @@ import dayjs from "dayjs";
 import AppPageHeader from "../../../components/AppPageHeader";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
+import { countryCodeToFlag } from "../../../utils/countryFlag";
+import { CURRENCY_COUNTRY_CODE, type SupportedCurrency } from "../../../currency/currency";
 import { getCollectionFigurines } from "../../collections/api/collectionApi";
 import type { Collection, CollectionFigurine } from "../../collections/types/collection";
 import { createPurchase, updatePurchase } from "../api/purchaseApi";
@@ -383,7 +385,30 @@ export default function PurchaseCreatePage() {
               <TextField label="Seller" value={form.seller} onChange={(event) => updateForm("seller", event.target.value)} error={Boolean(errors.seller)} helperText={errors.seller} inputProps={{ maxLength: 150 }} required fullWidth />
               <FormControl fullWidth required>
                 <InputLabel>Currency</InputLabel>
-                <Select value={form.currency} label="Currency" onChange={(event) => updateForm("currency", event.target.value)}>{PURCHASE_CURRENCIES.map((currency) => <MenuItem key={currency} value={currency}>{currency}</MenuItem>)}</Select>
+                <Select
+                  value={form.currency}
+                  label="Currency"
+                  onChange={(event) => updateForm("currency", event.target.value)}
+                  renderValue={(value) => (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                      <Typography component="span" sx={{ fontSize: "1rem", lineHeight: 1 }}>
+                        {countryCodeToFlag(CURRENCY_COUNTRY_CODE[value as SupportedCurrency])}
+                      </Typography>
+                      <Typography component="span">{value}</Typography>
+                    </Box>
+                  )}
+                >
+                  {PURCHASE_CURRENCIES.map((currency) => (
+                    <MenuItem key={currency} value={currency}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                        <Typography component="span" sx={{ fontSize: "1rem", lineHeight: 1 }}>
+                          {countryCodeToFlag(CURRENCY_COUNTRY_CODE[currency])}
+                        </Typography>
+                        <Typography component="span">{currency}</Typography>
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
               </FormControl>
             </Stack>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>

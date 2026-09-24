@@ -64,6 +64,8 @@ import type {
 } from "../types/figurine";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatIsoDateLabel } from "../../../utils/formatIsoDateLabel";
+import { countryCodeToFlag } from "../../../utils/countryFlag";
+import { CURRENCY_COUNTRY_CODE, type SupportedCurrency } from "../../../currency/currency";
 import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
 // Event form helpers
@@ -982,8 +984,29 @@ export default function FigurineFormPage() {
                     onChange={(e) => setDistributorField(i, "currency", e.target.value)}
                     error={Boolean(errors[`dist_${i}_currency`])}
                     helperText={errors[`dist_${i}_currency`]}
+                    slotProps={{
+                      select: {
+                        renderValue: (value) => (
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                            <Typography component="span" sx={{ fontSize: "1rem", lineHeight: 1 }}>
+                              {countryCodeToFlag(CURRENCY_COUNTRY_CODE[value as SupportedCurrency])}
+                            </Typography>
+                            <Typography component="span">{value as string}</Typography>
+                          </Box>
+                        ),
+                      },
+                    }}
                   >
-                    {CURRENCIES.map((c) => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+                    {CURRENCIES.map((c) => (
+                      <MenuItem key={c} value={c}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                          <Typography component="span" sx={{ fontSize: "1rem", lineHeight: 1 }}>
+                            {countryCodeToFlag(CURRENCY_COUNTRY_CODE[c as SupportedCurrency])}
+                          </Typography>
+                          <Typography component="span">{c}</Typography>
+                        </Box>
+                      </MenuItem>
+                    ))}
                   </TextField>
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>

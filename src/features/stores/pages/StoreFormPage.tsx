@@ -27,6 +27,7 @@ import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { createStore, getStoreById, updateStore } from "../api/storeApi";
 import type { StoreCurrency, StoreInput, StoreName } from "../types/store";
 import { countryCodeToFlag } from "../../../utils/countryFlag";
+import { CURRENCY_COUNTRY_CODE } from "../../../currency/currency";
 
 type FormData = {
 	name: string;
@@ -303,10 +304,19 @@ export default function StoreFormPage() {
 									setErrors((prev) => ({ ...prev, currency: undefined }));
 									setServerError(null);
 								}}
+								renderValue={(value) => (
+									<>
+										{value && <span style={{ marginRight: 8 }}>{countryCodeToFlag(CURRENCY_COUNTRY_CODE[value as StoreCurrency])}</span>}
+										{value || "Select currency"}
+									</>
+								)}
 							>
 								<MenuItem value="">Select currency</MenuItem>
 								{CURRENCY_OPTIONS.map((currency) => (
-									<MenuItem key={currency} value={currency}>{currency}</MenuItem>
+									<MenuItem key={currency} value={currency}>
+										<span style={{ marginRight: 8 }}>{countryCodeToFlag(CURRENCY_COUNTRY_CODE[currency])}</span>
+										{currency}
+									</MenuItem>
 								))}
 							</Select>
 							<FormHelperText>{errors.currency ?? "Required"}</FormHelperText>
