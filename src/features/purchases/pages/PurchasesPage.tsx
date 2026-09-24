@@ -30,6 +30,7 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 import AppPageHeader from "../../../components/AppPageHeader";
 import { useAuth } from "../../../auth/AuthContext";
+import { useDisplayCurrency } from "../../../currency/CurrencyContext";
 import { getApiErrorMessage } from "../../../utils/apiErrorMessage";
 import { formatCurrencyAmount } from "../../../utils/formatCurrencyAmount";
 import { getCollections, getCollectionFigurines } from "../../collections/api/collectionApi";
@@ -60,6 +61,7 @@ function isTrackingUrl(value: string | null | undefined): value is string {
 export default function PurchasesPage() {
   const { t } = useTranslation("purchases");
   const { hasPermission } = useAuth();
+  const { selectedCurrency } = useDisplayCurrency();
   const location = useLocation();
   const navigate = useNavigate();
   const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
@@ -94,7 +96,7 @@ export default function PurchasesPage() {
 
       // Reload backend-managed dates without assuming a PATCH response body.
       try {
-        const refreshedData = await getPurchases();
+        const refreshedData = await getPurchases({ currency: selectedCurrency ?? undefined });
         setPurchases(refreshedData.purchases ?? []);
         setSummary(refreshedData.summary);
       } catch (error) {
@@ -113,7 +115,7 @@ export default function PurchasesPage() {
     setDeletingPurchase(true);
     try {
       await deletePurchase(pendingDeletePurchase.purchaseId);
-      const refreshedData = await getPurchases();
+      const refreshedData = await getPurchases({ currency: selectedCurrency ?? undefined });
       setPurchases(refreshedData.purchases ?? []);
       setSummary(refreshedData.summary);
       setSuccessMessage(t("query.deleteSuccess"));
@@ -128,8 +130,9 @@ export default function PurchasesPage() {
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
 
-    Promise.all([getPurchases(), getCollections()])
+    Promise.all([getPurchases({ currency: selectedCurrency ?? undefined }), getCollections()])
       .then(async ([purchaseData, collections]) => {
         const figurinePages = await Promise.all(
           collections.map((collection) => getCollectionFigurines(collection.id, { includeRestocks: true })),
@@ -175,7 +178,7 @@ export default function PurchasesPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [selectedCurrency]);
 
   useEffect(() => {
     const state = location.state as { purchaseUpdated?: boolean } | null;

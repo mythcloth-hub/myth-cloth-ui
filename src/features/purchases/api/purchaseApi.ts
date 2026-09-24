@@ -1,7 +1,12 @@
 import httpClient from "../../../api/httpClient";
+import { toCurrencyParam, type SupportedCurrency } from "../../../currency/currency";
 import type { CreatePurchaseRequest, CreatePurchaseResponse, PurchaseRecord, PurchasesResponse, ShippingStatus } from "../types/purchase";
 
 const API_BASE = "/collectors/purchases/collections";
+
+type GetPurchasesParams = {
+  currency?: SupportedCurrency;
+};
 
 export async function createPurchase(
   collectionId: number,
@@ -19,8 +24,10 @@ export async function createPurchase(
   return response.data;
 }
 
-export async function getPurchases(): Promise<PurchasesResponse> {
-  const response = await httpClient.get<PurchasesResponse>("/collectors/purchases");
+export async function getPurchases(params?: GetPurchasesParams): Promise<PurchasesResponse> {
+  const response = await httpClient.get<PurchasesResponse>("/collectors/purchases", {
+    params: toCurrencyParam(params?.currency),
+  });
   return response.data;
 }
 
